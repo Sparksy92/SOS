@@ -36,7 +36,9 @@ import {
   Info,
   RefreshCw,
   User,
-  AlertTriangle
+  AlertTriangle,
+  FileSpreadsheet,
+  Square
 } from 'lucide-react';
 import './App.css';
 import { getRiskLevel, requiresAcknowledgement, getSafetyWarning } from './modules/safety/riskRules.js';
@@ -57,6 +59,19 @@ import {
   loadDashboardWidgets,
   saveDashboardWidgets
 } from './modules/profile/sosProfileStore.js';
+
+import {
+  addSavedAnswer,
+  addSavedSource,
+  addFieldNote,
+  loadSavedAnswers,
+  loadSavedSources,
+  loadFieldNotes
+} from './modules/session/sessionStore.js';
+import NotesReportsPanel from './components/reports/NotesReportsPanel.jsx';
+import RiskSaveConfirmation from './components/common/RiskSaveConfirmation.jsx';
+import FieldNoteEditor from './components/notes/FieldNoteEditor.jsx';
+
 
 import DashboardView from './components/dashboard/DashboardView.jsx';
 import WaterInventoryPanel from './components/water/WaterInventoryPanel.jsx';
@@ -142,6 +157,13 @@ function App() {
   // Settings modal state
   const [settingsOpen, setSettingsOpen] = useState(false);
 
+  // Phase 5 Notes & Reports States
+  const [pendingSaveAction, setPendingSaveAction] = useState(null);
+  const [pendingSaveRiskCategory, setPendingSaveRiskCategory] = useState(null);
+  const [noteEditorPrefill, setNoteEditorPrefill] = useState(null);
+  const [noteEditorOpen, setNoteEditorOpen] = useState(false);
+  const [reportBuilderOpenDirect, setReportBuilderOpenDirect] = useState(false);
+
   // Live Guide & Voice Chat States
   const [isLiveGuide, setIsLiveGuide] = useState(false);
   const [isVoiceChatActive, setIsVoiceChatActive] = useState(false);
@@ -194,6 +216,77 @@ function App() {
       return getRiskLevel(doc);
     }
     return { risk: 'LOW', category: null };
+  };
+
+  const executeSaveAnswer = (msg) => {
+    addSavedAnswer({
+      title: msg.text.substring(0, 40) + '...',
+      relatedQuestion: messages[messages.indexOf(msg) - 1]?.text || 'User Query',
+      relatedAnswerStatus: msg.answerStatus || 'verified_local',
+      riskCategory: getRiskySourceCategory(msg.sources) || getRiskLevel({ name: msg.text, path: '' }).category,
+      body: msg.text,
+      content: msg.text,
+      tags: ['jarvis']
+    });
+    alert("Answer saved successfully!");
+  };
+
+  const handleSaveAnswer = (msg) => {
+    const riskCat = getRiskySourceCategory(msg.sources) || getRiskLevel({ name: msg.text, path: '' }).category;
+    if (riskCat) {
+      setPendingSaveRiskCategory(riskCat);
+      setPendingSaveAction(() => () => executeSaveAnswer(msg));
+    } else {
+      executeSaveAnswer(msg);
+    }
+  };
+
+  const executeSaveSources = (sourcesList) => {
+    sourcesList.forEach(s => {
+      addSavedSource({
+        source: s.source || s.documentPath,
+        title: getSourceTitle(s.source || s.documentPath),
+        page: s.page || null,
+        section: s.section || null,
+        matchLabel: s.matchLabel || 'Related',
+        riskCategory: s.riskCategory || null,
+        excerpt: s.excerpt || ''
+      });
+    });
+    alert(`Saved ${sourcesList.length} source references!`);
+  };
+
+  const handleSaveSources = (sourcesList) => {
+    let riskCat = null;
+    for (const s of sourcesList) {
+      if (s.riskCategory) {
+        riskCat = s.riskCategory;
+        break;
+      }
+    }
+    if (riskCat) {
+      setPendingSaveRiskCategory(riskCat);
+      setPendingSaveAction(() => () => executeSaveSources(sourcesList));
+    } else {
+      executeSaveSources(sourcesList);
+    }
+  };
+
+  const handleCreateFieldNoteFromMsg = (msg) => {
+    const userQuery = messages[messages.indexOf(msg) - 1]?.text || '';
+    const riskCat = getRiskySourceCategory(msg.sources) || getRiskLevel({ name: msg.text, path: '' }).category;
+    
+    const prefill = {
+      title: `Observation on ${userQuery.substring(0, 30)}`,
+      noteType: 'research note',
+      riskCategory: riskCat || '',
+      body: `Jarvis Response Excerpt:\n"${msg.text.substring(0, 300)}..."`,
+      relatedSourcePaths: msg.sources?.map(s => s.source).join(', ') || '',
+      relatedJarvisAnswer: msg.text
+    };
+
+    setNoteEditorPrefill(prefill);
+    setNoteEditorOpen(true);
   };
   
   const recognitionRef = useRef(null);
@@ -809,6 +902,14 @@ function App() {
             </div>
 
             <div 
+              className={`nav-item ${viewMode === 'reports-panel' ? 'active' : ''}`}
+              onClick={() => { setViewMode('reports-panel'); setSidebarOpen(false); }}
+            >
+              <FileSpreadsheet size={18} className={viewMode === 'reports-panel' ? 'text-glow' : ''}/>
+              <span style={{color: viewMode === 'reports-panel' ? 'var(--brand-primary)' : ''}}>NOTES / REPORTS</span>
+            </div>
+
+            <div 
               className={`nav-item ${viewMode === 'settings' ? 'active' : ''}`}
               onClick={() => { setViewMode('settings'); setSidebarOpen(false); }}
             >
@@ -1176,6 +1277,44 @@ function App() {
                           <div style={{ whiteSpace: 'pre-wrap', lineHeight: '1.5' }}>{msg.text}</div>
                         )}
 
+                        {msg.role === 'ai' && (
+                          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '12px', borderTop: '1px solid rgba(255,255,255,0.03)', paddingTop: '10px' }}>
+                            <button 
+                              className="btn-tactical" 
+                              onClick={() => handleSaveAnswer(msg)}
+                              style={{ padding: '4px 10px', fontSize: '0.7rem' }}
+                            >
+                              SAVE ANSWER
+                            </button>
+                            {msg.sources && msg.sources.length > 0 && (
+                              <button 
+                                className="btn-tactical" 
+                                onClick={() => handleSaveSources(msg.sources)}
+                                style={{ padding: '4px 10px', fontSize: '0.7rem' }}
+                              >
+                                SAVE SOURCES
+                              </button>
+                            )}
+                            <button 
+                              className="btn-tactical" 
+                              onClick={() => handleCreateFieldNoteFromMsg(msg)}
+                              style={{ padding: '4px 10px', fontSize: '0.7rem' }}
+                            >
+                              CREATE FIELD NOTE
+                            </button>
+                            <button 
+                              className="btn-tactical" 
+                              onClick={() => {
+                                handleSaveAnswer(msg);
+                                setViewMode('reports-panel');
+                              }}
+                              style={{ padding: '4px 10px', fontSize: '0.7rem' }}
+                            >
+                              ADD TO REPORT
+                            </button>
+                          </div>
+                        )}
+
                         {(() => {
                           let riskyCategory = getRiskySourceCategory(msg.sources);
                           if (!riskyCategory && msg.role === 'ai') {
@@ -1294,23 +1433,40 @@ function App() {
                                       </div>
                                     )}
 
-                                    <div style={{ display: 'flex', gap: '10px', alignSelf: 'flex-end', marginTop: '4px' }}>
-                                      <button 
-                                        className="btn-tactical" 
-                                        onClick={() => openSourceDocument(s.source)}
-                                        style={{ padding: '6px 12px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}
-                                      >
-                                        <ExternalLink size={12} /> OPEN DOCUMENT
-                                      </button>
-                                      {['pdf', 'txt', 'md'].includes(s.source.split('.').pop().toLowerCase()) && (
-                                        <button 
-                                          className="btn-tactical" 
-                                          onClick={() => readSourceAloud(s.source)}
-                                          style={{ padding: '6px 12px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}
-                                        >
-                                          <Volume2 size={12} /> READ ALOUD
-                                        </button>
-                                      )}
+                                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignSelf: 'flex-end', marginTop: '4px' }}>
+                                       <button 
+                                         className="btn-tactical" 
+                                         onClick={() => openSourceDocument(s.source)}
+                                         style={{ padding: '6px 12px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}
+                                       >
+                                         <ExternalLink size={12} /> OPEN DOCUMENT
+                                       </button>
+                                       <button 
+                                         className="btn-tactical" 
+                                         onClick={() => handleSaveSources([s])}
+                                         style={{ padding: '6px 12px', fontSize: '0.75rem' }}
+                                       >
+                                         SAVE SOURCE
+                                       </button>
+                                       <button 
+                                         className="btn-tactical" 
+                                         onClick={() => {
+                                           handleSaveSources([s]);
+                                           setViewMode('reports-panel');
+                                         }}
+                                         style={{ padding: '6px 12px', fontSize: '0.75rem' }}
+                                       >
+                                         ADD TO REPORT
+                                       </button>
+                                       {['pdf', 'txt', 'md'].includes(s.source.split('.').pop().toLowerCase()) && (
+                                         <button 
+                                           className="btn-tactical" 
+                                           onClick={() => readSourceAloud(s.source)}
+                                           style={{ padding: '6px 12px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}
+                                         >
+                                           <Volume2 size={12} /> READ ALOUD
+                                         </button>
+                                       )}
                                     </div>
 
                                   </div>
@@ -1502,6 +1658,14 @@ function App() {
                   setViewMode={setViewMode}
                   setChatInput={setChatInput}
                   handleSendMessage={handleSendMessage}
+                />
+              </PanelErrorBoundary>
+            )}
+
+            {!error && !loading && viewMode === 'reports-panel' && (
+              <PanelErrorBoundary name="Notes and Reports">
+                <NotesReportsPanel 
+                  callSign={profile.name || 'Operator'}
                 />
               </PanelErrorBoundary>
             )}
@@ -1843,6 +2007,45 @@ function App() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Risk Save Confirmation Modal */}
+      {pendingSaveAction && pendingSaveRiskCategory && (
+        <RiskSaveConfirmation 
+          riskCategory={pendingSaveRiskCategory}
+          onCancel={() => {
+            setPendingSaveAction(null);
+            setPendingSaveRiskCategory(null);
+          }}
+          onConfirm={() => {
+            pendingSaveAction();
+            setPendingSaveAction(null);
+            setPendingSaveRiskCategory(null);
+          }}
+        />
+      )}
+
+      {/* Field Note Editor Modal */}
+      {noteEditorOpen && (
+        <FieldNoteEditor 
+          initialData={noteEditorPrefill}
+          onCancel={() => {
+            setNoteEditorOpen(false);
+            setNoteEditorPrefill(null);
+          }}
+          onSave={(noteData) => {
+            addFieldNote(noteData);
+            alert("Field note saved successfully!");
+            setNoteEditorOpen(false);
+            setNoteEditorPrefill(null);
+          }}
+          onSaveAndAddToReport={(noteData) => {
+            addFieldNote(noteData);
+            setNoteEditorOpen(false);
+            setNoteEditorPrefill(null);
+            setViewMode('reports-panel');
+          }}
+        />
       )}
     </>
   );
