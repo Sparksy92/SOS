@@ -29,25 +29,18 @@ jobs:
         run: |
           node --test sos-server/tests/*.test.mjs
 
-      - name: Scan for forbidden large files
+      - name: Clean up test artifacts
         run: |
-          FORBIDDEN_FILES=$(find . -type f \( \
-            -name "*.pdf" \
-            -o -name "*.zip" \
-            -o -name "*.zim" \
-            -o -name "*.iso" \
-            -o -name "*.gguf" \
-            -o -name "*.db" \
-            -o -name "*.sqlite" \
-            -o -name "*.mp4" \
-            -o -name "*.mkv" \
-            -o -name "*.avi" \
-            -o -name "*.wmv" \
-          \) ! -path "*/node_modules/*" ! -path "*/.git/*")
+          rm -f sos-server/*.db sos-server/*.sqlite sos-server/*.bak sos-server/material_manifest.json sos-server/metadata.json
+
+      - name: Scan for forbidden tracked files
+        run: |
+          FORBIDDEN_FILES=$(git ls-files | grep -Ei '\.(pdf|zip|zim|iso|gguf|db|sqlite|mp4|mkv|avi|wmv)$' || true)
           
-          if [ ! -z "$FORBIDDEN_FILES" ]; then
-            echo "CRITICAL ERROR: Forbidden binary or database files detected in the repository commit:"
+          if [ -n "$FORBIDDEN_FILES" ]; then
+            echo "CRITICAL ERROR: Forbidden committed binary or database files detected:"
             echo "$FORBIDDEN_FILES"
             exit 1
           fi
-          echo "Logistics check passed: No forbidden media/index files found."
+          
+          echo "Logistics check passed: No forbidden tracked media/index files found."
