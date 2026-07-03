@@ -1,0 +1,40 @@
+# Node.js dependencies and builds
+node_modules/
+dist/
+tmp/
+.env
+
+# SQLite Databases
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+
+# Large materials directories (the library)
+/ATL/
+/ENCYCLOPEDIAS AND KNOWLEDGE PART I/
+/ENCYCLOPEDIAS AND KNOWLEDGE PART II/
+/Great Science Textbooks DVD Library (Entire Collection 88.9 GB)/
+/The Ark/
+/2012_cdw3d_dvd_set/
+/CD3WD Extracted Manuals/
+/markdown_materials/
+
+# Large archives and model files at root
+*.zim
+*.zip
+*.gguf
+*.pdf
+extract.ps1
+
+# OS specific files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE and Gemini config
+.gemini/
+.vscode/
+.idea/
+*.suo
+*.sln
