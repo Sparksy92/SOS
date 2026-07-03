@@ -1007,3 +1007,45 @@ After coding, reply with:
 5. Any issues or follow-up recommendations
 
 Continue speaking as part of this project conversation.
+
+---
+
+## Response from Local LLM (Antigravity) - July 3, 2026
+
+### 1. Understanding of Phase 8
+Phase 8 focuses on **Offline Library Intelligence & Mission-Aware Search**. The core objective is to make J.A.R.V.I.S. and the offline material library aware of the active mission context. When an active field session is running, the app can recommend relevant reference files (PDFs, TXT, MD) completely offline without any external network dependency. 
+
+Specifically, we will implement:
+*   **Mission Search Utility & Scoring**: Normalize mission metadata to build a list of search terms and score documents based on filename, categories, index status, and risk categories.
+*   **Mission Source Recommendation Module**: Filter and rank materials based on user-defined limits, index status, and risk levels, with suggested operational actions.
+*   **Source Review Queue**: A local `localStorage`-backed store where operators can manually stage reference materials for further review within an active mission.
+*   **Mission-Aware Jarvis Context Panel**: Render active mission context and prefill safe template-guided prompts (e.g. blackout safety questions, first-aid references) next to the chat interface.
+*   **Indexed/Unindexed Visibility**: Display counts of indexed/unindexed materials.
+*   **Export and Backup Upgrades**: Include the source review queue and recommendation counts inside reports and version 2 backups.
+
+### 2. Files I Expect to Modify or Create
+*   **Create**:
+    *   `sos-app/src/modules/search/missionSearchUtils.js`
+    *   `sos-app/src/modules/search/missionSourceRecommendations.js`
+    *   `sos-app/src/modules/search/sourceReviewQueueStore.js`
+    *   `sos-app/src/components/missions/MissionSourceFinder.jsx`
+    *   `sos-app/src/components/missions/MissionJarvisContextPanel.jsx`
+    *   `sos-server/tests/missionSearch.test.mjs`
+    *   `docs/mission-aware-library-search.md`
+*   **Modify**:
+    *   `sos-app/src/components/missions/ActiveMissionView.jsx`
+    *   `sos-app/src/App.jsx`
+    *   `sos-app/src/modules/reports/reportExport.js`
+    *   `sos-app/src/modules/session/sessionStore.js`
+
+### 3. Risks and Mitigations
+*   **Performance with Large Libraries (500GB+)**: Scanning all documents and metadata on every keystroke or tab switch will degrade performance. 
+    *   *Mitigation*: Implement recommendation calculations on-demand when the operator clicks `FIND SOURCES FOR MISSION` rather than automatically. Use limits and metadata snapshots rather than full directory walks.
+*   **Auto-Indexing Lag**: Triggering index updates or crawling during recommendations might lock the browser.
+    *   *Mitigation*: The recommendations view will only suggest indexing single documents by exposing a button that calls the existing safe single-document indexing endpoint, with a notice pointing to the Library Panel for bulk operations.
+*   **Backup Version Compatibility**: Adding a new collection (source review queue) could break v1 or v2 backup restores.
+    *   *Mitigation*: Add the queue as an optional collection in version 2 backups (Option A) to preserve full backward compatibility.
+
+### 4. Local-First Confirmation
+I explicitly confirm that **I will not implement or imply any cloud sync, user accounts, logins, remote storage integrations (Firebase, Supabase, S3, GDrive, OneDrive, Dropbox, etc.), or remote telemetry/analytics**. All mission recommendations, review queue collections, and state configurations remain entirely local to the user's browser `localStorage` and local SQLite backend.
+
