@@ -106,7 +106,7 @@ export const validateBackup = (backupObject) => {
     }
   }
 
-  // Version 2 checks (Missions)
+  // Version 2 checks (Missions & Source Review Queue)
   if (backupObject.version >= 2) {
     if (backupObject.data.missions) {
       if (!Array.isArray(backupObject.data.missions)) {
@@ -115,6 +115,16 @@ export const validateBackup = (backupObject) => {
       for (const item of backupObject.data.missions) {
         if (!item.id || !item.createdAt) {
           return { valid: false, error: "Item inside missions collection is missing required 'id' or 'createdAt' fields." };
+        }
+      }
+    }
+    if (backupObject.data.sourceReviewQueue) {
+      if (!Array.isArray(backupObject.data.sourceReviewQueue)) {
+        return { valid: false, error: 'sourceReviewQueue collection is not a valid array.' };
+      }
+      for (const item of backupObject.data.sourceReviewQueue) {
+        if (!item.id || !item.createdAt) {
+          return { valid: false, error: "Item inside sourceReviewQueue collection is missing required 'id' or 'createdAt' fields." };
         }
       }
     }
@@ -159,7 +169,8 @@ export const exportAllSavedData = () => {
       reportDrafts: loadReportDrafts(),
       activeSession: loadActiveSession(),
       missions: localStore.get('missions', []),
-      activeMission: localStore.get('active_mission', null)
+      activeMission: localStore.get('active_mission', null),
+      sourceReviewQueue: localStore.get('source_review_queue', [])
     }
   };
 };
@@ -193,13 +204,19 @@ export const importSavedData = (backupObject) => {
   }
 
   // Version 2 imports
-  if (backupObject.version >= 2 && data.missions) {
-    const existingMissions = localStore.get('missions', []);
-    const merged = mergeCollections(existingMissions, data.missions);
-    localStore.set('missions', merged);
-    
+  if (backupObject.version >= 2) {
+    if (data.missions) {
+      const existingMissions = localStore.get('missions', []);
+      const merged = mergeCollections(existingMissions, data.missions);
+      localStore.set('missions', merged);
+    }
     if (data.activeMission) {
       localStore.set('active_mission', data.activeMission);
+    }
+    if (data.sourceReviewQueue) {
+      const existingQueue = localStore.get('source_review_queue', []);
+      const merged = mergeCollections(existingQueue, data.sourceReviewQueue);
+      localStore.set('source_review_queue', merged);
     }
   }
 
@@ -214,4 +231,5 @@ export const clearAllSavedData = () => {
   localStore.remove(ACTIVE_SESSION_KEY);
   localStore.remove('missions');
   localStore.remove('active_mission');
+  localStore.remove('source_review_queue');
 };

@@ -73,10 +73,12 @@ import NotesReportsPanel from './components/reports/NotesReportsPanel.jsx';
 import RiskSaveConfirmation from './components/common/RiskSaveConfirmation.jsx';
 import FieldNoteEditor from './components/notes/FieldNoteEditor.jsx';
 import MissionModePanel from './components/missions/MissionModePanel.jsx';
+import MissionJarvisContextPanel from './components/missions/MissionJarvisContextPanel.jsx';
 import { 
   loadActiveMission, saveActiveMission, 
   attachSavedAnswerToMission, attachSavedSourceToMission, attachFieldNoteToMission
 } from './modules/missions/missionStore.js';
+import { addSourceToReviewQueue } from './modules/search/sourceReviewQueueStore.js';
 
 
 import DashboardView from './components/dashboard/DashboardView.jsx';
@@ -409,6 +411,36 @@ function App() {
 
     setNoteEditorPrefill(prefill);
     setNoteEditorOpen(true);
+  };
+
+  const handleQueueSourceFromCard = (s) => {
+    if (!activeMission) return;
+    const queuedItem = addSourceToReviewQueue({
+      missionId: activeMission.id,
+      sourcePath: s.source || s.documentPath,
+      title: getSourceTitle(s.source || s.documentPath),
+      reason: s.matchLabel || 'Related source reference from Jarvis chat',
+      riskCategory: s.riskCategory || null,
+      status: 'queued'
+    });
+    if (queuedItem) {
+      updateMission(activeMission.id, {
+        timeline: [
+          ...(activeMission.timeline || []),
+          {
+            id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : Math.random().toString(36).substring(2, 9),
+            createdAt: new Date().toISOString(),
+            type: 'source_queued',
+            label: `Source queued for review from chat: "${getSourceTitle(s.source || s.documentPath)}"`,
+            details: { sourcePath: s.source || s.documentPath }
+          }
+        ]
+      });
+      setActiveMission(loadActiveMission());
+      alert(`Source queued for review!`);
+    } else {
+      alert("This source is already in the review queue for this mission.");
+    }
   };
   
   const recognitionRef = useRef(null);
@@ -1322,7 +1354,8 @@ function App() {
             )}
 
             {!error && !loading && viewMode === 'chat' && (
-              <div style={{ display: 'flex', flexDirection: 'column', height: '100%', maxWidth: '900px', margin: '0 auto', width: '100%' }}>
+              <div style={{ display: 'flex', gap: '20px', height: '100%', width: '100%', maxWidth: '1200px', margin: '0 auto' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', height: '100%', flex: 1, minWidth: 0 }}>
                 {activeMission && (
                   <div className="glass-panel text-glow" style={{
                     padding: '8px 16px',
@@ -1646,13 +1679,22 @@ function App() {
                                          ADD TO REPORT
                                        </button>
                                        {activeMission && (
-                                         <button 
-                                           className="btn-tactical" 
-                                           onClick={() => handleAttachSourcesToMission([s])}
-                                           style={{ padding: '6px 12px', fontSize: '0.75rem', borderColor: 'var(--brand-primary)', color: 'var(--brand-primary)' }}
-                                         >
-                                           ADD TO MISSION
-                                         </button>
+                                         <>
+                                           <button 
+                                             className="btn-tactical" 
+                                             onClick={() => handleAttachSourcesToMission([s])}
+                                             style={{ padding: '6px 12px', fontSize: '0.75rem', borderColor: 'var(--brand-primary)', color: 'var(--brand-primary)' }}
+                                           >
+                                             ADD TO MISSION
+                                           </button>
+                                           <button 
+                                             className="btn-tactical" 
+                                             onClick={() => handleQueueSourceFromCard(s)}
+                                             style={{ padding: '6px 12px', fontSize: '0.75rem', borderColor: '#00e5ff', color: '#00e5ff' }}
+                                           >
+                                             QUEUE FOR REVIEW
+                                           </button>
+                                         </>
                                        )}
                                        {['pdf', 'txt', 'md'].includes(s.source.split('.').pop().toLowerCase()) && (
                                          <button 
@@ -1804,6 +1846,29 @@ function App() {
                     <Send size={20} />
                   </button>
                 </div>
+                
+                </div>
+
+                {activeMission && (
+                  <MissionJarvisContextPanel 
+                    mission={activeMission}
+                    onSendPrompt={(pText) => {
+                      setChatInput(pText);
+                      handleSendMessage(pText);
+                    }}
+                    onOpenFieldMode={() => setViewMode('field-mode')}
+                    onCreateMissionNote={() => {
+                      setNoteEditorPrefill({
+                        title: `Note on ${activeMission.title}`,
+                        noteType: 'research note',
+                        riskCategory: activeMission.riskCategory || '',
+                        body: '',
+                        missionId: activeMission.id
+                      });
+                      setNoteEditorOpen(true);
+                    }}
+                  />
+                )}
               </div>
             )}
 

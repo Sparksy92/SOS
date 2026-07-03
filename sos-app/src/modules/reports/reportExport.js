@@ -129,10 +129,13 @@ export const generateMissionMarkdownReport = (mission, relatedData) => {
   const summary = mission.overview || 'No overview summary provided.';
   const manualNotes = mission.manualNotes || '';
   
+  const status = mission.status || 'active';
+  const priority = mission.priority || 'medium';
+
   let md = `# SURVIVALOS MISSION REPORT: ${title.toUpperCase()}\n`;
   md += `**MISSION TYPE:** ${type.toUpperCase()}\n`;
-  md += `**MISSION STATUS:** ${mission.status.toUpperCase()}\n`;
-  md += `**PRIORITY:** ${mission.priority.toUpperCase()}\n`;
+  md += `**MISSION STATUS:** ${status.toUpperCase()}\n`;
+  md += `**PRIORITY:** ${priority.toUpperCase()}\n`;
   md += `**STARTED ON:** ${new Date(timestamp).toLocaleString()}\n`;
   if (mission.completedAt) {
     md += `**COMPLETED ON:** ${new Date(mission.completedAt).toLocaleString()}\n`;
@@ -232,12 +235,45 @@ export const generateMissionMarkdownReport = (mission, relatedData) => {
     });
   }
 
+  // Section 9: Queued Sources for Review
+  const queued = relatedData.queuedSources || [];
+  if (queued.length > 0) {
+    md += `## SECTION 9: QUEUED SOURCES FOR REVIEW\n`;
+    queued.forEach((item, idx) => {
+      const risk = item.riskCategory ? ` [Risk: ${item.riskCategory.toUpperCase()}]` : '';
+      md += `*   **${item.title}**${risk}\n`;
+      md += `    *Path:* \`${item.sourcePath}\`\n`;
+      if (item.reason) {
+        md += `    *Reason:* ${item.reason}\n`;
+      }
+    });
+    md += `\n`;
+  }
+
+  // Section 10: Recommended Sources from Manifest
+  const recommended = relatedData.recommendedSources || [];
+  if (recommended.length > 0) {
+    md += `## SECTION 10: RECOMMENDED SOURCES FROM MANIFEST\n`;
+    recommended.forEach((item, idx) => {
+      const risk = item.riskCategory ? ` [Risk: ${item.riskCategory.toUpperCase()}]` : '';
+      const ind = item.indexed ? 'Indexed' : 'Unindexed';
+      md += `*   **${item.title}** (${item.matchLabel}, ${ind})${risk}\n`;
+      md += `    *Path:* \`${item.sourcePath}\`\n`;
+      if (item.reasons && item.reasons.length > 0) {
+        md += `    *Reasons:* ${item.reasons.join(', ')}\n`;
+      }
+    });
+    md += `\n`;
+  }
+
   // Safety Warnings
-  md += `## SECTION 9: RISK DIRECTIVES & WARNINGS\n`;
+  md += `## SECTION 11: RISK DIRECTIVES & WARNINGS\n`;
   const highRiskItems = [
     ...answers.filter(a => a.riskCategory),
     ...notes.filter(n => n.riskCategory),
-    ...sources.filter(s => s.riskCategory)
+    ...sources.filter(s => s.riskCategory),
+    ...queued.filter(q => q.riskCategory),
+    ...recommended.filter(r => r.riskCategory)
   ];
   if (mission.riskCategory) {
     highRiskItems.push({ riskCategory: mission.riskCategory });

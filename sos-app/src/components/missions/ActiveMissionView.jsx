@@ -8,13 +8,22 @@ import {
   attachSavedAnswerToMission, attachSavedSourceToMission, attachFieldNoteToMission
 } from '../../modules/missions/missionStore.js';
 import { createMissionTask, detectMissionRisks, buildMissionRelatedData, transitionMissionStatus } from '../../modules/missions/missionUtils.js';
-import { loadSavedAnswers, loadSavedSources, loadFieldNotes } from '../../modules/session/sessionStore.js';
+import { loadSavedAnswers, loadSavedSources, loadFieldNotes, addSavedSource } from '../../modules/session/sessionStore.js';
 import { generateMissionMarkdownReport, generateMissionJSONReport, downloadFile } from '../../modules/reports/reportExport.js';
+import MissionSourceFinder from './MissionSourceFinder.jsx';
+import { 
+  addSourceToReviewQueue, loadSourceReviewQueue, removeSourceReviewQueueItem 
+} from '../../modules/search/sourceReviewQueueStore.js';
 
 const ActiveMissionView = ({ mission, onSendSuggestedPrompt, onUpdateState }) => {
   const [newTaskLabel, setNewTaskLabel] = useState('');
   const [newTaskPriority, setNewTaskPriority] = useState('medium');
   const [manualNotes, setManualNotes] = useState(mission.manualNotes || '');
+
+  // Lists for local manifest/metadata evaluation
+  const [materials, setMaterials] = useState([]);
+  const [metadataList, setMetadataList] = useState({});
+  const [reviewQueue, setReviewQueue] = useState([]);
 
   // Load resources to resolve attached data
   const answers = loadSavedAnswers();
@@ -27,6 +36,30 @@ const ActiveMissionView = ({ mission, onSendSuggestedPrompt, onUpdateState }) =>
   // Sync notes changes
   useEffect(() => {
     setManualNotes(mission.manualNotes || '');
+    setReviewQueue(loadSourceReviewQueue().filter(x => x.missionId === mission.id));
+
+    // Fetch materials manifest and metadata list from local API endpoints
+    const API_BASE = `http://${window.location.hostname}:3001`;
+    Promise.all([
+      fetch(`${API_BASE}/api/materials`).then(res => res.json()).catch(() => ({ categories: {} })),
+      fetch(`${API_BASE}/api/metadata`).then(res => res.json()).catch(() => ({}))
+    ]).then(([materialsData, metadataData]) => {
+      const flattened = [];
+      Object.entries(materialsData.categories || {}).forEach(([catName, filesList]) => {
+        filesList.forEach(file => {
+          flattened.push({
+            name: file.name,
+            path: file.path,
+            category: catName,
+            indexed: !!file.indexed
+          });
+        });
+      });
+      setMaterials(flattened);
+      setMetadataList(metadataData || {});
+    }).catch(err => {
+      console.error("Error fetching local library manifest:", err);
+    });
   }, [mission.id]);
 
   const handleNotesChange = (e) => {
@@ -78,6 +111,103 @@ const ActiveMissionView = ({ mission, onSendSuggestedPrompt, onUpdateState }) =>
     const json = generateMissionJSONReport(mission, related);
     const filename = `mission_${mission.title.toLowerCase().replace(/[^a-z0-9]+/g, '_')}_report.json`;
     downloadFile(json, filename, 'application/json');
+  };
+
+  // Recommendations Finder actions
+  const handleOpenDocument = (path) => {
+    const url = `http://${window.location.hostname}:3001/api/materials/view?path=${encodeURIComponent(path)}`;
+    window.open(url, '_blank');
+  };
+
+  const handleSaveSource = (rec) => {
+    addSavedSource({
+      source: rec.sourcePath,
+      title: rec.title,
+      page: null,
+      section: null,
+      matchLabel: rec.matchLabel,
+      riskCategory: rec.riskCategory || null,
+      excerpt: rec.metadataSummary
+    });
+    // Add timeline event
+    updateMission(mission.id, {
+      timeline: [
+        ...(mission.timeline || []),
+        {
+          id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : Math.random().toString(36).substring(2, 9),
+          createdAt: new Date().toISOString(),
+          type: 'source_saved',
+          label: `Source reference saved: "${rec.title}"`,
+          details: { sourcePath: rec.sourcePath }
+        }
+      ]
+    });
+    if (onUpdateState) onUpdateState();
+    alert(`Source reference "${rec.title}" saved successfully!`);
+  };
+
+  const handleAttachSource = (rec) => {
+    const newItem = addSavedSource({
+      source: rec.sourcePath,
+      title: rec.title,
+      page: null,
+      section: null,
+      matchLabel: rec.matchLabel,
+      riskCategory: rec.riskCategory || null,
+      excerpt: rec.metadataSummary
+    });
+    attachSavedSourceToMission(mission.id, newItem.id);
+    if (onUpdateState) onUpdateState();
+    alert(`Source "${rec.title}" attached to active mission!`);
+  };
+
+  const handleQueueSource = (rec) => {
+    const queuedItem = addSourceToReviewQueue({
+      missionId: mission.id,
+      sourcePath: rec.sourcePath,
+      title: rec.title,
+      reason: rec.reasons.join(', '),
+      riskCategory: rec.riskCategory,
+      status: 'queued'
+    });
+    if (queuedItem) {
+      updateMission(mission.id, {
+        timeline: [
+          ...(mission.timeline || []),
+          {
+            id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : Math.random().toString(36).substring(2, 9),
+            createdAt: new Date().toISOString(),
+            type: 'source_queued',
+            label: `Source queued for review: "${rec.title}"`,
+            details: { sourcePath: rec.sourcePath }
+          }
+        ]
+      });
+      setReviewQueue(loadSourceReviewQueue().filter(x => x.missionId === mission.id));
+      if (onUpdateState) onUpdateState();
+      alert(`Source "${rec.title}" queued for review!`);
+    } else {
+      alert("This source is already in the review queue for this mission.");
+    }
+  };
+
+  const handleRemoveFromQueue = (id) => {
+    removeSourceReviewQueueItem(id);
+    setReviewQueue(loadSourceReviewQueue().filter(x => x.missionId === mission.id));
+    // Add timeline event
+    updateMission(mission.id, {
+      timeline: [
+        ...(mission.timeline || []),
+        {
+          id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : Math.random().toString(36).substring(2, 9),
+          createdAt: new Date().toISOString(),
+          type: 'source_unqueued',
+          label: `Source dismissed from review queue.`,
+          details: { queueItemId: id }
+        }
+      ]
+    });
+    if (onUpdateState) onUpdateState();
   };
 
   return (
@@ -227,7 +357,7 @@ const ActiveMissionView = ({ mission, onSendSuggestedPrompt, onUpdateState }) =>
                   style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px', borderBottom: '1px solid rgba(255,255,255,0.02)', gap: '10px' }}
                 >
                   <div 
-                    onClick={() => handleToggleToggleTask(task.id, task.status)}
+                    onClick={() => handleToggleTask(task.id, task.status)}
                     style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '0.85rem', flex: 1 }}
                   >
                     {task.status === 'done' ? (
@@ -253,11 +383,62 @@ const ActiveMissionView = ({ mission, onSendSuggestedPrompt, onUpdateState }) =>
           </div>
         </div>
 
-        {/* Right column: notes & Timeline */}
+        {/* Right column: notes & Timeline & review queue */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           
+          {/* Source Review Queue */}
+          <div className="glass-panel" style={{ padding: '20px' }}>
+            <h3 style={{ margin: '0 0 16px 0', fontSize: '0.9rem', color: 'var(--brand-primary)', fontFamily: 'var(--font-mono)' }}>
+              SOURCE REVIEW QUEUE ({reviewQueue.length})
+            </h3>
+            {reviewQueue.length === 0 ? (
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                No reference documents currently queued for operator review.
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '180px', overflowY: 'auto' }}>
+                {reviewQueue.map(item => (
+                  <div 
+                    key={item.id} 
+                    className="glass-panel" 
+                    style={{ 
+                      padding: '10px', 
+                      fontSize: '0.8rem', 
+                      backgroundColor: 'rgba(255,255,255,0.01)', 
+                      display: 'flex', 
+                      justifyContent: 'space-between', 
+                      alignItems: 'center', 
+                      gap: '8px' 
+                    }}
+                  >
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <strong style={{ display: 'block', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>{item.title}</strong>
+                      <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>{item.sourcePath}</span>
+                    </div>
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      <button 
+                        className="btn-tactical" 
+                        onClick={() => handleOpenDocument(item.sourcePath)}
+                        style={{ padding: '2px 6px', fontSize: '0.7rem' }}
+                      >
+                        OPEN
+                      </button>
+                      <button 
+                        className="btn-tactical" 
+                        onClick={() => handleRemoveFromQueue(item.id)}
+                        style={{ padding: '2px 6px', fontSize: '0.7rem', borderColor: 'var(--brand-danger)', color: 'var(--brand-danger)' }}
+                      >
+                        DISMISS
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
           {/* Timeline */}
-          <div className="glass-panel" style={{ padding: '20px', display: 'flex', flexDirection: 'column', height: '200px' }}>
+          <div className="glass-panel" style={{ padding: '20px', display: 'flex', flexDirection: 'column', height: '180px' }}>
             <h3 style={{ margin: '0 0 12px 0', fontSize: '0.9rem', color: 'var(--brand-primary)', fontFamily: 'var(--font-mono)' }}>
               MISSION LOG TIMELINE
             </h3>
@@ -282,7 +463,7 @@ const ActiveMissionView = ({ mission, onSendSuggestedPrompt, onUpdateState }) =>
               value={manualNotes} 
               onChange={handleNotesChange}
               className="search-input glass-panel" 
-              style={{ width: '100%', flex: 1, minHeight: '160px', padding: '12px', fontSize: '0.85rem', resize: 'vertical', fontFamily: 'var(--font-mono)' }}
+              style={{ width: '100%', flex: 1, minHeight: '120px', padding: '12px', fontSize: '0.85rem', resize: 'vertical', fontFamily: 'var(--font-mono)' }}
               placeholder="Enter observations, symptoms, checklists, or comments during this session..."
             />
           </div>
@@ -290,13 +471,13 @@ const ActiveMissionView = ({ mission, onSendSuggestedPrompt, onUpdateState }) =>
       </div>
 
       {/* Suggested Jarvis prompts & Searches */}
-      {selectedTemplate.suggestedJarvisPrompts && selectedTemplate.suggestedJarvisPrompts.length > 0 && (
+      {mission.suggestedJarvisPrompts && mission.suggestedJarvisPrompts.length > 0 && (
         <div className="glass-panel" style={{ padding: '20px' }}>
           <h3 style={{ margin: '0 0 12px 0', fontSize: '0.9rem', color: 'var(--brand-primary)', fontFamily: 'var(--font-mono)' }}>
             SUGGESTED NEURAL ASSISTANCE (J.A.R.V.I.S.)
           </h3>
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-            {selectedTemplate.suggestedJarvisPrompts.map((promptText, i) => (
+            {mission.suggestedJarvisPrompts.map((promptText, i) => (
               <button 
                 key={i} 
                 className="btn-tactical" 
@@ -309,6 +490,18 @@ const ActiveMissionView = ({ mission, onSendSuggestedPrompt, onUpdateState }) =>
           </div>
         </div>
       )}
+
+      {/* Offline Material Recommendation System */}
+      <MissionSourceFinder 
+        mission={mission}
+        materials={materials}
+        metadata={metadataList}
+        template={null}
+        onOpenDocument={handleOpenDocument}
+        onSaveSource={handleSaveSource}
+        onAttachSource={handleAttachSource}
+        onQueueSource={handleQueueSource}
+      />
 
       {/* Attached resources section */}
       <div className="glass-panel" style={{ padding: '20px' }}>
@@ -380,10 +573,6 @@ const ActiveMissionView = ({ mission, onSendSuggestedPrompt, onUpdateState }) =>
 
     </div>
   );
-
-  function handleToggleToggleTask(taskId, currentStatus) {
-    handleToggleTask(taskId, currentStatus);
-  }
 };
 
 export default ActiveMissionView;

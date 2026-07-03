@@ -150,7 +150,7 @@ test('SOS Mission Mode Test Suite', async (t) => {
     assert.ok(markdown.includes('Always mount solar facing true south.'));
     assert.ok(markdown.includes('## SECTION 8: ATTACHED FIELD NOTES'));
     assert.ok(markdown.includes('Check backup bulbs'));
-    assert.ok(markdown.includes('## SECTION 9: RISK DIRECTIVES & WARNINGS'));
+    assert.ok(markdown.includes('## SECTION 11: RISK DIRECTIVES & WARNINGS'));
     assert.ok(markdown.includes('**ELECTRICAL**'));
   });
 
