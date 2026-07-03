@@ -7,15 +7,34 @@ const ReportBuilder = ({
   fieldNotes = [], 
   savedSources = [], 
   defaultAuthor = 'Operator',
+  prefilledMission = null,
   onSaveDraft,
   onClose 
 }) => {
-  const [title, setTitle] = useState('Incident and Readiness Log');
-  const [reportType, setReportType] = useState('field report');
-  const [author, setAuthor] = useState(defaultAuthor);
-  const [summary, setSummary] = useState('');
-  const [manualNotes, setManualNotes] = useState('');
-  const [nextActions, setNextActions] = useState('');
+  const [title, setTitle] = useState(
+    prefilledMission ? `${prefilledMission.title} - Final Report` : 'Incident and Readiness Log'
+  );
+  const [reportType, setReportType] = useState(
+    prefilledMission ? 'mission report' : 'field report'
+  );
+  const [author, setAuthor] = useState(
+    prefilledMission?.callsign || defaultAuthor
+  );
+  const [summary, setSummary] = useState(
+    prefilledMission
+      ? `Final report for offline mission: ${prefilledMission.title.toUpperCase()}\nStatus: ${prefilledMission.status.toUpperCase()}\nOverview: ${prefilledMission.overview}`
+      : ''
+  );
+  const [manualNotes, setManualNotes] = useState(
+    prefilledMission
+      ? `Operational Timeline Events:\n${(prefilledMission.timeline || []).map(e => `- [${new Date(e.createdAt).toLocaleTimeString()}] ${e.label}`).join('\n')}\n\nManual Operator Observations:\n${prefilledMission.manualNotes}`
+      : ''
+  );
+  const [nextActions, setNextActions] = useState(
+    prefilledMission
+      ? `Pending/Incomplete Mission Tasks:\n${[...(prefilledMission.checklist || []), ...(prefilledMission.tasks || [])].filter(t => t.status !== 'done').map(t => `- ${t.label} (${t.priority.toUpperCase()})`).join('\n')}`
+      : ''
+  );
 
   // Selected arrays of IDs
   const [selectedAnswers, setSelectedAnswers] = useState([]);
@@ -28,10 +47,16 @@ const ReportBuilder = ({
 
   // Initialize checks (auto check all items when launching)
   useEffect(() => {
-    setSelectedAnswers(savedAnswers.map(a => a.id));
-    setSelectedNotes(fieldNotes.map(n => n.id));
-    setSelectedSources(savedSources.map(s => s.id));
-  }, [savedAnswers, fieldNotes, savedSources]);
+    if (prefilledMission) {
+      setSelectedAnswers(savedAnswers.filter(a => (prefilledMission.savedAnswerIds || []).includes(a.id)).map(a => a.id));
+      setSelectedNotes(fieldNotes.filter(n => (prefilledMission.fieldNoteIds || []).includes(n.id)).map(n => n.id));
+      setSelectedSources(savedSources.filter(s => (prefilledMission.savedSourceIds || []).includes(s.id)).map(s => s.id));
+    } else {
+      setSelectedAnswers(savedAnswers.map(a => a.id));
+      setSelectedNotes(fieldNotes.map(n => n.id));
+      setSelectedSources(savedSources.map(s => s.id));
+    }
+  }, [savedAnswers, fieldNotes, savedSources, prefilledMission]);
 
   // Debounced Autosave Effect
   useEffect(() => {

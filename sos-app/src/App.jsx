@@ -38,7 +38,8 @@ import {
   User,
   AlertTriangle,
   FileSpreadsheet,
-  Square
+  Square,
+  Compass
 } from 'lucide-react';
 import './App.css';
 import { getRiskLevel, requiresAcknowledgement, getSafetyWarning } from './modules/safety/riskRules.js';
@@ -71,6 +72,11 @@ import {
 import NotesReportsPanel from './components/reports/NotesReportsPanel.jsx';
 import RiskSaveConfirmation from './components/common/RiskSaveConfirmation.jsx';
 import FieldNoteEditor from './components/notes/FieldNoteEditor.jsx';
+import MissionModePanel from './components/missions/MissionModePanel.jsx';
+import { 
+  loadActiveMission, saveActiveMission, 
+  attachSavedAnswerToMission, attachSavedSourceToMission, attachFieldNoteToMission
+} from './modules/missions/missionStore.js';
 
 
 import DashboardView from './components/dashboard/DashboardView.jsx';
@@ -92,6 +98,7 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [viewMode, setViewMode] = useState('dashboard'); // 'dashboard', 'files', 'chat', 'water', 'food', 'readiness', 'action-guides', 'settings'
+  const [activeMission, setActiveMission] = useState(() => loadActiveMission());
   const [profile, setProfile] = useState(() => loadProfile());
   const [waterContainers, setWaterContainers] = useState(() => loadWaterContainers());
   const [favorites, setFavorites] = useState(() => loadFavorites());
@@ -312,6 +319,97 @@ function App() {
     setNoteEditorPrefill(prefill);
     setNoteEditorOpen(true);
   };
+
+  const handleAttachAnswerToMission = (msg, index) => {
+    if (!activeMission) return;
+    const riskCat = getRiskySourceCategory(msg.sources) || getRiskLevel({ name: msg.text, path: '' }).category;
+    
+    const attachAction = () => {
+      const userQuery = index > 0 ? messages[index - 1]?.text : 'User Query';
+      const newItem = addSavedAnswer({
+        title: msg.text.substring(0, 40) + '...',
+        relatedQuestion: userQuery || 'User Query',
+        relatedAnswerStatus: msg.answerStatus || 'verified_local',
+        riskCategory: riskCat,
+        body: msg.text,
+        content: msg.text,
+        tags: ['jarvis']
+      });
+      attachSavedAnswerToMission(activeMission.id, newItem.id);
+      setActiveMission(loadActiveMission());
+      alert("Answer saved and attached to active mission!");
+    };
+
+    if (riskCat) {
+      setPendingSaveRiskCategory(riskCat);
+      setPendingSaveAction({
+        actionType: 'attach_answer_to_mission',
+        riskCategory: riskCat,
+        execute: attachAction
+      });
+    } else {
+      attachAction();
+    }
+  };
+
+  const handleAttachSourcesToMission = (sourcesList) => {
+    if (!activeMission) return;
+
+    let riskCat = null;
+    for (const s of sourcesList) {
+      if (s.riskCategory) {
+        riskCat = s.riskCategory;
+        break;
+      }
+    }
+
+    const attachAction = () => {
+      sourcesList.forEach(s => {
+        const newItem = addSavedSource({
+          source: s.source || s.documentPath,
+          title: getSourceTitle(s.source || s.documentPath),
+          page: s.page || null,
+          section: s.section || null,
+          matchLabel: s.matchLabel || 'Related',
+          riskCategory: s.riskCategory || null,
+          excerpt: s.excerpt || ''
+        });
+        attachSavedSourceToMission(activeMission.id, newItem.id);
+      });
+      setActiveMission(loadActiveMission());
+      alert(`Saved and attached ${sourcesList.length} sources to active mission!`);
+    };
+
+    if (riskCat) {
+      setPendingSaveRiskCategory(riskCat);
+      setPendingSaveAction({
+        actionType: 'attach_sources_to_mission',
+        riskCategory: riskCat,
+        execute: attachAction
+      });
+    } else {
+      attachAction();
+    }
+  };
+
+  const handleCreateMissionFieldNote = (msg, index) => {
+    if (!activeMission) return;
+    const userQuery = index > 0 ? messages[index - 1]?.text : '';
+    const riskCat = getRiskySourceCategory(msg.sources) || getRiskLevel({ name: msg.text, path: '' }).category;
+    
+    const prefill = {
+      title: `Observation on ${userQuery.substring(0, 30)}`,
+      noteType: 'research note',
+      riskCategory: riskCat || '',
+      body: `Jarvis Response Excerpt:\n"${msg.text.substring(0, 300)}..."`,
+      relatedSourcePaths: msg.sources?.map(s => s.source).join(', ') || '',
+      relatedJarvisAnswer: msg.text,
+      missionId: activeMission.id
+    };
+
+    setNoteEditorPrefill(prefill);
+    setNoteEditorOpen(true);
+  };
   
   const recognitionRef = useRef(null);
 
@@ -338,6 +436,10 @@ function App() {
     }
     localStorage.setItem('sos-theme', theme);
   };
+
+  useEffect(() => {
+    setActiveMission(loadActiveMission());
+  }, [viewMode]);
 
   useEffect(() => {
     // Fetch materials and metadata
@@ -882,6 +984,14 @@ function App() {
             </div>
 
             <div 
+              className={`nav-item ${viewMode === 'field-mode' ? 'active' : ''}`}
+              onClick={() => { setViewMode('field-mode'); setSidebarOpen(false); }}
+            >
+              <Compass size={18} className={viewMode === 'field-mode' ? 'text-glow' : ''}/>
+              <span style={{color: viewMode === 'field-mode' ? 'var(--brand-primary)' : ''}}>FIELD MODE</span>
+            </div>
+
+            <div 
               className={`nav-item ${viewMode === 'chat' ? 'active' : ''}`}
               onClick={() => { setViewMode('chat'); setSidebarOpen(false); }}
             >
@@ -1213,6 +1323,33 @@ function App() {
 
             {!error && !loading && viewMode === 'chat' && (
               <div style={{ display: 'flex', flexDirection: 'column', height: '100%', maxWidth: '900px', margin: '0 auto', width: '100%' }}>
+                {activeMission && (
+                  <div className="glass-panel text-glow" style={{
+                    padding: '8px 16px',
+                    borderColor: 'var(--brand-primary)',
+                    backgroundColor: 'rgba(0, 229, 255, 0.05)',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '16px',
+                    fontSize: '0.8rem',
+                    fontFamily: 'var(--font-mono)'
+                  }}>
+                    <div>
+                      ⚡ <span style={{ color: 'var(--brand-primary)', fontWeight: 'bold' }}>ACTIVE FIELD MODE:</span> {activeMission.title.toUpperCase()}
+                      <span style={{ marginLeft: '10px', fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+                        ({activeMission.status.toUpperCase()})
+                      </span>
+                    </div>
+                    <button 
+                      className="btn-tactical" 
+                      onClick={() => setViewMode('field-mode')}
+                      style={{ padding: '2px 8px', fontSize: '0.7rem' }}
+                    >
+                      OPEN SESSION
+                    </button>
+                  </div>
+                )}
                 <div className="category-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: '16px' }}>
                   <div>
                     <h2 className="category-title">J.A.R.V.I.S. TERMINAL</h2>
@@ -1333,6 +1470,35 @@ function App() {
                             >
                               ADD TO REPORT
                             </button>
+
+                            {/* Active Mission Integrations */}
+                            {activeMission && (
+                              <>
+                                <button 
+                                  className="btn-tactical" 
+                                  onClick={() => handleAttachAnswerToMission(msg, i)}
+                                  style={{ padding: '4px 10px', fontSize: '0.7rem', borderColor: 'var(--brand-primary)', color: 'var(--brand-primary)' }}
+                                >
+                                  ADD ANSWER TO MISSION
+                                </button>
+                                {msg.sources && msg.sources.length > 0 && (
+                                  <button 
+                                    className="btn-tactical" 
+                                    onClick={() => handleAttachSourcesToMission(msg.sources)}
+                                    style={{ padding: '4px 10px', fontSize: '0.7rem', borderColor: 'var(--brand-primary)', color: 'var(--brand-primary)' }}
+                                  >
+                                    ADD SOURCES TO MISSION
+                                  </button>
+                                )}
+                                <button 
+                                  className="btn-tactical" 
+                                  onClick={() => handleCreateMissionFieldNote(msg, i)}
+                                  style={{ padding: '4px 10px', fontSize: '0.7rem', borderColor: 'var(--brand-primary)', color: 'var(--brand-primary)' }}
+                                >
+                                  CREATE MISSION NOTE
+                                </button>
+                              </>
+                            )}
                           </div>
                         )}
 
@@ -1471,7 +1637,7 @@ function App() {
                                        </button>
                                        <button 
                                          className="btn-tactical" 
-                                         onClick={() => {
+                              onClick={() => {
                                            handleSaveSources([s]);
                                            setViewMode('reports-panel');
                                          }}
@@ -1479,6 +1645,15 @@ function App() {
                                        >
                                          ADD TO REPORT
                                        </button>
+                                       {activeMission && (
+                                         <button 
+                                           className="btn-tactical" 
+                                           onClick={() => handleAttachSourcesToMission([s])}
+                                           style={{ padding: '6px 12px', fontSize: '0.75rem', borderColor: 'var(--brand-primary)', color: 'var(--brand-primary)' }}
+                                         >
+                                           ADD TO MISSION
+                                         </button>
+                                       )}
                                        {['pdf', 'txt', 'md'].includes(s.source.split('.').pop().toLowerCase()) && (
                                          <button 
                                            className="btn-tactical" 
@@ -1679,6 +1854,18 @@ function App() {
                   setViewMode={setViewMode}
                   setChatInput={setChatInput}
                   handleSendMessage={handleSendMessage}
+                />
+              </PanelErrorBoundary>
+            )}
+
+            {!error && !loading && viewMode === 'field-mode' && (
+              <PanelErrorBoundary name="Field Mode / Mission Control">
+                <MissionModePanel 
+                  callSign={profile.name || 'Operator'}
+                  onSendSuggestedPrompt={(promptText) => {
+                    setChatInput(promptText);
+                    setViewMode('chat');
+                  }}
                 />
               </PanelErrorBoundary>
             )}
@@ -2059,13 +2246,21 @@ function App() {
             setNoteEditorPrefill(null);
           }}
           onSave={(noteData) => {
-            addFieldNote(noteData);
+            const newItem = addFieldNote(noteData);
+            if (noteData.missionId) {
+              attachFieldNoteToMission(noteData.missionId, newItem.id);
+              setActiveMission(loadActiveMission());
+            }
             alert("Field note saved successfully!");
             setNoteEditorOpen(false);
             setNoteEditorPrefill(null);
           }}
           onSaveAndAddToReport={(noteData) => {
-            addFieldNote(noteData);
+            const newItem = addFieldNote(noteData);
+            if (noteData.missionId) {
+              attachFieldNoteToMission(noteData.missionId, newItem.id);
+              setActiveMission(loadActiveMission());
+            }
             setNoteEditorOpen(false);
             setNoteEditorPrefill(null);
             setViewMode('reports-panel');

@@ -106,6 +106,20 @@ export const validateBackup = (backupObject) => {
     }
   }
 
+  // Version 2 checks (Missions)
+  if (backupObject.version >= 2) {
+    if (backupObject.data.missions) {
+      if (!Array.isArray(backupObject.data.missions)) {
+        return { valid: false, error: 'Missions collection is not a valid array.' };
+      }
+      for (const item of backupObject.data.missions) {
+        if (!item.id || !item.createdAt) {
+          return { valid: false, error: "Item inside missions collection is missing required 'id' or 'createdAt' fields." };
+        }
+      }
+    }
+  }
+
   return { valid: true };
 };
 
@@ -136,14 +150,16 @@ export const mergeCollections = (existingList, importedList) => {
 export const exportAllSavedData = () => {
   return {
     backupType: 'sos_session_backup',
-    version: 1,
+    version: 2,
     exportedAt: new Date().toISOString(),
     data: {
       savedAnswers: loadSavedAnswers(),
       savedSources: loadSavedSources(),
       fieldNotes: loadFieldNotes(),
       reportDrafts: loadReportDrafts(),
-      activeSession: loadActiveSession()
+      activeSession: loadActiveSession(),
+      missions: localStore.get('missions', []),
+      activeMission: localStore.get('active_mission', null)
     }
   };
 };
@@ -176,6 +192,17 @@ export const importSavedData = (backupObject) => {
     saveActiveSession(data.activeSession);
   }
 
+  // Version 2 imports
+  if (backupObject.version >= 2 && data.missions) {
+    const existingMissions = localStore.get('missions', []);
+    const merged = mergeCollections(existingMissions, data.missions);
+    localStore.set('missions', merged);
+    
+    if (data.activeMission) {
+      localStore.set('active_mission', data.activeMission);
+    }
+  }
+
   return true;
 };
 
@@ -185,4 +212,6 @@ export const clearAllSavedData = () => {
   localStore.remove(FIELD_NOTES_KEY);
   localStore.remove(REPORT_DRAFTS_KEY);
   localStore.remove(ACTIVE_SESSION_KEY);
+  localStore.remove('missions');
+  localStore.remove('active_mission');
 };

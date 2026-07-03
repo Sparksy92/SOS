@@ -120,3 +120,153 @@ export const downloadFile = (content, filename, contentType) => {
   a.click();
   URL.revokeObjectURL(url);
 };
+
+export const generateMissionMarkdownReport = (mission, relatedData) => {
+  const title = mission.title || 'UNNAMED MISSION';
+  const type = mission.missionType || 'general';
+  const timestamp = mission.createdAt || new Date().toISOString();
+  const author = mission.callsign || 'OPERATOR';
+  const summary = mission.overview || 'No overview summary provided.';
+  const manualNotes = mission.manualNotes || '';
+  
+  let md = `# SURVIVALOS MISSION REPORT: ${title.toUpperCase()}\n`;
+  md += `**MISSION TYPE:** ${type.toUpperCase()}\n`;
+  md += `**MISSION STATUS:** ${mission.status.toUpperCase()}\n`;
+  md += `**PRIORITY:** ${mission.priority.toUpperCase()}\n`;
+  md += `**STARTED ON:** ${new Date(timestamp).toLocaleString()}\n`;
+  if (mission.completedAt) {
+    md += `**COMPLETED ON:** ${new Date(mission.completedAt).toLocaleString()}\n`;
+  }
+  md += `**OPERATOR CALLSIGN:** ${author.toUpperCase()}\n`;
+  if (mission.locationLabel) {
+    md += `**LOCATION/SECTOR:** ${mission.locationLabel.toUpperCase()}\n`;
+  }
+  md += `\n`;
+
+  md += `## SECTION 1: MISSION OVERVIEW\n`;
+  md += `${summary}\n\n`;
+
+  // Objectives
+  md += `## SECTION 2: OBJECTIVES STATUS\n`;
+  const objectives = mission.objectives || [];
+  if (objectives.length === 0) {
+    md += `*No objectives defined for this mission.*\n\n`;
+  } else {
+    objectives.forEach(obj => {
+      const check = obj.status === 'done' ? '[x]' : '[ ]';
+      md += `- ${check} ${obj.label}\n`;
+    });
+    md += `\n`;
+  }
+
+  // Checklist / Tasks
+  md += `## SECTION 3: CHECKLIST & LOGISTICS TASKS\n`;
+  const tasks = [...(mission.checklist || []), ...(mission.tasks || [])];
+  if (tasks.length === 0) {
+    md += `*No tasks or checklist items defined.*\n\n`;
+  } else {
+    tasks.forEach(task => {
+      const check = task.status === 'done' ? '[x]' : '[ ]';
+      const prio = task.priority !== 'medium' ? ` (${task.priority.toUpperCase()})` : '';
+      md += `- ${check} ${task.label}${prio}\n`;
+    });
+    md += `\n`;
+  }
+
+  // Timeline
+  md += `## SECTION 4: MISSION TIMELINE LOGS\n`;
+  const timeline = mission.timeline || [];
+  if (timeline.length === 0) {
+    md += `*No timeline events logged.*\n\n`;
+  } else {
+    timeline.forEach(event => {
+      md += `*   \`[${new Date(event.createdAt).toLocaleTimeString()}]\` ${event.label}\n`;
+    });
+    md += `\n`;
+  }
+
+  if (manualNotes.trim()) {
+    md += `## SECTION 5: OPERATOR OBSERVATION SCRATCHPAD\n`;
+    md += `${manualNotes}\n\n`;
+  }
+
+  // Attached Answers
+  md += `## SECTION 6: ATTACHED JARVIS ANSWERS\n`;
+  const answers = relatedData.includedAnswers || [];
+  if (answers.length === 0) {
+    md += `*No Jarvis answers attached to this mission.*\n\n`;
+  } else {
+    answers.forEach((ans, idx) => {
+      md += `### Answer #${idx + 1}: ${ans.title || 'Query'}\n`;
+      md += `**Query:** *${ans.relatedQuestion || 'N/A'}*\n`;
+      md += `\n${ans.body || ans.content}\n\n`;
+    });
+  }
+
+  // Attached Sources
+  md += `## SECTION 7: ATTACHED SOURCES REFERENCE\n`;
+  const sources = relatedData.includedSources || [];
+  if (sources.length === 0) {
+    md += `*No library source citations attached.*\n\n`;
+  } else {
+    sources.forEach((src) => {
+      const loc = src.page ? `Page ${src.page}` : src.section ? `Section ${src.section}` : 'N/A';
+      md += `*   **${src.title || 'Source'}** (Loc: ${loc}, Match: ${src.matchLabel || 'Related'})\n`;
+      md += `    *Path:* \`${src.source || src.documentPath || 'N/A'}\`\n`;
+      if (src.excerpt) {
+        md += `    > Excerpt: "${src.excerpt.trim()}"\n`;
+      }
+      md += `\n`;
+    });
+  }
+
+  // Attached Notes
+  md += `## SECTION 8: ATTACHED FIELD NOTES\n`;
+  const notes = relatedData.includedNotes || [];
+  if (notes.length === 0) {
+    md += `*No field notes attached.*\n\n`;
+  } else {
+    notes.forEach((note, idx) => {
+      md += `### Note #${idx + 1}: ${note.title || 'Note'} (${note.noteType || 'general'})\n`;
+      md += `\n${note.body || note.content}\n\n`;
+    });
+  }
+
+  // Safety Warnings
+  md += `## SECTION 9: RISK DIRECTIVES & WARNINGS\n`;
+  const highRiskItems = [
+    ...answers.filter(a => a.riskCategory),
+    ...notes.filter(n => n.riskCategory),
+    ...sources.filter(s => s.riskCategory)
+  ];
+  if (mission.riskCategory) {
+    highRiskItems.push({ riskCategory: mission.riskCategory });
+  }
+
+  if (highRiskItems.length > 0) {
+    md += `> [!WARNING]\n`;
+    md += `> **CRITICAL SECURITY RISK WARNING**\n`;
+    md += `> This mission report logs active procedures in high-risk categories:\n`;
+    const uniqueCats = [...new Set(highRiskItems.map(item => item.riskCategory).filter(Boolean))];
+    uniqueCats.forEach(cat => {
+      md += `> - **${cat.toUpperCase()}**\n`;
+    });
+    md += `> \n`;
+    md += `> Cross-verify all technical, electrical, chemical, mechanical, and first-aid checklists with physically printed reference material. AI predictions must not be used as live instructions in hazard contexts.\n\n`;
+  } else {
+    md += `*No high-risk operations were identified during this mission.*\n\n`;
+  }
+
+  md += `---\n*END OF FIELD MISSION REPORT // CONFIDENTIAL OFFLINE HOMESTEAD ARCHIVE*\n`;
+  return md;
+};
+
+export const generateMissionJSONReport = (mission, relatedData) => {
+  return JSON.stringify({
+    reportType: 'sos_mission_report',
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    mission,
+    relatedData
+  }, null, 2);
+};

@@ -13,6 +13,7 @@ import {
 } from '../../modules/session/sessionStore.js';
 import FieldNoteEditor from '../notes/FieldNoteEditor.jsx';
 import ReportBuilder from './ReportBuilder.jsx';
+import { loadMissions } from '../../modules/missions/missionStore.js';
 
 const NotesReportsPanel = ({ callSign = 'Operator' }) => {
   const [activeTab, setActiveTab] = useState('answers'); // 'answers', 'sources', 'notes', 'reports'
@@ -82,17 +83,28 @@ const NotesReportsPanel = ({ callSign = 'Operator' }) => {
     alert("All saved data has been successfully deleted.");
   };
 
+  const [missions, setMissions] = useState([]);
+
   // Reload everything from local storage
   const reloadData = () => {
     setAnswers(loadSavedAnswers());
     setSources(loadSavedSources());
     setNotes(loadFieldNotes());
     setReports(loadReportDrafts());
+    setMissions(loadMissions());
   };
 
   useEffect(() => {
     reloadData();
   }, []);
+
+  const getAttachedMission = (item) => {
+    return missions.find(m => 
+      (m.savedAnswerIds || []).includes(item.id) ||
+      (m.savedSourceIds || []).includes(item.id) ||
+      (m.fieldNoteIds || []).includes(item.id)
+    );
+  };
 
   const handleDeleteItem = (id, type) => {
     if (!window.confirm("Are you sure you want to permanently delete this item?")) return;
@@ -402,17 +414,39 @@ const NotesReportsPanel = ({ callSign = 'Operator' }) => {
                   <div>
                     {/* Header info */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px', marginBottom: '8px' }}>
-                      <span style={{ 
-                        fontSize: '0.65rem', 
-                        fontFamily: 'var(--font-mono)', 
-                        backgroundColor: 'rgba(255,255,255,0.05)', 
-                        padding: '2px 6px', 
-                        borderRadius: '3px',
-                        color: 'var(--brand-primary)',
-                        fontWeight: 'bold'
-                      }}>
-                        {activeTab === 'notes' ? (item.noteType || 'general').toUpperCase() : activeTab.toUpperCase()}
-                      </span>
+                      <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
+                        <span style={{ 
+                          fontSize: '0.65rem', 
+                          fontFamily: 'var(--font-mono)', 
+                          backgroundColor: 'rgba(255,255,255,0.05)', 
+                          padding: '2px 6px', 
+                          borderRadius: '3px',
+                          color: 'var(--brand-primary)',
+                          fontWeight: 'bold'
+                        }}>
+                          {activeTab === 'notes' ? (item.noteType || 'general').toUpperCase() : activeTab.toUpperCase()}
+                        </span>
+                        {(() => {
+                          const attached = getAttachedMission(item);
+                          if (attached) {
+                            return (
+                              <span style={{ 
+                                fontSize: '0.65rem', 
+                                fontFamily: 'var(--font-mono)', 
+                                backgroundColor: 'rgba(0, 229, 255, 0.08)', 
+                                border: '1px solid var(--brand-primary)',
+                                padding: '2px 6px', 
+                                borderRadius: '3px',
+                                color: 'var(--brand-primary)',
+                                fontWeight: 'bold'
+                              }}>
+                                MISSION: {attached.title.toUpperCase()}
+                              </span>
+                            );
+                          }
+                          return null;
+                        })()}
+                      </div>
                       <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{dateStr}</span>
                     </div>
 
