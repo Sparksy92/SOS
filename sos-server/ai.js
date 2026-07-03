@@ -7,6 +7,7 @@ const { HNSWLib } = require("@langchain/community/vectorstores/hnswlib");
 const { PromptTemplate } = require("@langchain/core/prompts");
 const { StringOutputParser } = require("@langchain/core/output_parsers");
 const { RunnableSequence } = require("@langchain/core/runnables");
+const { db } = require('./db');
 
 // Configuration
 const ROOT_DIR = path.join(__dirname, '..');
@@ -55,20 +56,40 @@ const indexFile = async (filePath) => {
     const mdRelPath = path.join(parsed.dir, parsed.name + '.md');
     const mdPath = path.join(ROOT_DIR, 'markdown_materials', mdRelPath);
 
+    let pages = [];
+
     if (ext === '.pdf' && fs.existsSync(mdPath)) {
       console.log(`[VECTOR] Found high-fidelity olmOCR Markdown: ${mdPath}`);
       const text = fs.readFileSync(mdPath, 'utf8');
       docs = [new Document({ pageContent: text, metadata: { source: filePath } })];
+      pages = [text];
     } else if (ext === '.pdf') {
       // 1. Load PDF
       const loader = new PDFLoader(filePath);
       docs = await loader.load();
+      pages = docs.map(d => d.pageContent);
     } else if (ext === '.txt') {
       // 1. Load TXT
       const text = fs.readFileSync(filePath, 'utf8');
       docs = [new Document({ pageContent: text, metadata: { source: filePath } })];
+      pages = [text];
     } else {
       throw new Error(`Unsupported file type: ${ext}`);
+    }
+
+    // SQLite Indexing Block
+    const relativePath = '/materials/' + path.relative(ROOT_DIR, filePath).replace(/\\/g, '/');
+    const checkStmt = db.prepare("SELECT 1 FROM indexed_docs WHERE path = ?");
+    const isAlreadyIndexed = !!checkStmt.get(relativePath);
+
+    if (!isAlreadyIndexed) {
+      console.log(`[SQLITE] Unified Indexing to SQLite: ${relativePath}`);
+      const insertChunk = db.prepare("INSERT INTO document_chunks (document_path, chunk_index, content) VALUES (?, ?, ?)");
+      for (let i = 0; i < pages.length; i++) {
+        insertChunk.run(relativePath, i, pages[i]);
+      }
+      const markIndexed = db.prepare("INSERT INTO indexed_docs (path, indexed_at) VALUES (?, ?)");
+      markIndexed.run(relativePath, new Date().toISOString());
     }
 
     // 2. Split Text
@@ -102,7 +123,7 @@ const indexFile = async (filePath) => {
   }
 };
 
-const { db, hasFts5 } = require('./db');
+const { hasFts5 } = require('./db');
 
 const RISKY_PATTERNS = {
   'medical': /medical|first aid|triage|burn|wound|poison|injury/i,

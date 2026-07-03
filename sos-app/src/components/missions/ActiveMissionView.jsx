@@ -228,6 +228,44 @@ const ActiveMissionView = ({ mission, onSendSuggestedPrompt, onUpdateState }) =>
     if (onUpdateState) onUpdateState();
   };
 
+  const handleIndexDocument = async (filePath) => {
+    if (window.confirm(`Initialize Neural Index for this reference? This parses contents locally into the J.A.R.V.I.S. database.`)) {
+      try {
+        const res = await fetch(`http://${window.location.hostname}:3001/api/index/document`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ filePath })
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert(`Document successfully indexed. ${data.chunks || 0} chunks added.`);
+          
+          // Re-fetch materials list to update UI status immediately
+          const API_BASE = `http://${window.location.hostname}:3001`;
+          const matRes = await fetch(`${API_BASE}/api/materials`);
+          const matData = await matRes.json();
+          const flattened = [];
+          Object.entries(matData.categories || {}).forEach(([catName, filesList]) => {
+            filesList.forEach(file => {
+              flattened.push({
+                name: file.name,
+                path: file.path,
+                category: catName,
+                indexed: !!file.indexed
+              });
+            });
+          });
+          setMaterials(flattened);
+          if (onUpdateState) onUpdateState();
+        } else {
+          alert("Error indexing: " + data.error);
+        }
+      } catch (err) {
+        alert("Network error indexing: " + err.message);
+      }
+    }
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', paddingBottom: '30px' }}>
       
@@ -519,6 +557,7 @@ const ActiveMissionView = ({ mission, onSendSuggestedPrompt, onUpdateState }) =>
         onSaveSource={handleSaveSource}
         onAttachSource={handleAttachSource}
         onQueueSource={handleQueueSource}
+        onIndexDocument={handleIndexDocument}
       />
 
       {/* Attached resources section */}

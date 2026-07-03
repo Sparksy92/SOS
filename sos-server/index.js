@@ -34,11 +34,13 @@ const crawlerRoutes = require('./routes/crawler.routes');
 const mediaRoutes = require('./routes/media.routes');
 const materialsRoutes = require('./routes/materials.routes');
 const healthRoutes = require('./routes/health.routes');
+const indexRoutes = require('./routes/index.routes');
 
 app.use('/api/crawler', crawlerRoutes);
 app.use('/api/video', mediaRoutes);
 app.use('/api/materials', materialsRoutes);
 app.use('/api/health', healthRoutes);
+app.use('/api/index', indexRoutes);
 
 // AI Chat Endpoint
 app.use(express.json()); // Add JSON parser for POST requests
@@ -56,23 +58,7 @@ app.post('/api/chat', async (req, res) => {
   }
 });
 
-// AI Index Endpoint
-app.post('/api/index', async (req, res) => {
-  try {
-    const { filePath } = req.body; 
-    if (!filePath) return res.status(400).json({ error: "filePath is required" });
-    
-    // Resolve absolute path using the new MATERIALS_DIR
-    const absolutePath = path.join(MATERIALS_DIR, filePath.replace('/materials/', ''));
-    if (!fs.existsSync(absolutePath)) return res.status(404).json({ error: "File not found" });
 
-    const result = await ai.indexFile(absolutePath);
-    res.json(result);
-  } catch (err) {
-    console.error("Indexing Error:", err);
-    res.status(500).json({ error: err.message });
-  }
-});
 
 
 // --- METADATA SYSTEM ---

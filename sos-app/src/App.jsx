@@ -22,6 +22,7 @@ import {
   Image,
   Volume2,
   VolumeX,
+  Database,
   Play,
   Pause,
   LayoutDashboard,
@@ -74,6 +75,7 @@ import RiskSaveConfirmation from './components/common/RiskSaveConfirmation.jsx';
 import FieldNoteEditor from './components/notes/FieldNoteEditor.jsx';
 import MissionModePanel from './components/missions/MissionModePanel.jsx';
 import MissionJarvisContextPanel from './components/missions/MissionJarvisContextPanel.jsx';
+import IndexIntegrityPanel from './components/library/IndexIntegrityPanel.jsx';
 import { 
   loadActiveMission, saveActiveMission, updateMission, addMissionTimelineEvent,
   attachSavedAnswerToMission, attachSavedSourceToMission, attachFieldNoteToMission
@@ -1076,6 +1078,14 @@ function App() {
               <span style={{color: viewMode === 'settings' ? 'var(--brand-primary)' : ''}}>SETTINGS / PROFILE</span>
             </div>
 
+            <div 
+              className={`nav-item ${viewMode === 'index-integrity' ? 'active' : ''}`}
+              onClick={() => { setViewMode('index-integrity'); setSidebarOpen(false); }}
+            >
+              <Database size={18} className={viewMode === 'index-integrity' ? 'text-glow' : ''}/>
+              <span style={{color: viewMode === 'index-integrity' ? 'var(--brand-primary)' : ''}}>INDEX INTEGRITY</span>
+            </div>
+
             <div style={{ margin: '16px 0 8px 16px', fontSize: '0.75rem', color: 'var(--brand-primary)', letterSpacing: '1px', textTransform: 'uppercase' }}>
               Library Browser
             </div>
@@ -1932,6 +1942,24 @@ function App() {
               <PanelErrorBoundary name="Notes and Reports">
                 <NotesReportsPanel 
                   callSign={profile.name || 'Operator'}
+                />
+              </PanelErrorBoundary>
+            )}
+
+            {!error && !loading && viewMode === 'index-integrity' && (
+              <PanelErrorBoundary name="Index Integrity Auditor">
+                <IndexIntegrityPanel 
+                  onRefreshManifest={async () => {
+                    try {
+                      const res = await fetch(`http://${window.location.hostname}:3001/api/materials`);
+                      const data = await res.json();
+                      if (data.categories) {
+                        setCategories(data.categories);
+                      }
+                    } catch (e) {
+                      console.error("Failed refreshing manifest categories:", e);
+                    }
+                  }}
                 />
               </PanelErrorBoundary>
             )}
