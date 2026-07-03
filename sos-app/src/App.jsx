@@ -26,6 +26,7 @@ import {
   Pause
 } from 'lucide-react';
 import './App.css';
+import { getRiskLevel, requiresAcknowledgement, getSafetyWarning } from './modules/safety/riskRules';
 
 const API_BASE = `http://${window.location.hostname}:3001`;
 
@@ -46,6 +47,7 @@ function App() {
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [isAudioLoading, setIsAudioLoading] = useState(false);
   const [showAudioHUD, setShowAudioHUD] = useState(false);
+  const [acknowledgedDocs, setAcknowledgedDocs] = useState({});
 
   const toggleFolder = (folderPath) => {
     setCollapsedFolders(prev => ({
@@ -490,6 +492,19 @@ function App() {
     return steps;
   };
 
+  const getRiskySourceCategory = (sources) => {
+    if (!sources || sources.length === 0) return null;
+    for (const s of sources) {
+      const path = s.source;
+      if (!path) continue;
+      const risk = getRiskLevel({ name: path.split(/[\\/]/).pop(), path });
+      if (risk.risk === 'HIGH') {
+        return risk.category;
+      }
+    }
+    return null;
+  };
+
   const handleSendMessage = async (overrideText = null) => {
     const textToSend = overrideText || chatInput;
     if (!textToSend.trim() || chatLoading) return;
@@ -927,6 +942,26 @@ function App() {
                           /* Standard Text Render */
                           <div style={{ whiteSpace: 'pre-wrap', lineHeight: '1.5' }}>{msg.text}</div>
                         )}
+
+                        {(() => {
+                          const riskyCategory = getRiskySourceCategory(msg.sources);
+                          if (!riskyCategory) return null;
+                          return (
+                            <div style={{
+                              marginTop: '12px',
+                              padding: '10px 12px',
+                              border: '1px solid var(--brand-danger)',
+                              borderRadius: '4px',
+                              backgroundColor: 'rgba(255, 0, 0, 0.1)',
+                              color: 'var(--brand-danger)',
+                              fontSize: '0.8rem',
+                              lineHeight: '1.4',
+                              fontFamily: 'var(--font-mono)'
+                            }}>
+                              <strong>[SAFETY CAUTION]</strong> {getSafetyWarning(riskyCategory)}
+                            </div>
+                          );
+                        })()}
                         
                         {msg.sources && msg.sources.length > 0 && (
                           <div style={{ marginTop: '16px', paddingTop: '12px', borderTop: '1px dashed var(--border-subtle)', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
@@ -1016,182 +1051,229 @@ function App() {
                </button>
             </div>
           </div>
-          <div style={{ display: 'flex', gap: '20px', flex: 1, overflow: 'hidden' }}>
-            {/* The Document Previewer */}
-            <div className="glass-panel" style={{ flex: showAudioHUD ? 0.6 : 1, overflow: 'hidden', position: 'relative', borderRadius: '8px', transition: 'all 0.3s ease' }}>
-              {['.mp4', '.webm'].includes(selectedDocument.extension?.toLowerCase()) ? (
-                <video 
-                  src={`${API_BASE}${selectedDocument.path}`} 
-                  controls 
-                  autoPlay
-                  style={{ width: '100%', height: '100%', backgroundColor: 'black', borderRadius: '8px' }} 
-                />
-              ) : ['.avi', '.mkv', '.wmv', '.mov'].includes(selectedDocument.extension?.toLowerCase()) ? (
-                <div style={{ position: 'relative', width: '100%', height: '100%', backgroundColor: 'black', borderRadius: '8px', overflow: 'hidden' }}>
-                  <div style={{
-                    position: 'absolute', top: '12px', left: '12px', zIndex: 10,
-                    backgroundColor: 'rgba(0,0,0,0.7)', border: '1px solid var(--brand-primary)',
-                    color: 'var(--brand-primary)', padding: '6px 12px', fontSize: '0.75rem',
-                    fontFamily: 'var(--font-mono)', borderRadius: '4px', letterSpacing: '1.5px',
-                    display: 'flex', alignItems: 'center', gap: '8px', boxShadow: 'var(--glow-primary)'
-                  }}>
-                    <span className="status-dot-active" style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--brand-primary)', display: 'inline-block', boxShadow: '0 0 8px var(--brand-primary)' }}></span>
-                    REAL-TIME NEURAL TRANSCODING PROTOCOL (FFMPEG)
-                  </div>
+          {requiresAcknowledgement(selectedDocument) && !acknowledgedDocs[selectedDocument.path] ? (
+            <div className="glass-panel" style={{
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              alignItems: 'center',
+              padding: '40px',
+              textAlign: 'center',
+              border: '1px solid var(--brand-danger)',
+              boxShadow: 'var(--glow-danger)',
+              backgroundColor: 'rgba(0,0,0,0.7)',
+              fontFamily: 'var(--font-mono)'
+            }}>
+              <ShieldAlert size={64} style={{ color: 'var(--brand-danger)', marginBottom: '24px' }} />
+              <h3 style={{ color: 'var(--brand-danger)', fontSize: '1.5rem', marginBottom: '16px', letterSpacing: '2px' }}>
+                ☣ WARNING: HIGH RISK CLASSIFICATION
+              </h3>
+              <div style={{
+                maxWidth: '600px',
+                color: 'var(--text-main)',
+                fontSize: '1.05rem',
+                lineHeight: '1.6',
+                marginBottom: '32px',
+                backgroundColor: 'rgba(0,0,0,0.5)',
+                border: '1px solid var(--border-subtle)',
+                padding: '20px',
+                borderRadius: '8px'
+              }}>
+                {getSafetyWarning(getRiskLevel(selectedDocument).category)}
+              </div>
+              <button 
+                className="btn-tactical"
+                style={{
+                  backgroundColor: 'var(--brand-danger)',
+                  color: 'white',
+                  borderColor: 'var(--brand-danger)',
+                  padding: '16px 32px',
+                  fontSize: '1.1rem'
+                }}
+                onClick={() => setAcknowledgedDocs(prev => ({ ...prev, [selectedDocument.path]: true }))}
+              >
+                I ACKNOWLEDGE UNDERSTANDING AND ASSUME ALL RISKS
+              </button>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', gap: '20px', flex: 1, overflow: 'hidden' }}>
+              {/* The Document Previewer */}
+              <div className="glass-panel" style={{ flex: showAudioHUD ? 0.6 : 1, overflow: 'hidden', position: 'relative', borderRadius: '8px', transition: 'all 0.3s ease' }}>
+                {['.mp4', '.webm'].includes(selectedDocument.extension?.toLowerCase()) ? (
                   <video 
-                    src={`${API_BASE}/api/video/stream?path=${encodeURIComponent(selectedDocument.path)}`} 
+                    src={`${API_BASE}${selectedDocument.path}`} 
                     controls 
                     autoPlay
-                    style={{ width: '100%', height: '100%', borderRadius: '8px' }} 
+                    style={{ width: '100%', height: '100%', backgroundColor: 'black', borderRadius: '8px' }} 
                   />
-                </div>
-              ) : selectedDocument.extension?.toLowerCase() === '.iso' ? (
-                <div style={{
-                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                  height: '100%', padding: '40px', textAlign: 'center', backgroundColor: '#0a0a0a', color: 'var(--text-main)'
-                }}>
-                  <Disc size={64} style={{ color: 'var(--brand-primary)', marginBottom: '24px' }} />
-                  <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', marginBottom: '12px' }}>
-                    DVD IMAGE MOUNT PROTOCOL
-                  </h3>
-                  <p style={{ color: 'var(--text-muted)', maxWidth: '600px', marginBottom: '32px', lineHeight: '1.6' }}>
-                    This is a <strong>CD3WD DVD ISO Image ({selectedDocument.name})</strong>. Windows 10 & 11 can mount this file natively as a virtual drive.
-                  </p>
-                  <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-subtle)', borderRadius: '8px', padding: '20px', textAlign: 'left', maxWidth: '600px', marginBottom: '32px' }}>
-                    <h4 style={{ margin: '0 0 10px 0', color: 'var(--brand-primary)' }}>Instructions:</h4>
-                    <ol style={{ margin: 0, paddingLeft: '20px', lineHeight: '1.5', color: 'var(--text-muted)' }}>
-                      <li>Copy the absolute local path using the button below.</li>
-                      <li>Paste the path into your Windows File Explorer path bar to find the file.</li>
-                      <li><strong>Double-click</strong> the file to mount it as a virtual DVD drive.</li>
-                      <li>Access the books, programs, and survival materials inside!</li>
-                    </ol>
-                  </div>
-                  <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', justifyContent: 'center' }}>
-                    <a 
-                      href={`${API_BASE}${selectedDocument.path}`} 
-                      download
-                      className="btn-tactical"
-                      style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '12px 24px', fontSize: '1rem', textDecoration: 'none', backgroundColor: 'var(--brand-primary)', color: 'black' }}
-                    >
-                      <Download size={18} /> DOWNLOAD ISO (large file)
-                    </a>
-                    <button 
-                      className="btn-tactical"
-                      onClick={() => {
-                        const absoluteLocalPath = selectedDocument.path.replace('/materials/', 'C:\\Users\\Blair\\Downloads\\survival\\').replace(/\//g, '\\');
-                        navigator.clipboard.writeText(absoluteLocalPath);
-                        alert(`Copied local path:\n${absoluteLocalPath}`);
-                      }}
-                      style={{ padding: '12px 24px', fontSize: '1rem' }}
-                    >
-                      COPY ABSOLUTE PATH
-                    </button>
-                  </div>
-                </div>
-              ) : ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp'].includes(selectedDocument.extension?.toLowerCase()) ? (
-                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', height: '100%', backgroundColor: '#0a0a0a', borderRadius: '8px', overflow: 'auto', padding: '16px' }}>
-                  <img 
-                    src={`${API_BASE}${selectedDocument.path}`} 
-                    alt={selectedDocument.name} 
-                    style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', borderRadius: '4px', border: '1px solid var(--border-subtle)', boxShadow: 'var(--glow-primary)' }} 
-                  />
-                </div>
-              ) : (
-                <iframe 
-                  src={`${API_BASE}${selectedDocument.path}`}
-                  title="Document Viewer"
-                  style={{ width: '100%', height: '100%', border: 'none', backgroundColor: '#e2e8f0' }}
-                />
-              )}
-            </div>
-
-            {/* J.A.R.V.I.S. Audiobook Reader HUD */}
-            {showAudioHUD && (
-              <div className="glass-panel" style={{
-                flex: 0.4,
-                display: 'flex',
-                flexDirection: 'column',
-                padding: '24px',
-                border: '1px solid var(--brand-primary)',
-                boxShadow: 'var(--glow-primary)',
-                borderRadius: '8px',
-                backgroundColor: 'rgba(0, 0, 0, 0.4)',
-                fontFamily: 'var(--font-mono)',
-                transition: 'all 0.3s ease',
-                overflow: 'hidden'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--brand-primary)', marginBottom: '16px', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '12px' }}>
-                  <Cpu size={20} className="status-dot-active" />
-                  <span style={{ letterSpacing: '2px', fontSize: '0.9rem', fontWeight: 'bold' }}>J.A.R.V.I.S. AUDIO READER</span>
-                </div>
-
-                {isAudioLoading ? (
-                  <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
-                    EXTRACTING TEXT PROTOCOL...
-                  </div>
-                ) : (
-                  <>
-                    {/* Read Along Area */}
+                ) : ['.avi', '.mkv', '.wmv', '.mov'].includes(selectedDocument.extension?.toLowerCase()) ? (
+                  <div style={{ position: 'relative', width: '100%', height: '100%', backgroundColor: 'black', borderRadius: '8px', overflow: 'hidden' }}>
                     <div style={{
-                      flex: 1,
-                      overflowY: 'auto',
-                      padding: '16px',
-                      backgroundColor: 'rgba(0,0,0,0.6)',
-                      border: '1px solid var(--border-subtle)',
-                      borderRadius: '4px',
-                      color: 'var(--text-main)',
-                      fontSize: '0.95rem',
-                      lineHeight: '1.6',
-                      marginBottom: '20px',
-                      maxHeight: '400px'
+                      position: 'absolute', top: '12px', left: '12px', zIndex: 10,
+                      backgroundColor: 'rgba(0,0,0,0.7)', border: '1px solid var(--brand-primary)',
+                      color: 'var(--brand-primary)', padding: '6px 12px', fontSize: '0.75rem',
+                      fontFamily: 'var(--font-mono)', borderRadius: '4px', letterSpacing: '1.5px',
+                      display: 'flex', alignItems: 'center', gap: '8px', boxShadow: 'var(--glow-primary)'
                     }}>
-                      <div style={{ fontSize: '0.7rem', color: 'var(--brand-secondary)', marginBottom: '8px', letterSpacing: '1px' }}>
-                        READ ALONG // SECTION {currentChunkIndex + 1} OF {audioChunks.length}
-                      </div>
-                      {audioChunks[currentChunkIndex]}
+                      <span className="status-dot-active" style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--brand-primary)', display: 'inline-block', boxShadow: '0 0 8px var(--brand-primary)' }}></span>
+                      REAL-TIME NEURAL TRANSCODING PROTOCOL (FFMPEG)
                     </div>
-
-                    {/* Audiobook Controls */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                      <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
-                        <button 
-                          className="btn-tactical" 
-                          disabled={currentChunkIndex === 0} 
-                          onClick={playPrevChunk}
-                          style={{ fontSize: '0.8rem', padding: '8px 16px' }}
-                        >
-                          PREV
-                        </button>
-                        <button 
-                          className="btn-tactical" 
-                          onClick={toggleAudioPlay}
-                          style={{ fontSize: '0.8rem', padding: '8px 24px', borderColor: 'var(--brand-primary)', color: isAudioPlaying ? 'var(--brand-primary)' : '' }}
-                        >
-                          {isAudioPlaying ? <Pause size={12} style={{display:'inline', marginRight:'6px'}}/> : <Play size={12} style={{display:'inline', marginRight:'6px'}}/>}
-                          {isAudioPlaying ? 'PAUSE' : 'PLAY'}
-                        </button>
-                        <button 
-                          className="btn-tactical" 
-                          disabled={currentChunkIndex === audioChunks.length - 1} 
-                          onClick={playNextChunk}
-                          style={{ fontSize: '0.8rem', padding: '8px 16px' }}
-                        >
-                          NEXT
-                        </button>
-                      </div>
-                      <button 
-                        className="btn-tactical" 
-                        style={{ borderColor: 'var(--brand-danger)', color: 'var(--brand-danger)', fontSize: '0.8rem', padding: '6px 12px' }}
-                        onClick={stopAudioReader}
+                    <video 
+                      src={`${API_BASE}/api/video/stream?path=${encodeURIComponent(selectedDocument.path)}`} 
+                      controls 
+                      autoPlay
+                      style={{ width: '100%', height: '100%', borderRadius: '8px' }} 
+                    />
+                  </div>
+                ) : selectedDocument.extension?.toLowerCase() === '.iso' ? (
+                  <div style={{
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                    height: '100%', padding: '40px', textAlign: 'center', backgroundColor: '#0a0a0a', color: 'var(--text-main)'
+                  }}>
+                    <Disc size={64} style={{ color: 'var(--brand-primary)', marginBottom: '24px' }} />
+                    <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', marginBottom: '12px' }}>
+                      DVD IMAGE MOUNT PROTOCOL
+                    </h3>
+                    <p style={{ color: 'var(--text-muted)', maxWidth: '600px', marginBottom: '32px', lineHeight: '1.6' }}>
+                      This is a <strong>CD3WD DVD ISO Image ({selectedDocument.name})</strong>. Windows 10 & 11 can mount this file natively as a virtual drive.
+                    </p>
+                    <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-subtle)', borderRadius: '8px', padding: '20px', textAlign: 'left', maxWidth: '600px', marginBottom: '32px' }}>
+                      <h4 style={{ margin: '0 0 10px 0', color: 'var(--brand-primary)' }}>Instructions:</h4>
+                      <ol style={{ margin: 0, paddingLeft: '20px', lineHeight: '1.5', color: 'var(--text-muted)' }}>
+                        <li>Copy the absolute local path using the button below.</li>
+                        <li>Paste the path into your Windows File Explorer path bar to find the file.</li>
+                        <li><strong>Double-click</strong> the file to mount it as a virtual DVD drive.</li>
+                        <li>Access the books, programs, and survival materials inside!</li>
+                      </ol>
+                    </div>
+                    <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                      <a 
+                        href={`${API_BASE}${selectedDocument.path}`} 
+                        download
+                        className="btn-tactical"
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '12px 24px', fontSize: '1rem', textDecoration: 'none', backgroundColor: 'var(--brand-primary)', color: 'black' }}
                       >
-                        CLOSE AUDIO HUD
+                        <Download size={18} /> DOWNLOAD ISO (large file)
+                      </a>
+                      <button 
+                        className="btn-tactical"
+                        onClick={() => {
+                          const absoluteLocalPath = selectedDocument.path.replace('/materials/', 'C:\\Users\\Blair\\Downloads\\survival\\').replace(/\//g, '\\');
+                          navigator.clipboard.writeText(absoluteLocalPath);
+                          alert(`Copied local path:\n${absoluteLocalPath}`);
+                        }}
+                        style={{ padding: '12px 24px', fontSize: '1rem' }}
+                      >
+                        COPY ABSOLUTE PATH
                       </button>
                     </div>
-                  </>
+                  </div>
+                ) : ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp'].includes(selectedDocument.extension?.toLowerCase()) ? (
+                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', height: '100%', backgroundColor: '#0a0a0a', borderRadius: '8px', overflow: 'auto', padding: '16px' }}>
+                    <img 
+                      src={`${API_BASE}${selectedDocument.path}`} 
+                      alt={selectedDocument.name} 
+                      style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', borderRadius: '4px', border: '1px solid var(--border-subtle)', boxShadow: 'var(--glow-primary)' }} 
+                    />
+                  </div>
+                ) : (
+                  <iframe 
+                    src={`${API_BASE}${selectedDocument.path}`}
+                    title="Document Viewer"
+                    style={{ width: '100%', height: '100%', border: 'none', backgroundColor: '#e2e8f0' }}
+                  />
                 )}
               </div>
-            )}
-          </div>
+
+              {/* J.A.R.V.I.S. Audiobook Reader HUD */}
+              {showAudioHUD && (
+                <div className="glass-panel" style={{
+                  flex: 0.4,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  padding: '24px',
+                  border: '1px solid var(--brand-primary)',
+                  boxShadow: 'var(--glow-primary)',
+                  borderRadius: '8px',
+                  backgroundColor: 'rgba(0, 0, 0, 0.4)',
+                  fontFamily: 'var(--font-mono)',
+                  transition: 'all 0.3s ease',
+                  overflow: 'hidden'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--brand-primary)', marginBottom: '16px', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '12px' }}>
+                    <Cpu size={20} className="status-dot-active" />
+                    <span style={{ letterSpacing: '2px', fontSize: '0.9rem', fontWeight: 'bold' }}>J.A.R.V.I.S. AUDIO READER</span>
+                  </div>
+
+                  {isAudioLoading ? (
+                    <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
+                      EXTRACTING TEXT PROTOCOL...
+                    </div>
+                  ) : (
+                    <>
+                      {/* Read Along Area */}
+                      <div style={{
+                        flex: 1,
+                        overflowY: 'auto',
+                        padding: '16px',
+                        backgroundColor: 'rgba(0,0,0,0.6)',
+                        border: '1px solid var(--border-subtle)',
+                        borderRadius: '4px',
+                        color: 'var(--text-main)',
+                        fontSize: '0.95rem',
+                        lineHeight: '1.6',
+                        marginBottom: '20px',
+                        maxHeight: '400px'
+                      }}>
+                        <div style={{ fontSize: '0.7rem', color: 'var(--brand-secondary)', marginBottom: '8px', letterSpacing: '1px' }}>
+                          READ ALONG // SECTION {currentChunkIndex + 1} OF {audioChunks.length}
+                        </div>
+                        {audioChunks[currentChunkIndex]}
+                      </div>
+
+                      {/* Audiobook Controls */}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+                          <button 
+                            className="btn-tactical" 
+                            disabled={currentChunkIndex === 0} 
+                            onClick={playPrevChunk}
+                            style={{ fontSize: '0.8rem', padding: '8px 16px' }}
+                          >
+                            PREV
+                          </button>
+                          <button 
+                            className="btn-tactical" 
+                            onClick={toggleAudioPlay}
+                            style={{ fontSize: '0.8rem', padding: '8px 24px', borderColor: 'var(--brand-primary)', color: isAudioPlaying ? 'var(--brand-primary)' : '' }}
+                          >
+                            {isAudioPlaying ? <Pause size={12} style={{display:'inline', marginRight:'6px'}}/> : <Play size={12} style={{display:'inline', marginRight:'6px'}}/>}
+                            {isAudioPlaying ? 'PAUSE' : 'PLAY'}
+                          </button>
+                          <button 
+                            className="btn-tactical" 
+                            disabled={currentChunkIndex === audioChunks.length - 1} 
+                            onClick={playNextChunk}
+                            style={{ fontSize: '0.8rem', padding: '8px 16px' }}
+                          >
+                            NEXT
+                          </button>
+                        </div>
+                        <button 
+                          className="btn-tactical" 
+                          style={{ borderColor: 'var(--brand-danger)', color: 'var(--brand-danger)', fontSize: '0.8rem', padding: '6px 12px' }}
+                          onClick={stopAudioReader}
+                        >
+                          CLOSE AUDIO HUD
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
 

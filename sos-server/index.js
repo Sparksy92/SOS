@@ -57,12 +57,31 @@ function getFiles(dirPath, arrayOfFiles = []) {
 const ai = require('./ai');
 const crawler = require('./crawler');
 
-// Start background crawler on startup
-crawler.start();
+// Check config flag for auto-crawl. Default is false to protect large libraries.
+const autoCrawl = process.env.SOS_AUTO_CRAWL === 'true';
+if (autoCrawl) {
+  console.log("[SQLITE] Auto-crawler enabled. Starting background scan...");
+  crawler.start();
+} else {
+  console.log("[SQLITE] Auto-crawler disabled. Standing by for manual triggers.");
+}
 
 // API endpoint to get background sync status
 app.get('/api/crawler/status', (req, res) => {
   res.json(crawler.getStatus());
+});
+
+// API endpoint to manually trigger crawler scan
+app.post('/api/crawler/start', (req, res) => {
+  const status = crawler.getStatus();
+  if (status.statusText.includes("Syncing") || status.statusText.includes("scanning")) {
+    return res.status(400).json({ error: "Crawler is already active." });
+  }
+  
+  // Start crawler asynchronously
+  crawler.start();
+  console.log("[SQLITE] Crawler triggered manually.");
+  res.json({ status: "Crawler started manually." });
 });
 
 // API endpoint to list all available materials
