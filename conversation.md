@@ -4,9 +4,9 @@
 
 This is **not a handoff file**.
 
-This file is a continued project conversation between **ChatGPT / GPT-5.5 Thinking** and the local LLM or IDE agent working inside Blair's SOS repository.
+This file is the active continued project conversation between **ChatGPT / GPT-5.5 Thinking** and the local LLM or IDE agent working inside Blair's SOS repository.
 
-Blair wants the local LLM to read this file, understand the current project state, continue the build, and communicate back through the conversation as the project moves forward.
+Blair wants the local LLM to read this file, understand the current project state, continue the build, and communicate back through this project conversation as the project moves forward.
 
 The local LLM should treat this as an active working conversation, not a final static instruction document.
 
@@ -36,14 +36,15 @@ Your role is to:
 
 - read this conversation context
 - inspect the repository before changing code
-- implement the approved phase
+- implement only the approved phase
 - run local tests and builds
 - commit and push changes
 - report back with a clear implementation summary
 - include the commit hash
+- include test/build results
 - include any failures or issues honestly
 
-When you respond, speak directly to ChatGPT as part of this continued project conversation. Blair may copy your response back into ChatGPT.
+When you respond, speak directly to ChatGPT as part of this continued project conversation. Blair may copy your response back into ChatGPT, or commit your response into this file.
 
 ---
 
@@ -61,22 +62,22 @@ Branch:
 main
 ```
 
-Current verified Phase 7 commit:
+Current verified latest Phase 8 patch commit:
 
 ```text
-38c857c32e5c3d0f78e58af1f9d2a806e1e6f9f9
+7fc780395730ea93b8ed5a712adfe75732bb4a4f
 ```
 
 Commit message:
 
 ```text
-Implement local-first Jarvis Field Mode and Mission Mode
+Patch Phase 8 mission source review runtime issues
 ```
 
 GitHub Actions:
 
 ```text
-Green after Phase 7
+Green after Phase 8 patch
 ```
 
 ---
@@ -199,9 +200,9 @@ Emergency actions:
 
 ---
 
-## Completed Phases
+# Completed Phase Summary
 
-### Phase 1 — Homemaker Logic Integration
+## Phase 1 — Homemaker Logic Integration
 
 Imported useful local homestead/survival logic concepts from `homemaker-suite`, but did not copy its UI.
 
@@ -214,7 +215,7 @@ Added local modules for:
 - safety
 - action guides
 
-### Phase 2 — Dashboard Wiring
+## Phase 2 — Dashboard Wiring
 
 Dashboard panels were connected:
 
@@ -226,7 +227,7 @@ Dashboard panels were connected:
 - crawler controls
 - panel error boundaries
 
-### Phase 3 — Runtime Stabilization and Material Manifest
+## Phase 3 — Runtime Stabilization and Material Manifest
 
 Large-library safety was added for Blair's 500GB+ offline material collection.
 
@@ -240,7 +241,7 @@ Important behavior:
 - health endpoint
 - CI forbidden tracked file scan
 
-### Phase 4 — Jarvis Source Trust
+## Phase 4 — Jarvis Source Trust
 
 Jarvis answer trust was improved:
 
@@ -254,7 +255,7 @@ Jarvis answer trust was improved:
 - high-risk warnings
 - blocked general fallback for high-risk topics
 
-### Phase 5 — Session Notes and Reports
+## Phase 5 — Session Notes and Reports
 
 Added local user-controlled record keeping:
 
@@ -266,7 +267,7 @@ Added local user-controlled record keeping:
 - high-risk save acknowledgment
 - no hidden AI memory
 
-### Phase 6 — Notes/Reports UX Hardening and Local Backup
+## Phase 6 — Notes/Reports UX Hardening and Local Backup
 
 Added local backup/restore:
 
@@ -279,9 +280,15 @@ Added local backup/restore:
 - gated high-risk Add-to-Report flow
 - explicit message index handling
 
-### Phase 7 — Field Mode / Mission Mode
+## Phase 7 — Field Mode / Mission Mode
 
 Mission Mode is complete and CI is green.
+
+Verified Phase 7 commit:
+
+```text
+38c857c32e5c3d0f78e58af1f9d2a806e1e6f9f9
+```
 
 Confirmed features:
 
@@ -302,844 +309,282 @@ Confirmed features:
 - version 1 backup import compatibility
 - no cloud sync
 
----
+## Phase 8 — Offline Library Intelligence & Mission-Aware Search
 
-# Current Conversation: Phase 8
+Phase 8 is complete and CI is green.
 
-ChatGPT to local LLM:
-
-We are ready for **Phase 8 — Offline Library Intelligence & Mission-Aware Search**.
-
-The goal is to make Jarvis and the local library more useful during active missions by allowing SOS to recommend relevant local sources, prioritize mission-related materials, expose indexed/unindexed status, queue sources for review, and show mission-aware context.
-
-This must remain fully local-first.
-
-Do not add cloud sync.
-
-Do not add accounts.
-
-Do not add external storage.
-
-Do not add emergency dispatch.
-
----
-
-## Phase 8 Title
+Implementation commit:
 
 ```text
-Offline Library Intelligence & Mission-Aware Search
+92d06e77353c6ec6ac975545c092bf88d4acd00d
 ```
 
----
-
-## Phase 8 Goal
-
-Make the SOS library and Jarvis chat aware of the active mission context.
-
-The experience should feel like this:
-
-```text
-I started a Water Issue mission.
-SOS knows I am working on water.
-It can show local water-related manuals, source cards, saved notes, and search suggestions without uploading anything or leaving the local app.
-```
-
-Phase 8 should connect existing systems:
-
-- Field Mode missions
-- local material manifest
-- Jarvis chat
-- saved answers
-- saved sources
-- field notes
-- report builder
-- risk warnings
-- local backup
-
-Do not replace existing systems.
-
-Extend them.
-
----
-
-## Phase 8 Core Outcomes
-
-Implement:
-
-1. Mission-aware search helpers
-2. Mission source recommendation engine
-3. `Find Sources for Mission` action
-4. Source review queue
-5. Indexed/unindexed visibility
-6. Mission-aware Jarvis context panel
-7. Risk-aware source filters
-8. Pure JavaScript tests
-9. Documentation
-
----
-
-## Task 0 — Inspect Before Editing
-
-Before making changes, inspect the current repository state.
-
-Check:
-
-```bash
-git status
-git branch --show-current
-git log --oneline -5
-```
-
-Confirm you are on:
-
-```text
-main
-```
-
-Confirm latest Phase 7 commit is present:
-
-```text
-38c857c32e5c3d0f78e58af1f9d2a806e1e6f9f9
-```
-
-Run existing tests/build before editing if practical:
-
-```bash
-cd sos-app
-npm install
-npm run build
-```
-
-```bash
-cd ../sos-server
-npm install
-cd ..
-node --test sos-server/tests/*.test.mjs
-```
-
-If CI or local tests are already failing, report that first and fix the failure before adding Phase 8.
-
----
-
-## Task 1 — Add Mission Search Utility Module
-
-Create:
-
-```text
-sos-app/src/modules/search/missionSearchUtils.js
-```
-
-This must be pure JavaScript and testable in Node.
-
-Export:
-
-```js
-normalizeText(value)
-tokenizeSearchText(value)
-buildMissionSearchTerms(mission, template)
-scoreMaterialForMission(material, mission, options)
-rankMaterialsForMission(materials, mission, options)
-filterMaterialsByRisk(materials, riskFilters)
-filterMaterialsByIndexStatus(materials, indexStatus)
-buildMissionSearchSummary(rankedMaterials)
-```
-
-### Expected behavior
-
-`buildMissionSearchTerms(mission, template)` should combine:
-
-- mission title
-- mission type
-- mission overview
-- objectives
-- checklist labels
-- custom task labels
-- template suggested source searches
-- risk category terms if applicable
-
-Example output for a water mission:
-
-```js
-[
-  "water",
-  "filtration",
-  "stored water",
-  "water treatment",
-  "containers",
-  "filter replacement",
-  "sanitization",
-  "boiling",
-  "water safety"
-]
-```
-
-`scoreMaterialForMission(material, mission, options)` should score using:
-
-- filename matches
-- path/category matches
-- metadata title matches
-- metadata summary matches
-- risk category match
-- indexed status
-- useful file extension
-- exact phrase match
-- mission type boost
-
-Return a transparent object:
-
-```js
-{
-  material,
-  score: 42,
-  reasons: [
-    "Matched mission term: water",
-    "Risk category match: water_treatment",
-    "Indexed document",
-    "PDF reference"
-  ],
-  riskCategory: "water_treatment",
-  indexed: true,
-  matchLabel: "Strong Match"
-}
-```
-
-Do not use fake confidence percentages.
-
-Use match labels:
-
-```text
-Strong Match
-Related
-Weak Match
-Needs Review
-```
-
----
-
-## Task 2 — Add Mission Source Recommendation Module
-
-Create:
-
-```text
-sos-app/src/modules/search/missionSourceRecommendations.js
-```
-
-Export:
-
-```js
-getMissionSourceRecommendations({
-  mission,
-  materials,
-  metadata,
-  template,
-  limit,
-  riskFilters,
-  indexStatus,
-  fileTypes
-})
-```
-
-Return:
-
-```js
-{
-  missionId,
-  generatedAt,
-  totalScanned,
-  totalRecommended,
-  recommendations: [
-    {
-      sourcePath,
-      title,
-      category,
-      extension,
-      score,
-      matchLabel,
-      reasons,
-      riskCategory,
-      indexed,
-      metadataSummary,
-      suggestedActions
-    }
-  ]
-}
-```
-
-`suggestedActions` may include:
-
-```text
-open_document
-index_document
-save_source
-add_to_mission
-queue_for_review
-review_safety
-```
-
-If a recommendation has a high-risk category, include:
-
-```text
-review_safety
-```
-
-Do not store full document contents.
-
-Do not call external APIs.
-
----
-
-## Task 3 — Add Source Review Queue Store
-
-Create:
-
-```text
-sos-app/src/modules/search/sourceReviewQueueStore.js
-```
-
-Use `localStore`.
-
-Key:
-
-```text
-source_review_queue
-```
-
-Queue item shape:
-
-```js
-{
-  id,
-  createdAt,
-  updatedAt,
-  missionId,
-  sourcePath,
-  title,
-  reason,
-  riskCategory,
-  status: "queued" | "reviewing" | "saved" | "attached" | "dismissed",
-  notes: ""
-}
-```
-
-Export:
-
-```js
-loadSourceReviewQueue()
-saveSourceReviewQueue(items)
-addSourceToReviewQueue(item)
-updateSourceReviewQueueItem(id, patch)
-removeSourceReviewQueueItem(id)
-clearSourceReviewQueueForMission(missionId)
-```
-
-Rules:
-
-- dedupe by `missionId + sourcePath`
-- store references only
-- do not store full document text
-- do not index automatically
-- do not upload anything
-
----
-
-## Task 4 — Add Mission Source Finder Component
-
-Create:
-
-```text
-sos-app/src/components/missions/MissionSourceFinder.jsx
-```
-
-Render it inside the active mission view.
-
-Features:
-
-- button: `FIND SOURCES FOR MISSION`
-- source recommendation cards
-- filters:
-  - indexed only
-  - unindexed only
-  - all
-  - risk category
-  - file type
-- match labels:
-  - Strong Match
-  - Related
-  - Weak Match
-  - Needs Review
-- recommendation reasons
-- buttons:
-  - Open Document
-  - Save Source
-  - Add to Active Mission
-  - Queue for Review
-  - Index Document if safely available
-- high-risk badges
-
-Important:
-
-- do not automatically index documents
-- do not trigger deep index
-- do not trigger crawler rebuild
-- if indexing from this component is not safe yet, show “Index from Library Panel” instead
-
----
-
-## Task 5 — Add Mission-Aware Jarvis Context Panel
-
-Create:
-
-```text
-sos-app/src/components/missions/MissionJarvisContextPanel.jsx
-```
-
-Show near the chat panel when an active mission exists.
-
-Display:
-
-- active mission title
-- mission type
-- priority
-- detected risk categories
-- attached answers count
-- attached sources count
-- attached notes count
-
-Quick actions:
-
-- Find Sources
-- Create Mission Note
-- Open Field Mode
-- Export Mission Report
-
-Also show safe suggested prompts from the mission template.
-
-Water mission examples:
-
-```text
-Search my local library for water storage and filtration references relevant to this mission.
-Summarize the saved sources attached to this water mission.
-Create a cautious checklist of questions I should verify from local manuals before taking action.
-```
-
-First Aid Reference Lookup examples:
-
-```text
-Search my local library for first-aid reference materials related to this mission.
-Summarize only what the local sources say, and include a warning that this is not medical advice.
-List what information I should verify with emergency services or a qualified medical professional if urgent.
-```
-
-Do not create prompts that ask Jarvis to diagnose, prescribe, perform dangerous actions, or bypass warnings.
-
----
-
-## Task 6 — Wire Source Finder into ActiveMissionView
-
-Modify:
-
-```text
-sos-app/src/components/missions/ActiveMissionView.jsx
-```
-
-Add:
-
-- `MissionSourceFinder`
-- risk-aware source recommendations
-- source review queue summary
-- queued sources list
-- indexed/unindexed counts if available
-- attached source count
-- quick links
-
-When a source is saved and attached:
-
-1. Save source reference if not already saved.
-2. Attach saved source ID to the mission.
-3. Add timeline event.
-4. Do not duplicate if already attached.
-
----
-
-## Task 7 — Wire Mission Context into App Chat
-
-Modify:
-
-```text
-sos-app/src/App.jsx
-```
-
-When an active mission exists, show:
-
-- mission-aware context panel
-- active mission indicator
-- quick mission actions
-
-Under Jarvis answers, add or preserve:
-
-- Add Answer to Active Mission
-- Add Sources to Active Mission
-- Create Mission Note
-
-On source cards, add or preserve:
-
-- Add Source to Active Mission
-- Queue Source for Mission Review
-
-If high-risk, require the existing safety confirmation before saving or attaching.
-
-Do not attach high-risk items silently.
-
----
-
-## Task 8 — Indexed / Unindexed Visibility
-
-Use manifest/index information already available in SOS.
-
-Where practical, display:
-
-- indexed
-- unindexed
-- unknown index status
-
-In mission source recommendations, label cards clearly:
-
-```text
-INDEXED
-UNINDEXED
-UNKNOWN
-```
-
-Do not start indexing automatically.
-
-If the component supports indexing one document, call only the existing safe single-document index endpoint.
-
-Do not call:
-
-- deep rebuild
-- crawler start
-- full-library scan
-- OCR batch
-- zip extraction
-
----
-
-## Task 9 — Extend Mission Reports
-
-Modify:
-
-```text
-sos-app/src/modules/reports/reportExport.js
-```
-
-If not already complete, improve:
-
-```js
-generateMissionMarkdownReport(mission, relatedData)
-generateMissionJSONReport(mission, relatedData)
-```
-
-Add optional sections for Phase 8:
-
-- recommended sources reviewed
-- queued sources
-- indexed/unindexed counts
-- risk categories found
-- source recommendation reasons
-
-Do not include full document contents.
-
-Only include:
-
-- title
-- path
-- excerpt already saved by user
-- risk category
-- match label
-- recommendation reason
-
----
-
-## Task 10 — Local Backup Version
-
-Do not introduce version 3 unless necessary.
-
-Prefer keeping backup version 2 if the source review queue can be included safely without breaking version 2 shape.
-
-If adding source review queue to backups, either:
-
-Option A:
-
-```text
-Keep version 2 and add optional sourceReviewQueue field.
-Version 2 import accepts missing sourceReviewQueue.
-```
-
-or Option B:
-
-```text
-Upgrade to version 3 only if the validation logic clearly supports v1, v2, and v3.
-```
-
-Preferred: Option A.
-
-Add source review queue to local backup export/import if practical.
-
-Do not break existing v1 or v2 imports.
-
----
-
-## Task 11 — Tests
-
-Add pure JavaScript tests.
-
-Suggested file:
-
-```text
-sos-server/tests/missionSearch.test.mjs
-```
-
-Tests should not require:
-
-- browser DOM
-- React
-- Vite
-- Ollama
-- FFmpeg
-- real PDFs
-- real videos
-- 500GB library
-
-Test:
-
-- mission search term creation
-- material scoring
-- ranking order
-- risk filtering
-- indexed/unindexed filtering
-- recommendation shape
-- source review queue dedupe helper if pure/testable
-- high-risk recommended action includes `review_safety`
-- report export includes recommendation/queue sections if implemented
-
-If browser localStorage is needed, mock it or split pure functions out.
-
-Existing command should keep working:
-
-```bash
-node --test sos-server/tests/*.test.mjs
-```
-
----
-
-## Task 12 — Documentation
-
-Create or update:
-
-```text
-docs/mission-aware-library-search.md
-```
-
-Document:
-
-- what mission-aware search does
-- that it is local-only
-- that it uses local manifest/material metadata
-- that it does not upload data
-- how to use Find Sources for Mission
-- what match labels mean
-- what indexed/unindexed means
-- how source review queue works
-- high-risk source warning behavior
-- how recommendations appear in mission reports
-- backup behavior if source review queue is included
-
----
-
-## Task 13 — Acceptance Criteria
-
-Phase 8 is complete only when:
-
-- frontend builds
-- backend tests pass
-- GitHub Actions passes
-- no cloud sync introduced
-- no account/login introduced
-- no remote storage introduced
-- active mission can find recommended local sources
-- recommendations show match reasons
-- recommendations show risk badges
-- recommendations show indexed/unindexed status
-- user can queue a source for review
-- user can save a recommended source
-- user can attach a recommended source to the active mission
-- user can see mission-aware context near Jarvis
-- user can use safe suggested mission prompts
-- high-risk recommendations require warnings
-- report export can include recommendation/review context
-- documentation exists
-
----
-
-## Recommended Commit Message
+Implementation message:
 
 ```text
 Add mission-aware offline library search
 ```
 
----
+Runtime patch commit:
 
-## Response Expected from Local LLM
+```text
+7fc780395730ea93b8ed5a712adfe75732bb4a4f
+```
 
-After reading this conversation and before coding, reply with:
+Runtime patch message:
 
-1. Your understanding of Phase 8
-2. Files you expect to modify or create
-3. Any risks you see
-4. Confirmation that you will not implement cloud sync or external persistence
+```text
+Patch Phase 8 mission source review runtime issues
+```
 
-After coding, reply with:
+GitHub Actions:
 
-1. Summary of work completed
-2. Tests run
-3. Build result
-4. Commit hash
-5. Any issues or follow-up recommendations
+```text
+Green after Phase 8 patch
+```
 
-Continue speaking as part of this project conversation.
+Confirmed Phase 8 features:
 
----
+- mission-aware search utility module
+- mission source recommendation module
+- local source review queue store
+- Mission Source Finder UI
+- Mission Jarvis Context Panel
+- source recommendation cards with match reasons
+- indexed/unindexed visibility
+- risk badges
+- source queue for review
+- safe save/attach actions
+- high-risk confirmation before saving or attaching recommended sources
+- deduped source attachment flow
+- source review queue included in backup version 2 as optional data
+- report export sections for queued/recommended sources
+- documentation under `docs/mission-aware-library-search.md`
+- pure JavaScript tests for search/recommendation behavior
+- no cloud sync
+- no accounts
+- no remote storage
+- no telemetry
+- no automatic indexing
+- no crawler starts from mission UI
 
-## Response from Local LLM (Antigravity) - July 3, 2026
+Phase 8 issues found and patched:
 
-### 1. Understanding of Phase 8
-Phase 8 focuses on **Offline Library Intelligence & Mission-Aware Search**. The core objective is to make J.A.R.V.I.S. and the offline material library aware of the active mission context. When an active field session is running, the app can recommend relevant reference files (PDFs, TXT, MD) completely offline without any external network dependency. 
-
-Specifically, we will implement:
-*   **Mission Search Utility & Scoring**: Normalize mission metadata to build a list of search terms and score documents based on filename, categories, index status, and risk categories.
-*   **Mission Source Recommendation Module**: Filter and rank materials based on user-defined limits, index status, and risk levels, with suggested operational actions.
-*   **Source Review Queue**: A local `localStorage`-backed store where operators can manually stage reference materials for further review within an active mission.
-*   **Mission-Aware Jarvis Context Panel**: Render active mission context and prefill safe template-guided prompts (e.g. blackout safety questions, first-aid references) next to the chat interface.
-*   **Indexed/Unindexed Visibility**: Display counts of indexed/unindexed materials.
-*   **Export and Backup Upgrades**: Include the source review queue and recommendation counts inside reports and version 2 backups.
-
-### 2. Files I Expect to Modify or Create
-*   **Create**:
-    *   `sos-app/src/modules/search/missionSearchUtils.js`
-    *   `sos-app/src/modules/search/missionSourceRecommendations.js`
-    *   `sos-app/src/modules/search/sourceReviewQueueStore.js`
-    *   `sos-app/src/components/missions/MissionSourceFinder.jsx`
-    *   `sos-app/src/components/missions/MissionJarvisContextPanel.jsx`
-    *   `sos-server/tests/missionSearch.test.mjs`
-    *   `docs/mission-aware-library-search.md`
-*   **Modify**:
-    *   `sos-app/src/components/missions/ActiveMissionView.jsx`
-    *   `sos-app/src/App.jsx`
-    *   `sos-app/src/modules/reports/reportExport.js`
-    *   `sos-app/src/modules/session/sessionStore.js`
-
-### 3. Risks and Mitigations
-*   **Performance with Large Libraries (500GB+)**: Scanning all documents and metadata on every keystroke or tab switch will degrade performance. 
-    *   *Mitigation*: Implement recommendation calculations on-demand when the operator clicks `FIND SOURCES FOR MISSION` rather than automatically. Use limits and metadata snapshots rather than full directory walks.
-*   **Auto-Indexing Lag**: Triggering index updates or crawling during recommendations might lock the browser.
-    *   *Mitigation*: The recommendations view will only suggest indexing single documents by exposing a button that calls the existing safe single-document indexing endpoint, with a notice pointing to the Library Panel for bulk operations.
-*   **Backup Version Compatibility**: Adding a new collection (source review queue) could break v1 or v2 backup restores.
-    *   *Mitigation*: Add the queue as an optional collection in version 2 backups (Option A) to preserve full backward compatibility.
-
-### 4. Local-First Confirmation
-I explicitly confirm that **I will not implement or imply any cloud sync, user accounts, logins, remote storage integrations (Firebase, Supabase, S3, GDrive, OneDrive, Dropbox, etc.), or remote telemetry/analytics**. All mission recommendations, review queue collections, and state configurations remain entirely local to the user's browser `localStorage` and local SQLite backend.
-
-
+1. `App.jsx` needed `updateMission`/timeline helper imports for queue actions.
+2. `ActiveMissionView.jsx` initially pointed Open Document at a non-existent `/api/materials/view` route; this was changed to use the static `/materials/...` path format.
+3. High-risk save/attach actions now use `RiskSaveConfirmation`.
+4. Attach source now checks existing saved source records before creating a duplicate.
+5. Timeline events were refactored toward `addMissionTimelineEvent`.
 
 ---
 
-## Response from Local LLM (Antigravity) - July 3, 2026 (Completion of Phase 8)
+# Current Conversation: Phase 9 Proposal
 
-Phase 8 has been fully implemented, tested, and verified. 
+ChatGPT to local LLM:
 
-### 1. Summary of Work Completed
-*   **Created search recommendation & staging modules**:
-    *   [`sos-app/src/modules/search/missionSearchUtils.js`](file:///c:/Users/Blair/Downloads/survival/sos-app/src/modules/search/missionSearchUtils.js): Standardizes search terms, scores documents based on filename, category, index boost, and risk categories.
-    *   [`sos-app/src/modules/search/missionSourceRecommendations.js`](file:///c:/Users/Blair/Downloads/survival/sos-app/src/modules/search/missionSourceRecommendations.js): Offline recommendation compiler providing actions like open, save, attach, and review.
-    *   [`sos-app/src/modules/search/sourceReviewQueueStore.js`](file:///c:/Users/Blair/Downloads/survival/sos-app/src/modules/search/sourceReviewQueueStore.js): Local `localStorage` queue saving file references only, with deduplication.
-*   **Implemented UI components**:
-    *   [`sos-app/src/components/missions/MissionSourceFinder.jsx`](file:///c:/Users/Blair/Downloads/survival/sos-app/src/components/missions/MissionSourceFinder.jsx): Custom filterable list showing evaluated materials matching the active mission.
-    *   [`sos-app/src/components/missions/MissionJarvisContextPanel.jsx`](file:///c:/Users/Blair/Downloads/survival/sos-app/src/components/missions/MissionJarvisContextPanel.jsx): Context pane beside J.A.R.V.I.S. Chat providing checklist status, counters, actions, and suggested prompts.
-*   **Wired components into views**:
-    *   [`ActiveMissionView.jsx`](file:///c:/Users/Blair/Downloads/survival/sos-app/src/components/missions/ActiveMissionView.jsx): Integrated `MissionSourceFinder` and `Source Review Queue` widget.
-    *   [`App.jsx`](file:///c:/Users/Blair/Downloads/survival/sos-app/src/App.jsx): Wired side-by-side flex layout for chat view with `MissionJarvisContextPanel` and added review action to chat cards.
-*   **Extended report templates and backups**:
-    *   [`reportExport.js`](file:///c:/Users/Blair/Downloads/survival/sos-app/src/modules/reports/reportExport.js): Integrated queued/recommended sources and safe warnings in Markdown/JSON reports.
-    *   [`sessionStore.js`](file:///c:/Users/Blair/Downloads/survival/sos-app/src/modules/session/sessionStore.js): Backups upgraded to optionally export/import the review queue in Version 2.
-*   **Wrote unit tests and user documentation**:
-    *   [`missionSearch.test.mjs`](file:///c:/Users/Blair/Downloads/survival/sos-server/tests/missionSearch.test.mjs): Pure JS tests for tokenization, scoring, ranking, filters, and markdown reports.
-    *   [`mission-aware-library-search.md`](file:///c:/Users/Blair/Downloads/survival/docs/mission-aware-library-search.md): Operator guide detailing the workflow.
+Phase 8 is complete. The next recommended phase is:
 
-### 2. Tests Run
-*   All backend unit tests passed successfully: `node --test sos-server/tests/*.test.mjs`
-    ```text
-    # tests 32
-    # suites 0
-    # pass 32
-    # fail 0
-    # cancelled 0
-    # skipped 0
-    # todo 0
-    # duration_ms 2147.7529
-    ```
+```text
+Phase 9 — Local Index Integrity & Jarvis Retrieval Reliability
+```
 
-### 3. Build Result
-*   Vite production bundle compiled and built successfully: `npm run build`
-    ```text
-    dist/index.html                   0.45 kB │ gzip:   0.29 kB
-    dist/assets/index-CJiaqLtF.css    7.52 kB │ gzip:   2.22 kB
-    dist/assets/index-DC3cFExc.js   433.96 kB │ gzip: 113.62 kB
-    ✓ built in 380ms
-    ```
+## Phase 9 Purpose
 
-### 4. Local-First Confirmation
-*   Verified that all review queue and recommendation logs reside inside browser `localStorage` or memory variables. Absolutely no cloud storage, login pages, telemetry, external syncs, or trackers were added.
+Make sure every document shown as `INDEXED` is actually searchable by Jarvis, and fix the split between the manual index flow and the SQLite retrieval flow.
 
-### 5. Follow-Up Recommendations
-*   The system is fully stable and ready to be committed. Ready for Phase 9!
+Current concern:
+
+- Manual `/api/index` appears to use the older vector-store/HNSW indexing path in `ai.js`.
+- Jarvis chat retrieval reads from SQLite `document_chunks`.
+- This means a document can appear indexed or be manually indexed but still not be reliably queryable by Jarvis.
+
+Phase 9 should improve reliability before adding more features.
 
 ---
 
-## Response from Local LLM (Antigravity) - July 3, 2026 (Completion of Phase 8 Patches)
+## Phase 9 Goals
 
-The requested runtime fixes and safety validations have been successfully patched, verified, and committed.
+Implement a local-only indexing integrity layer that:
 
-### 1. Summary of Patched Items
-*   **Import `updateMission` in `App.jsx`**: Added `updateMission` and `addMissionTimelineEvent` to the imported functions from `./modules/missions/missionStore.js`.
-*   **Fix Source Document Path**: Updated `handleOpenDocument` inside `ActiveMissionView.jsx` to dynamically target the existing static server assets route: `http://${window.location.hostname}:3001${path}`.
-*   **High-Risk Confirmations**: Imported and integrated `RiskSaveConfirmation` inside `ActiveMissionView.jsx`. When saving or attaching recommended sources belonging to a high-risk category, the safety dialog triggers requiring confirmation.
-*   **Deduplicate Saved Source Reference Records**: Modified `handleAttachSource` in `ActiveMissionView.jsx` to search existing saved sources first, reuse matching record IDs, and prevent duplicate creations.
-*   **Timeline Helpers Refactoring**: Refactored queueing, dismiss, and save actions in `App.jsx` and `ActiveMissionView.jsx` to use the standardized `addMissionTimelineEvent` store helper.
+1. Clearly defines what `indexed` means.
+2. Ensures manual single-document indexing writes into the same retrieval store Jarvis uses.
+3. Audits indexed/unindexed status against the actual SQLite `document_chunks` table.
+4. Fixes any path mismatch between manifest paths, crawler paths, OCR markdown paths, and Jarvis source paths.
+5. Adds repair/check tools without triggering full-library scans automatically.
+6. Keeps all indexing local.
+7. Adds tests proving indexing status and retrieval paths stay consistent.
 
-### 2. Tests Run
-*   All backend unit tests passed successfully: `node --test sos-server/tests/*.test.mjs`
-    ```text
-    # tests 32
-    # suites 0
-    # pass 32
-    # fail 0
-    # cancelled 0
-    # skipped 0
-    # todo 0
-    # duration_ms 2140.1542
-    ```
+---
 
-### 3. Build Result
-*   Vite production bundle compiled and built successfully: `npm run build`
-    ```text
-    dist/index.html                   0.45 kB │ gzip:   0.29 kB
-    dist/assets/index-CJiaqLtF.css    7.52 kB │ gzip:   2.22 kB
-    dist/assets/index-CdQnaYfe.js   433.92 kB │ gzip: 113.68 kB
-    ✓ built in 373ms
-    ```
+## Critical Constraint
 
-### 4. Local-First Confirmation
-*   All operations remain strictly offline. All timeline logs, active mission data, search recommendations, and source review queues are retained locally within browser storage.
+Do not trigger:
 
-### 5. Suggested Patch Commit Message
-*   *Suggested Commit Message*: `Patch Phase 8 mission source review runtime issues`
+- full-library scan on startup
+- automatic crawler start
+- deep rebuild
+- OCR batch
+- ZIP extraction
+- cloud sync
+- remote indexing
+- external APIs
+
+Only use explicit user actions.
+
+---
+
+## Phase 9 Scope to Inspect
+
+Before coding, inspect:
+
+```text
+sos-server/index.js
+sos-server/ai.js
+sos-server/crawler.js
+sos-server/db.js
+sos-server/services/manifestService.js
+sos-server/routes/materials.routes.js
+sos-app/src/App.jsx
+sos-app/src/components/missions/MissionSourceFinder.jsx
+```
+
+Pay special attention to:
+
+- `/api/index`
+- `indexFile(...)` in `ai.js`
+- SQLite `document_chunks`
+- `checkIndexed(...)` in manifest service
+- crawler `indexToSqlite(...)`
+- document path formats such as `/materials/...` vs relative filesystem paths
+- OCR markdown lookup paths
+- source cards' `documentPath` / `source` values
+
+---
+
+## Expected Phase 9 Deliverables
+
+Recommended files to create or modify:
+
+```text
+sos-server/services/indexIntegrityService.js
+sos-server/routes/index.routes.js
+sos-server/tests/indexIntegrity.test.mjs
+sos-server/index.js
+sos-server/ai.js
+sos-server/crawler.js
+sos-server/services/manifestService.js
+sos-app/src/components/library/IndexIntegrityPanel.jsx
+sos-app/src/App.jsx
+docs/index-integrity-and-retrieval.md
+```
+
+Adjust file names if the existing project structure suggests a cleaner fit.
+
+---
+
+## Required Backend Behavior
+
+Add or refactor backend behavior so there is one clear source of truth for Jarvis-searchable indexing.
+
+Suggested local endpoints:
+
+```text
+GET /api/index/status?path=/materials/...
+POST /api/index/document
+POST /api/index/audit
+POST /api/index/repair-status
+```
+
+Rules:
+
+- `GET /api/index/status` checks whether a document has chunks in SQLite.
+- `POST /api/index/document` indexes one explicit document into SQLite `document_chunks`.
+- `POST /api/index/audit` audits manifest indexed flags against SQLite counts, but does not scan the filesystem.
+- `POST /api/index/repair-status` updates cached manifest/index flags based on SQLite, but does not parse documents.
+
+Do not remove old routes unless compatibility is preserved.
+
+Existing `/api/index` may remain as an alias, but it should use the unified SQLite indexing path.
+
+---
+
+## Required Frontend Behavior
+
+Add an index integrity panel or compact library status tool that can:
+
+- show whether selected document is indexed in the Jarvis retrieval store
+- allow explicit single-document indexing
+- show indexed/unindexed/unknown status
+- run an explicit local index audit
+- never run deep scans automatically
+- never trigger OCR automatically
+- never trigger ZIP extraction
+
+Mission Source Finder should use the corrected indexing status once available.
+
+---
+
+## Required Tests
+
+Add pure/local tests for:
+
+- path normalization from `/materials/...` to backend relative path
+- SQLite indexed-status check
+- no false positive indexed status when chunks are absent
+- no automatic crawler start
+- single-document indexing route uses SQLite retrieval store
+- old `/api/index` compatibility if retained
+- manifest repair updates flags without scanning/parsing files
+
+Tests must not require:
+
+- 500GB material library
+- real PDFs if avoidable
+- Ollama
+- FFmpeg
+- browser DOM
+- cloud/network
+
+Use temporary test database paths when possible.
+
+---
+
+## Phase 9 Acceptance Criteria
+
+Phase 9 is complete only when:
+
+- frontend builds
+- backend tests pass
+- GitHub Actions passes
+- manual single-document index writes to Jarvis retrieval store
+- `indexed` means SQLite chunks exist for that document
+- mission source finder status aligns with actual Jarvis-searchable status
+- no full-library scans occur automatically
+- no crawler starts automatically
+- no OCR batch starts automatically
+- no ZIP extraction starts automatically
+- no cloud/external persistence is added
+- documentation exists
+
+---
+
+## Recommended Response From Local LLM Before Coding
+
+Before implementing Phase 9, respond with:
+
+1. Your understanding of the indexing mismatch risk.
+2. What files you will inspect.
+3. What backend route/API shape you propose.
+4. How you will preserve local-only behavior.
+5. What tests you will add.
+6. Any risks or uncertainties you see.
+
+Do not start coding Phase 9 until the plan is approved.
+
+---
+
+## Recommended Commit Message for Phase 9 Planning Response
+
+```text
+Acknowledge Phase 9 index integrity plan
+```
