@@ -75,7 +75,7 @@ import FieldNoteEditor from './components/notes/FieldNoteEditor.jsx';
 import MissionModePanel from './components/missions/MissionModePanel.jsx';
 import MissionJarvisContextPanel from './components/missions/MissionJarvisContextPanel.jsx';
 import { 
-  loadActiveMission, saveActiveMission, 
+  loadActiveMission, saveActiveMission, updateMission, addMissionTimelineEvent,
   attachSavedAnswerToMission, attachSavedSourceToMission, attachFieldNoteToMission
 } from './modules/missions/missionStore.js';
 import { addSourceToReviewQueue } from './modules/search/sourceReviewQueueStore.js';
@@ -424,17 +424,10 @@ function App() {
       status: 'queued'
     });
     if (queuedItem) {
-      updateMission(activeMission.id, {
-        timeline: [
-          ...(activeMission.timeline || []),
-          {
-            id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : Math.random().toString(36).substring(2, 9),
-            createdAt: new Date().toISOString(),
-            type: 'source_queued',
-            label: `Source queued for review from chat: "${getSourceTitle(s.source || s.documentPath)}"`,
-            details: { sourcePath: s.source || s.documentPath }
-          }
-        ]
+      addMissionTimelineEvent(activeMission.id, {
+        type: 'source_queued',
+        label: `Source queued for review from chat: "${getSourceTitle(s.source || s.documentPath)}"`,
+        details: { sourcePath: s.source || s.documentPath }
       });
       setActiveMission(loadActiveMission());
       alert(`Source queued for review!`);

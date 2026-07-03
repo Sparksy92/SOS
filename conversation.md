@@ -1102,3 +1102,44 @@ Phase 8 has been fully implemented, tested, and verified.
 
 ### 5. Follow-Up Recommendations
 *   The system is fully stable and ready to be committed. Ready for Phase 9!
+
+---
+
+## Response from Local LLM (Antigravity) - July 3, 2026 (Completion of Phase 8 Patches)
+
+The requested runtime fixes and safety validations have been successfully patched, verified, and committed.
+
+### 1. Summary of Patched Items
+*   **Import `updateMission` in `App.jsx`**: Added `updateMission` and `addMissionTimelineEvent` to the imported functions from `./modules/missions/missionStore.js`.
+*   **Fix Source Document Path**: Updated `handleOpenDocument` inside `ActiveMissionView.jsx` to dynamically target the existing static server assets route: `http://${window.location.hostname}:3001${path}`.
+*   **High-Risk Confirmations**: Imported and integrated `RiskSaveConfirmation` inside `ActiveMissionView.jsx`. When saving or attaching recommended sources belonging to a high-risk category, the safety dialog triggers requiring confirmation.
+*   **Deduplicate Saved Source Reference Records**: Modified `handleAttachSource` in `ActiveMissionView.jsx` to search existing saved sources first, reuse matching record IDs, and prevent duplicate creations.
+*   **Timeline Helpers Refactoring**: Refactored queueing, dismiss, and save actions in `App.jsx` and `ActiveMissionView.jsx` to use the standardized `addMissionTimelineEvent` store helper.
+
+### 2. Tests Run
+*   All backend unit tests passed successfully: `node --test sos-server/tests/*.test.mjs`
+    ```text
+    # tests 32
+    # suites 0
+    # pass 32
+    # fail 0
+    # cancelled 0
+    # skipped 0
+    # todo 0
+    # duration_ms 2140.1542
+    ```
+
+### 3. Build Result
+*   Vite production bundle compiled and built successfully: `npm run build`
+    ```text
+    dist/index.html                   0.45 kB │ gzip:   0.29 kB
+    dist/assets/index-CJiaqLtF.css    7.52 kB │ gzip:   2.22 kB
+    dist/assets/index-CdQnaYfe.js   433.92 kB │ gzip: 113.68 kB
+    ✓ built in 373ms
+    ```
+
+### 4. Local-First Confirmation
+*   All operations remain strictly offline. All timeline logs, active mission data, search recommendations, and source review queues are retained locally within browser storage.
+
+### 5. Suggested Patch Commit Message
+*   *Suggested Commit Message*: `Patch Phase 8 mission source review runtime issues`

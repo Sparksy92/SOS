@@ -5,8 +5,10 @@ import {
 } from 'lucide-react';
 import { 
   updateMission, updateMissionTask, addMissionTask, 
-  attachSavedAnswerToMission, attachSavedSourceToMission, attachFieldNoteToMission
+  attachSavedAnswerToMission, attachSavedSourceToMission, attachFieldNoteToMission,
+  addMissionTimelineEvent
 } from '../../modules/missions/missionStore.js';
+import RiskSaveConfirmation from '../common/RiskSaveConfirmation.jsx';
 import { createMissionTask, detectMissionRisks, buildMissionRelatedData, transitionMissionStatus } from '../../modules/missions/missionUtils.js';
 import { loadSavedAnswers, loadSavedSources, loadFieldNotes, addSavedSource } from '../../modules/session/sessionStore.js';
 import { generateMissionMarkdownReport, generateMissionJSONReport, downloadFile } from '../../modules/reports/reportExport.js';
@@ -24,6 +26,10 @@ const ActiveMissionView = ({ mission, onSendSuggestedPrompt, onUpdateState }) =>
   const [materials, setMaterials] = useState([]);
   const [metadataList, setMetadataList] = useState({});
   const [reviewQueue, setReviewQueue] = useState([]);
+
+  // Risk confirmation modal pending actions
+  const [pendingSaveAction, setPendingSaveAction] = useState(null);
+  const [pendingSaveRiskCategory, setPendingSaveRiskCategory] = useState(null);
 
   // Load resources to resolve attached data
   const answers = loadSavedAnswers();
@@ -115,50 +121,77 @@ const ActiveMissionView = ({ mission, onSendSuggestedPrompt, onUpdateState }) =>
 
   // Recommendations Finder actions
   const handleOpenDocument = (path) => {
-    const url = `http://${window.location.hostname}:3001/api/materials/view?path=${encodeURIComponent(path)}`;
+    const url = `http://${window.location.hostname}:3001${path.startsWith('/') ? path : '/' + path}`;
     window.open(url, '_blank');
   };
 
   const handleSaveSource = (rec) => {
-    addSavedSource({
-      source: rec.sourcePath,
-      title: rec.title,
-      page: null,
-      section: null,
-      matchLabel: rec.matchLabel,
-      riskCategory: rec.riskCategory || null,
-      excerpt: rec.metadataSummary
-    });
-    // Add timeline event
-    updateMission(mission.id, {
-      timeline: [
-        ...(mission.timeline || []),
-        {
-          id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : Math.random().toString(36).substring(2, 9),
-          createdAt: new Date().toISOString(),
-          type: 'source_saved',
-          label: `Source reference saved: "${rec.title}"`,
-          details: { sourcePath: rec.sourcePath }
-        }
-      ]
-    });
-    if (onUpdateState) onUpdateState();
-    alert(`Source reference "${rec.title}" saved successfully!`);
+    const saveAction = () => {
+      addSavedSource({
+        source: rec.sourcePath,
+        title: rec.title,
+        page: null,
+        section: null,
+        matchLabel: rec.matchLabel,
+        riskCategory: rec.riskCategory || null,
+        excerpt: rec.metadataSummary
+      });
+      addMissionTimelineEvent(mission.id, {
+        type: 'source_saved',
+        label: `Source reference saved: "${rec.title}"`,
+        details: { sourcePath: rec.sourcePath }
+      });
+      if (onUpdateState) onUpdateState();
+      alert(`Source reference "${rec.title}" saved successfully!`);
+    };
+
+    if (rec.riskCategory) {
+      setPendingSaveRiskCategory(rec.riskCategory);
+      setPendingSaveAction({
+        type: 'save_source',
+        title: `Save Source: "${rec.title}"`,
+        execute: saveAction
+      });
+    } else {
+      saveAction();
+    }
   };
 
   const handleAttachSource = (rec) => {
-    const newItem = addSavedSource({
-      source: rec.sourcePath,
-      title: rec.title,
-      page: null,
-      section: null,
-      matchLabel: rec.matchLabel,
-      riskCategory: rec.riskCategory || null,
-      excerpt: rec.metadataSummary
-    });
-    attachSavedSourceToMission(mission.id, newItem.id);
-    if (onUpdateState) onUpdateState();
-    alert(`Source "${rec.title}" attached to active mission!`);
+    const attachAction = () => {
+      const existingSources = loadSavedSources();
+      const existing = existingSources.find(s => s.source === rec.sourcePath);
+      let sourceId;
+      if (existing) {
+        sourceId = existing.id;
+      } else {
+        const newItem = addSavedSource({
+          source: rec.sourcePath,
+          title: rec.title,
+          page: null,
+          section: null,
+          matchLabel: rec.matchLabel,
+          riskCategory: rec.riskCategory || null,
+          excerpt: rec.metadataSummary
+        });
+        sourceId = newItem.id;
+      }
+      
+      attachSavedSourceToMission(mission.id, sourceId);
+      if (onUpdateState) onUpdateState();
+      alert(`Source "${rec.title}" attached to active mission!`);
+    };
+
+    if (rec.riskCategory) {
+      setPendingSaveRiskCategory(rec.riskCategory);
+      setPendingSaveAction({
+        type: 'attach_source',
+        title: `Attach Source to Mission: "${rec.title}"`,
+        execute: attachAction
+      });
+    } else {
+      attachAction();
+    }
   };
 
   const handleQueueSource = (rec) => {
@@ -171,17 +204,10 @@ const ActiveMissionView = ({ mission, onSendSuggestedPrompt, onUpdateState }) =>
       status: 'queued'
     });
     if (queuedItem) {
-      updateMission(mission.id, {
-        timeline: [
-          ...(mission.timeline || []),
-          {
-            id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : Math.random().toString(36).substring(2, 9),
-            createdAt: new Date().toISOString(),
-            type: 'source_queued',
-            label: `Source queued for review: "${rec.title}"`,
-            details: { sourcePath: rec.sourcePath }
-          }
-        ]
+      addMissionTimelineEvent(mission.id, {
+        type: 'source_queued',
+        label: `Source queued for review: "${rec.title}"`,
+        details: { sourcePath: rec.sourcePath }
       });
       setReviewQueue(loadSourceReviewQueue().filter(x => x.missionId === mission.id));
       if (onUpdateState) onUpdateState();
@@ -194,18 +220,10 @@ const ActiveMissionView = ({ mission, onSendSuggestedPrompt, onUpdateState }) =>
   const handleRemoveFromQueue = (id) => {
     removeSourceReviewQueueItem(id);
     setReviewQueue(loadSourceReviewQueue().filter(x => x.missionId === mission.id));
-    // Add timeline event
-    updateMission(mission.id, {
-      timeline: [
-        ...(mission.timeline || []),
-        {
-          id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : Math.random().toString(36).substring(2, 9),
-          createdAt: new Date().toISOString(),
-          type: 'source_unqueued',
-          label: `Source dismissed from review queue.`,
-          details: { queueItemId: id }
-        }
-      ]
+    addMissionTimelineEvent(mission.id, {
+      type: 'source_unqueued',
+      label: `Source dismissed from review queue.`,
+      details: { queueItemId: id }
     });
     if (onUpdateState) onUpdateState();
   };
@@ -570,6 +588,24 @@ const ActiveMissionView = ({ mission, onSendSuggestedPrompt, onUpdateState }) =>
           </button>
         </div>
       </div>
+
+      {/* Risk Save Confirmation Modal */}
+      {pendingSaveAction && pendingSaveRiskCategory && (
+        <RiskSaveConfirmation 
+          riskCategory={pendingSaveRiskCategory}
+          onCancel={() => {
+            setPendingSaveAction(null);
+            setPendingSaveRiskCategory(null);
+          }}
+          onConfirm={() => {
+            if (pendingSaveAction && pendingSaveAction.execute) {
+              pendingSaveAction.execute();
+            }
+            setPendingSaveAction(null);
+            setPendingSaveRiskCategory(null);
+          }}
+        />
+      )}
 
     </div>
   );
