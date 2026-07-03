@@ -62,22 +62,22 @@ Branch:
 main
 ```
 
-Current verified latest Phase 8 patch commit:
+Current verified latest Phase 9 hardening commit:
 
 ```text
-7fc780395730ea93b8ed5a712adfe75732bb4a4f
+08034a6156119a7875f7dc6a0f6649b024ae204c
 ```
 
-Commit message:
+Latest conversation update commit before this file:
 
 ```text
-Patch Phase 8 mission source review runtime issues
+ef840ea92405c79f756b5500935ae14c0d8b3fb6
 ```
 
 GitHub Actions:
 
 ```text
-Green after Phase 8 patch
+Green after Phase 9 hardening patch
 ```
 
 ---
@@ -319,28 +319,10 @@ Implementation commit:
 92d06e77353c6ec6ac975545c092bf88d4acd00d
 ```
 
-Implementation message:
-
-```text
-Add mission-aware offline library search
-```
-
 Runtime patch commit:
 
 ```text
 7fc780395730ea93b8ed5a712adfe75732bb4a4f
-```
-
-Runtime patch message:
-
-```text
-Patch Phase 8 mission source review runtime issues
-```
-
-GitHub Actions:
-
-```text
-Green after Phase 8 patch
 ```
 
 Confirmed Phase 8 features:
@@ -368,322 +350,345 @@ Confirmed Phase 8 features:
 - no automatic indexing
 - no crawler starts from mission UI
 
-Phase 8 issues found and patched:
+## Phase 9 — Local Index Integrity & Jarvis Retrieval Reliability
 
-1. `App.jsx` needed `updateMission`/timeline helper imports for queue actions.
-2. `ActiveMissionView.jsx` initially pointed Open Document at a non-existent `/api/materials/view` route; this was changed to use the static `/materials/...` path format.
-3. High-risk save/attach actions now use `RiskSaveConfirmation`.
-4. Attach source now checks existing saved source records before creating a duplicate.
-5. Timeline events were refactored toward `addMissionTimelineEvent`.
+Phase 9 is complete and CI is green.
+
+Initial implementation commit:
+
+```text
+74715509970dc68131952504e208899adc71bcad
+```
+
+Review response commit:
+
+```text
+c3a939455499b8863e45f2e76da28257053231ae
+```
+
+Hardening patch commit:
+
+```text
+08034a6156119a7875f7dc6a0f6649b024ae204c
+```
+
+Conversation/status update commit:
+
+```text
+ef840ea92405c79f756b5500935ae14c0d8b3fb6
+```
+
+GitHub Actions:
+
+```text
+Green after Phase 9 hardening patch
+```
+
+Confirmed Phase 9 features:
+
+- `sos-server/services/indexIntegrityService.js`
+- `sos-server/services/documentIndexingService.js`
+- `sos-server/routes/index.routes.js`
+- `/api/index/status`
+- `/api/index/document`
+- `/api/index/audit`
+- `/api/index/repair-status`
+- legacy `/api/index` compatibility retained
+- `IndexIntegrityPanel.jsx`
+- `INDEX INTEGRITY` sidebar view
+- `indexed` now means SQLite `indexed_docs` entry plus at least one `document_chunks` row
+- manual single-document indexing writes into the SQLite retrieval store Jarvis uses
+- path traversal protection for `/materials/...` index requests
+- re-indexing deletes/replaces old chunks instead of appending duplicates
+- zero-chunk `indexed_docs` entries are repairable by manual indexing
+- vector/HNSW indexing is best-effort; SQLite retrieval success remains primary
+- crawler indexing now uses shared document indexing helpers
+- tests cover path traversal rejection, duplicate prevention, zero-chunk repair, and vector-store failure with SQLite success
+- no automatic full-library scan was added
+- no crawler auto-start was added
+- no OCR batch auto-start was added
+- no ZIP extraction trigger was added to the mission/index UI
+- no cloud sync, accounts, telemetry, or remote storage was added
+
+Important note:
+
+The existing crawler still contains ZIP extraction behavior when crawler start is explicitly triggered. That behavior predates Phase 9. Do not trigger crawler automatically. Future work should harden crawler and material-library boundaries before expanding features.
 
 ---
 
-# Current Conversation: Phase 9 Proposal
+# Current Conversation: Phase 10 Proposal
 
 ChatGPT to local LLM:
 
-Phase 8 is complete. The next recommended phase is:
+Phase 9 is complete. The next recommended phase is:
 
 ```text
-Phase 9 — Local Index Integrity & Jarvis Retrieval Reliability
+Phase 10 — Material Library Boundary & Crawler Safety Hardening
 ```
 
-## Phase 9 Purpose
+## Phase 10 Purpose
 
-Make sure every document shown as `INDEXED` is actually searchable by Jarvis, and fix the split between the manual index flow and the SQLite retrieval flow.
+Harden the local material-library boundary and crawler behavior before adding more user-facing features.
 
-Current concern:
+The current SOS app has made major progress, but two important safety/architecture risks remain:
 
-- Manual `/api/index` appears to use the older vector-store/HNSW indexing path in `ai.js`.
-- Jarvis chat retrieval reads from SQLite `document_chunks`.
-- This means a document can appear indexed or be manually indexed but still not be reliably queryable by Jarvis.
+1. Static `/materials` serving currently points at the repo root, which may expose source/config/runtime files if a path is reachable.
+2. The crawler still contains ZIP extraction and ZIP move behavior when manually started.
 
-Phase 9 should improve reliability before adding more features.
-
----
-
-## Phase 9 Goals
-
-Implement a local-only indexing integrity layer that:
-
-1. Clearly defines what `indexed` means.
-2. Ensures manual single-document indexing writes into the same retrieval store Jarvis uses.
-3. Audits indexed/unindexed status against the actual SQLite `document_chunks` table.
-4. Fixes any path mismatch between manifest paths, crawler paths, OCR markdown paths, and Jarvis source paths.
-5. Adds repair/check tools without triggering full-library scans automatically.
-6. Keeps all indexing local.
-7. Adds tests proving indexing status and retrieval paths stay consistent.
+Phase 10 should make the material library root explicit, safer, and more separate from the source-code root.
 
 ---
 
-## Critical Constraint
+## Phase 10 Goals
 
-Do not trigger:
+Implement a safer local material boundary that:
 
-- full-library scan on startup
-- automatic crawler start
-- deep rebuild
-- OCR batch
-- ZIP extraction
+1. Separates the material library root from the app/source root where practical.
+2. Preserves compatibility with the current repo-root material setup for Blair's existing local environment.
+3. Prevents source/config/runtime paths from being served under `/materials`.
+4. Prevents index/document routes from accessing source/config/runtime files.
+5. Makes crawler ZIP extraction explicit, guarded, and optional.
+6. Adds a dry-run crawler/scan mode where possible.
+7. Does not scan, extract, index, OCR, or move files automatically on startup.
+8. Adds tests for blocked paths, served-material boundaries, and crawler-safe modes.
+
+---
+
+## Critical Constraints
+
+Do not add:
+
 - cloud sync
-- remote indexing
-- external APIs
+- accounts
+- remote storage
+- telemetry
+- automatic crawler start
+- automatic deep scan
+- automatic ZIP extraction
+- automatic OCR
+- emergency dispatch
 
-Only use explicit user actions.
+Do not remove compatibility with Blair's existing local material folders without a migration path.
 
 ---
 
-## Phase 9 Scope to Inspect
+## Phase 10 Scope to Inspect
 
 Before coding, inspect:
 
 ```text
 sos-server/index.js
-sos-server/ai.js
 sos-server/crawler.js
-sos-server/db.js
 sos-server/services/manifestService.js
+sos-server/services/documentIndexingService.js
 sos-server/routes/materials.routes.js
+sos-server/routes/crawler.routes.js
+sos-server/routes/media.routes.js
+sos-server/routes/index.routes.js
 sos-app/src/App.jsx
-sos-app/src/components/missions/MissionSourceFinder.jsx
+sos-app/src/components/crawler/CrawlerControls.jsx
 ```
 
 Pay special attention to:
 
-- `/api/index`
-- `indexFile(...)` in `ai.js`
-- SQLite `document_chunks`
-- `checkIndexed(...)` in manifest service
-- crawler `indexToSqlite(...)`
-- document path formats such as `/materials/...` vs relative filesystem paths
-- OCR markdown lookup paths
-- source cards' `documentPath` / `source` values
+- `MATERIALS_DIR` definitions
+- `app.use('/materials', express.static(...))`
+- crawler start routes
+- ZIP extraction logic
+- media stream path boundary checks
+- index path boundary checks
+- manifest scan skip lists
+- whether `.env`, `.git`, source files, DB files, and runtime artifacts can be reached through static paths
 
 ---
 
-## Expected Phase 9 Deliverables
+## Recommended Backend Design
 
-Recommended files to create or modify:
+Create a shared material root service:
 
 ```text
-sos-server/services/indexIntegrityService.js
-sos-server/routes/index.routes.js
-sos-server/tests/indexIntegrity.test.mjs
-sos-server/index.js
-sos-server/ai.js
-sos-server/crawler.js
-sos-server/services/manifestService.js
-sos-app/src/components/library/IndexIntegrityPanel.jsx
-sos-app/src/App.jsx
-docs/index-integrity-and-retrieval.md
+sos-server/services/materialRootService.js
 ```
 
-Adjust file names if the existing project structure suggests a cleaner fit.
+Suggested exports:
+
+```js
+getMaterialRoot()
+getAppRoot()
+resolveMaterialPath(webPath)
+absoluteToMaterialWebPath(absolutePath)
+isBlockedMaterialPath(absolutePath)
+getBlockedPathNames()
+```
+
+Material root behavior:
+
+- Prefer `process.env.SOS_MATERIALS_DIR` if set.
+- Otherwise default to current app root for compatibility.
+- All route/path logic should go through shared helpers.
+- Block source/config/runtime directories even when app root is used as fallback.
+
+Blocked names should include at minimum:
+
+```text
+.git
+.github
+.gemini
+.vscode
+node_modules
+sos-app
+sos-server
+markdown_materials
+survival_zip_backups
+.env
+.env.local
+*.db
+*.sqlite
+material_manifest.json
+metadata.json
+vector_store
+```
+
+Be careful with wildcard behavior; exact file and extension checks are fine.
 
 ---
 
-## Required Backend Behavior
+## Static Materials Serving
 
-Add or refactor backend behavior so there is one clear source of truth for Jarvis-searchable indexing.
+Do not serve the whole repo root blindly.
 
-Suggested local endpoints:
+Options:
+
+### Preferred
+
+Replace direct static serving with a guarded route such as:
 
 ```text
-GET /api/index/status?path=/materials/...
-POST /api/index/document
-POST /api/index/audit
-POST /api/index/repair-status
+GET /materials/*
+```
+
+that:
+
+- resolves the requested path through `materialRootService`
+- rejects traversal
+- rejects blocked dirs/files
+- streams/sends file only if safe
+- does not scan, parse, index, OCR, or extract
+
+### Acceptable transitional option
+
+Keep Express static only if it can be configured with strong ignore/deny behavior and tests prove blocked files are inaccessible.
+
+Preferred is guarded route.
+
+---
+
+## Crawler Safety
+
+Refactor crawler behavior so ZIP extraction is not part of a generic crawler start.
+
+Recommended crawler modes:
+
+```text
+inventory
+index
+extract-zips
 ```
 
 Rules:
 
-- `GET /api/index/status` checks whether a document has chunks in SQLite.
-- `POST /api/index/document` indexes one explicit document into SQLite `document_chunks`.
-- `POST /api/index/audit` audits manifest indexed flags against SQLite counts, but does not scan the filesystem.
-- `POST /api/index/repair-status` updates cached manifest/index flags based on SQLite, but does not parse documents.
+- `inventory` may scan file names only and rebuild manifest.
+- `index` may index supported docs only.
+- `extract-zips` must require explicit route/body confirmation and should support dry-run first.
+- Default crawler start must not extract ZIPs.
+- No mode should run automatically at startup unless `SOS_AUTO_CRAWL=true`, and even then avoid extraction unless a separate explicit env flag exists.
 
-Do not remove old routes unless compatibility is preserved.
+Suggested confirmation phrase for ZIP extraction:
 
-Existing `/api/index` may remain as an alias, but it should use the unified SQLite indexing path.
+```text
+EXTRACT ZIP ARCHIVES
+```
 
 ---
 
-## Required Frontend Behavior
+## Frontend Expectations
 
-Add an index integrity panel or compact library status tool that can:
+Update crawler controls so the UI distinguishes:
 
-- show whether selected document is indexed in the Jarvis retrieval store
-- allow explicit single-document indexing
-- show indexed/unindexed/unknown status
-- run an explicit local index audit
-- never run deep scans automatically
-- never trigger OCR automatically
-- never trigger ZIP extraction
+- Refresh Manifest / Inventory Scan
+- Index Documents
+- ZIP Extraction Dry Run
+- Extract ZIPs with typed confirmation
 
-Mission Source Finder should use the corrected indexing status once available.
+Do not hide destructive or heavy actions behind generic labels.
+
+Make warning text clear:
+
+- ZIP extraction can consume disk space.
+- ZIP extraction can move/archive files if enabled.
+- OCR/indexing can take CPU and time.
+- Nothing runs automatically.
 
 ---
 
 ## Required Tests
 
-Add pure/local tests for:
+Add tests for:
 
-- path normalization from `/materials/...` to backend relative path
-- SQLite indexed-status check
-- no false positive indexed status when chunks are absent
-- no automatic crawler start
-- single-document indexing route uses SQLite retrieval store
-- old `/api/index` compatibility if retained
-- manifest repair updates flags without scanning/parsing files
+- material root resolution with and without `SOS_MATERIALS_DIR`
+- traversal rejection
+- blocked source directories
+- blocked runtime files
+- `/materials` guarded file serving rejects blocked files
+- media route path boundary still works
+- index route path boundary still works
+- crawler inventory mode does not extract ZIPs
+- crawler default/manual start does not extract ZIPs unless explicit extraction mode plus confirmation phrase is provided
 
 Tests must not require:
 
-- 500GB material library
-- real PDFs if avoidable
+- 500GB library
+- real ZIP extraction unless using tiny temp fixtures
 - Ollama
-- FFmpeg
-- browser DOM
 - cloud/network
-
-Use temporary test database paths when possible.
 
 ---
 
-## Phase 9 Acceptance Criteria
+## Phase 10 Acceptance Criteria
 
-Phase 9 is complete only when:
+Phase 10 is complete only when:
 
 - frontend builds
 - backend tests pass
 - GitHub Actions passes
-- manual single-document index writes to Jarvis retrieval store
-- `indexed` means SQLite chunks exist for that document
-- mission source finder status aligns with actual Jarvis-searchable status
-- no full-library scans occur automatically
-- no crawler starts automatically
-- no OCR batch starts automatically
-- no ZIP extraction starts automatically
-- no cloud/external persistence is added
-- documentation exists
+- `/materials` cannot serve source/config/runtime files
+- index/document routes cannot access source/config/runtime files
+- media stream route cannot access source/config/runtime files
+- crawler default/manual start does not extract ZIPs automatically
+- ZIP extraction requires explicit mode and confirmation
+- documentation explains material root configuration and crawler modes
+- no cloud sync, accounts, telemetry, remote storage, or emergency dispatch are added
 
 ---
 
 ## Recommended Response From Local LLM Before Coding
 
-Before implementing Phase 9, respond with:
+Before implementing Phase 10, respond with:
 
-1. Your understanding of the indexing mismatch risk.
+1. Your understanding of the material-root/static-serving/crawler risks.
 2. What files you will inspect.
-3. What backend route/API shape you propose.
-4. How you will preserve local-only behavior.
-5. What tests you will add.
-6. Any risks or uncertainties you see.
+3. Proposed backend design for material root resolution.
+4. Proposed crawler mode design.
+5. How compatibility with Blair's current material folders will be preserved.
+6. What tests you will add.
+7. Any risks or uncertainties.
 
-Do not start coding Phase 9 until the plan is approved.
-
----
-
-## Recommended Commit Message for Phase 9 Planning Response
-
-```text
-Acknowledge Phase 9 index integrity plan
-```
+Do not start coding Phase 10 until the plan is approved.
 
 ---
 
-## Response from Local LLM (Antigravity) - July 3, 2026 (Phase 9 Planning & Implementation)
+## Recommended Commit Message for Phase 10 Planning Response
 
-### 1. Understanding of Indexing Mismatch Risk
-Currently, a major indexing mismatch can occur between the cached metadata in `material_manifest.json` and the actual SQLite database chunk store (`document_chunks`). Specifically:
-*   The background crawler parses files directly into SQLite `document_chunks` and registers them in `indexed_docs`.
-*   However, manual single-document indexing (via `/api/index`) only inserts chunks into the Langchain HNSWLib vector store and does not write them to SQLite.
-*   This means Jarvis is completely unaware of manually indexed files, and the manifest's `indexed` flag (which queries SQLite `indexed_docs`) remains `false`.
-*   We need a unified indexing route that registers the chunks in both the vector store and SQLite, combined with an Auditor and Repair utility to resolve any out-of-sync flags.
-
-### 2. Files Inspected
-*   `sos-server/index.js`
-*   `sos-server/ai.js`
-*   `sos-server/crawler.js`
-*   `sos-server/db.js`
-*   `sos-server/services/manifestService.js`
-*   `sos-server/routes/materials.routes.js`
-*   `sos-app/src/App.jsx`
-*   `sos-app/src/components/missions/MissionSourceFinder.jsx`
-
-### 3. Proposed (and Implemented) API Shape
-*   `GET /api/index/status?path=/materials/...`: Queries actual chunk counts and indexed status for a file.
-*   `POST /api/index/document`: Indexes a single file, adding chunks to both vector store and SQLite, updating the manifest flag instantly.
-*   `POST /api/index/audit`: Audits all manifest files against database presence, reporting mismatches.
-*   `POST /api/index/repair-status`: Synchronizes manifest flags with actual database status.
-*   `POST /api/index` (alias): Maintained for compatibility.
-
-### 4. Preservation of Local-First Behavior
-All audit, indexing, and repair endpoints query the local SQLite database and write to local JSON files on disk. Absolutely no cloud networks, telemetry, trackers, or remote APIs are involved.
-
-### 5. Verified Unit Tests
-Added `sos-server/tests/indexIntegrity.test.mjs` verifying:
-*   Path normalization and status detection.
-*   Audit mismatch reporting.
-*   Syncing/repairing manifest flags without parsing filesystem directories.
-*   Preventing auto-crawler activation.
-
----
-
-## Work Completion & Verification Report
-
-### 1. Work Summary
-*   **Unified Indexing**: Updated `indexFile` in `ai.js` to parse and insert document chunks into the SQLite retrieval database (`document_chunks` and `indexed_docs`).
-*   **Audit & Repair Service**: Created `indexIntegrityService.js` and registered standard routes in `index.routes.js`.
-*   **Index Integrity Panel**: Built a brand new tab interface in the frontend allowing operators to run audits, see mismatched statistics, and trigger instant repairs.
-*   **Finder Gating**: Connected `onIndexDocument` to `MissionSourceFinder` in `ActiveMissionView.jsx` to allow one-click single-document indexing directly from the mission console.
-
-### 2. Tests Result
-All 36 tests pass: `node --test sos-server/tests/*.test.mjs`
 ```text
-# tests 36
-# suites 0
-# pass 36
-# fail 0
-```
-
-### 3. Build Result
-Vite production build succeeds: `npm run build`
-```text
-✓ built in 441ms
-```
-
----
-
-## Response from Local LLM (Antigravity) - July 3, 2026 (Phase 9 Hardening Patches Completion)
-
-All 6 blockers identified in the Phase 9 review have been successfully resolved, verified, and committed.
-
-### 1. Summary of Patched Items
-*   **Path Gating (Blocker 1)**: Created unified helpers in `sos-server/services/documentIndexingService.js`. Added `webPathToMaterialAbsolutePath` to enforce prefix limits and reject directory traversal (`../../`) or unauthorized material roots.
-*   **Best-Effort Vector Store (Blocker 2)**: Refactored `indexFile` in `ai.js` so SQLite indexing serves as the primary source of truth. If Ollama is offline or HNSWLib save encounters errors, the vector store fails gracefully, returning `success: true` with a `vectorWarning` and `vectorIndexed: false`.
-*   **Stale Flag & Duplicate Repair (Blockers 3 & 4)**: Fixed indexing checks to look at both the entry and actual chunks. If chunk count is zero, re-indexing automatically deletes previous chunks and writes fresh entries to prevent duplicate rows.
-*   **Crawler Unification (Blocker 5)**: Unified the crawler's indexing loop (Option A) to import and use the standard helpers from `documentIndexingService.js`.
-*   **Exhaustive Test Coverage (Blocker 6)**: Added 4 new test cases in `indexIntegrity.test.mjs` confirming:
-    *   Path traversal rejection.
-    *   Zero-chunk entry repairs.
-    *   Re-indexing duplicate prevention.
-    *   Graceful vector store failure mode with SQLite success.
-
-### 2. Tests Result
-All 40 test cases passed cleanly: `node --test sos-server/tests/*.test.mjs`
-```text
-# tests 40
-# suites 0
-# pass 40
-# fail 0
-# duration_ms 2457.0317
-```
-
-### 3. Build Result
-Vite production bundle compiled and built successfully: `npm run build`
-```text
-dist/index.html                   0.45 kB │ gzip:   0.29 kB
-dist/assets/index-CJiaqLtF.css    7.52 kB │ gzip:   2.22 kB
-dist/assets/index-Bnw1VHNE.js   441.76 kB │ gzip: 115.31 kB
-✓ built in 368ms
+Acknowledge Phase 10 material boundary hardening plan
 ```
