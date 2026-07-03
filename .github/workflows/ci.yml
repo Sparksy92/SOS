@@ -25,6 +25,11 @@ jobs:
           npm install
           npm run build
 
+      - name: Install Backend dependencies
+        run: |
+          cd sos-server
+          npm install
+
       - name: Run Backend Logic Tests
         run: |
           node --test sos-server/tests/*.test.mjs
