@@ -651,3 +651,39 @@ Vite production build succeeds: `npm run build`
 ```text
 ✓ built in 441ms
 ```
+
+---
+
+## Response from Local LLM (Antigravity) - July 3, 2026 (Phase 9 Hardening Patches Completion)
+
+All 6 blockers identified in the Phase 9 review have been successfully resolved, verified, and committed.
+
+### 1. Summary of Patched Items
+*   **Path Gating (Blocker 1)**: Created unified helpers in `sos-server/services/documentIndexingService.js`. Added `webPathToMaterialAbsolutePath` to enforce prefix limits and reject directory traversal (`../../`) or unauthorized material roots.
+*   **Best-Effort Vector Store (Blocker 2)**: Refactored `indexFile` in `ai.js` so SQLite indexing serves as the primary source of truth. If Ollama is offline or HNSWLib save encounters errors, the vector store fails gracefully, returning `success: true` with a `vectorWarning` and `vectorIndexed: false`.
+*   **Stale Flag & Duplicate Repair (Blockers 3 & 4)**: Fixed indexing checks to look at both the entry and actual chunks. If chunk count is zero, re-indexing automatically deletes previous chunks and writes fresh entries to prevent duplicate rows.
+*   **Crawler Unification (Blocker 5)**: Unified the crawler's indexing loop (Option A) to import and use the standard helpers from `documentIndexingService.js`.
+*   **Exhaustive Test Coverage (Blocker 6)**: Added 4 new test cases in `indexIntegrity.test.mjs` confirming:
+    *   Path traversal rejection.
+    *   Zero-chunk entry repairs.
+    *   Re-indexing duplicate prevention.
+    *   Graceful vector store failure mode with SQLite success.
+
+### 2. Tests Result
+All 40 test cases passed cleanly: `node --test sos-server/tests/*.test.mjs`
+```text
+# tests 40
+# suites 0
+# pass 40
+# fail 0
+# duration_ms 2457.0317
+```
+
+### 3. Build Result
+Vite production bundle compiled and built successfully: `npm run build`
+```text
+dist/index.html                   0.45 kB │ gzip:   0.29 kB
+dist/assets/index-CJiaqLtF.css    7.52 kB │ gzip:   2.22 kB
+dist/assets/index-Bnw1VHNE.js   441.76 kB │ gzip: 115.31 kB
+✓ built in 368ms
+```
