@@ -1,4 +1,4 @@
-name: Survival OS CI Pipeline
+name: SOS App CI Pipeline
 
 on:
   push:
@@ -27,7 +27,7 @@ jobs:
 
       - name: Run Backend Logic Tests
         run: |
-          node --test sos-server/tests/calculations.test.mjs
+          node --test sos-server/tests/*.test.mjs
 
       - name: Scan for forbidden large files
         run: |

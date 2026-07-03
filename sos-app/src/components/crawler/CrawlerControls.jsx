@@ -155,7 +155,7 @@ export default function CrawlerControls({
       <div className="glass-panel" style={{ padding: '16px', display: 'flex', gap: '10px' }}>
         <Info size={20} style={{ color: 'var(--brand-primary)', flexShrink: 0 }} />
         <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: '1.4' }}>
-          <strong>INDEX REBUILD GURANTEE:</strong> Crawler operations run in a 100% read-only state. Under no circumstances will rebuilding indexes alter, delete, or rename original documents in your 500GB+ survival knowledge library.
+          <strong>INDEX REBUILD GUARANTEE:</strong> Crawler operations run in a 100% read-only state. Under no circumstances will rebuilding indexes alter, delete, or rename original documents in your 500GB+ survival knowledge library.
         </div>
       </div>
 

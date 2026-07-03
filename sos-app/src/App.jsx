@@ -65,6 +65,7 @@ import ReadinessPanel from './components/readiness/ReadinessPanel.jsx';
 import ActionGuidesPanel from './components/actions/ActionGuidesPanel.jsx';
 import ProfileSettingsPanel from './components/settings/ProfileSettingsPanel.jsx';
 import CrawlerControls from './components/crawler/CrawlerControls.jsx';
+import PanelErrorBoundary from './components/common/PanelErrorBoundary.jsx';
 
 const API_BASE = `http://${window.location.hostname}:3001`;
 
@@ -1182,58 +1183,72 @@ function App() {
             )}
 
             {!error && !loading && viewMode === 'dashboard' && (
-              <DashboardView 
-                profile={profile}
-                waterContainers={waterContainers}
-                crawlerStatus={crawlerStatus}
-                setViewMode={setViewMode}
-                categories={categories}
-                metadata={metadata}
-              />
+              <PanelErrorBoundary name="Dashboard">
+                <DashboardView 
+                  profile={profile}
+                  waterContainers={waterContainers}
+                  crawlerStatus={crawlerStatus}
+                  setViewMode={setViewMode}
+                  categories={categories}
+                  metadata={metadata}
+                />
+              </PanelErrorBoundary>
             )}
 
             {!error && !loading && viewMode === 'water' && (
-              <WaterInventoryPanel 
-                waterContainers={waterContainers}
-                setWaterContainers={setWaterContainers}
-                profile={profile}
-              />
+              <PanelErrorBoundary name="Water Inventory">
+                <WaterInventoryPanel 
+                  waterContainers={waterContainers}
+                  setWaterContainers={setWaterContainers}
+                  profile={profile}
+                />
+              </PanelErrorBoundary>
             )}
 
             {!error && !loading && viewMode === 'food' && (
-              <PantryPanel 
-                profile={profile}
-                setProfile={setProfile}
-              />
+              <PanelErrorBoundary name="Food Pantry">
+                <PantryPanel 
+                  profile={profile}
+                  setProfile={setProfile}
+                />
+              </PanelErrorBoundary>
             )}
 
             {!error && !loading && viewMode === 'readiness' && (
-              <ReadinessPanel 
-                profile={profile}
-                waterContainers={waterContainers}
-              />
+              <PanelErrorBoundary name="Readiness Evaluation">
+                <ReadinessPanel 
+                  profile={profile}
+                  waterContainers={waterContainers}
+                />
+              </PanelErrorBoundary>
             )}
 
             {!error && !loading && viewMode === 'action-guides' && (
-              <ActionGuidesPanel 
-                setViewMode={setViewMode}
-                setChatInput={setChatInput}
-                handleSendMessage={handleSendMessage}
-              />
+              <PanelErrorBoundary name="Action Guides">
+                <ActionGuidesPanel 
+                  setViewMode={setViewMode}
+                  setChatInput={setChatInput}
+                  handleSendMessage={handleSendMessage}
+                />
+              </PanelErrorBoundary>
             )}
 
             {!error && !loading && viewMode === 'settings' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '32px', width: '100%', paddingBottom: '40px' }}>
-                <ProfileSettingsPanel 
-                  profile={profile}
-                  setProfile={setProfile}
-                  dashboardWidgets={dashboardWidgets}
-                  setDashboardWidgets={setDashboardWidgets}
-                />
-                <CrawlerControls 
-                  crawlerStatus={crawlerStatus}
-                  API_BASE={API_BASE}
-                />
+                <PanelErrorBoundary name="Profile Settings">
+                  <ProfileSettingsPanel 
+                    profile={profile}
+                    setProfile={setProfile}
+                    dashboardWidgets={dashboardWidgets}
+                    setDashboardWidgets={setDashboardWidgets}
+                  />
+                </PanelErrorBoundary>
+                <PanelErrorBoundary name="Crawler Sync Controls">
+                  <CrawlerControls 
+                    crawlerStatus={crawlerStatus}
+                    API_BASE={API_BASE}
+                  />
+                </PanelErrorBoundary>
               </div>
             )}
           </div>
