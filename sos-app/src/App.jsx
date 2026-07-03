@@ -1224,7 +1224,8 @@ function App() {
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                               {msg.sources.map((s, idx) => {
                                 const title = getSourceTitle(s.source);
-                                const risk = getSourceRisk(s.source);
+                                const riskCategory = s.riskCategory || getSourceRisk(s.source)?.category;
+                                const isHighRisk = !!riskCategory;
                                 const locationLabel = s.page ? `PAGE ${s.page}` : s.section ? `SECTION ${s.section}` : null;
                                 
                                 return (
@@ -1236,7 +1237,7 @@ function App() {
                                       display: 'flex', 
                                       flexDirection: 'column', 
                                       gap: '10px', 
-                                      borderColor: risk.risk === 'HIGH' ? 'var(--brand-danger)' : 'var(--border-subtle)',
+                                      borderColor: isHighRisk ? 'var(--brand-danger)' : 'var(--border-subtle)',
                                       backgroundColor: 'rgba(255,255,255,0.01)'
                                     }}
                                   >
@@ -1270,9 +1271,9 @@ function App() {
                                             {s.matchLabel.toUpperCase()}
                                           </span>
                                         )}
-                                        {risk.risk === 'HIGH' && (
+                                        {isHighRisk && (
                                           <span style={{ fontSize: '0.65rem', backgroundColor: 'var(--brand-danger)', color: 'white', padding: '2px 6px', borderRadius: '3px', fontWeight: 'bold', fontFamily: 'var(--font-mono)' }}>
-                                            RISK: {risk.category.toUpperCase()}
+                                            RISK: {riskCategory.toUpperCase()}
                                           </span>
                                         )}
                                       </div>
@@ -1301,7 +1302,7 @@ function App() {
                                       >
                                         <ExternalLink size={12} /> OPEN DOCUMENT
                                       </button>
-                                      {['.pdf', '.txt', '.md'].includes(s.source.split('.').pop().toLowerCase()) && (
+                                      {['pdf', 'txt', 'md'].includes(s.source.split('.').pop().toLowerCase()) && (
                                         <button 
                                           className="btn-tactical" 
                                           onClick={() => readSourceAloud(s.source)}
