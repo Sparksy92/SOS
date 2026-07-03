@@ -1,0 +1,53 @@
+name: Survival OS CI Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build_and_test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies & Build Frontend (sos-app)
+        run: |
+          cd sos-app
+          npm install
+          npm run build
+
+      - name: Run Backend Logic Tests
+        run: |
+          node --test sos-server/tests/calculations.test.mjs
+
+      - name: Scan for forbidden large files
+        run: |
+          FORBIDDEN_FILES=$(find . -type f \( \
+            -name "*.pdf" \
+            -o -name "*.zip" \
+            -o -name "*.zim" \
+            -o -name "*.iso" \
+            -o -name "*.gguf" \
+            -o -name "*.db" \
+            -o -name "*.sqlite" \
+            -o -name "*.mp4" \
+            -o -name "*.mkv" \
+            -o -name "*.avi" \
+            -o -name "*.wmv" \
+          \) ! -path "*/node_modules/*" ! -path "*/.git/*")
+          
+          if [ ! -z "$FORBIDDEN_FILES" ]; then
+            echo "CRITICAL ERROR: Forbidden binary or database files detected in the repository commit:"
+            echo "$FORBIDDEN_FILES"
+            exit 1
+          fi
+          echo "Logistics check passed: No forbidden media/index files found."

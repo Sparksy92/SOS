@@ -9,6 +9,7 @@ const PORT = 3001;
 
 // Enable CORS for frontend
 app.use(cors());
+app.use(express.json());
 
 // Path to the survival materials
 const MATERIALS_DIR = path.join(__dirname, '..');
@@ -66,23 +67,9 @@ if (autoCrawl) {
   console.log("[SQLITE] Auto-crawler disabled. Standing by for manual triggers.");
 }
 
-// API endpoint to get background sync status
-app.get('/api/crawler/status', (req, res) => {
-  res.json(crawler.getStatus());
-});
-
-// API endpoint to manually trigger crawler scan
-app.post('/api/crawler/start', (req, res) => {
-  const status = crawler.getStatus();
-  if (status.statusText.includes("Syncing") || status.statusText.includes("scanning")) {
-    return res.status(400).json({ error: "Crawler is already active." });
-  }
-  
-  // Start crawler asynchronously
-  crawler.start();
-  console.log("[SQLITE] Crawler triggered manually.");
-  res.json({ status: "Crawler started manually." });
-});
+// Register routes
+const crawlerRoutes = require('./routes/crawler.routes');
+app.use('/api/crawler', crawlerRoutes);
 
 // API endpoint to list all available materials
 app.get('/api/materials', (req, res) => {

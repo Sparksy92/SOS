@@ -23,10 +23,48 @@ import {
   Volume2,
   VolumeX,
   Play,
-  Pause
+  Pause,
+  LayoutDashboard,
+  Droplet,
+  Wheat,
+  ClipboardList,
+  Trash2,
+  Plus,
+  Edit3,
+  CheckSquare,
+  ArrowRight,
+  Info,
+  RefreshCw,
+  User,
+  AlertTriangle
 } from 'lucide-react';
 import './App.css';
-import { getRiskLevel, requiresAcknowledgement, getSafetyWarning } from './modules/safety/riskRules';
+import { getRiskLevel, requiresAcknowledgement, getSafetyWarning } from './modules/safety/riskRules.js';
+import { loadWaterContainers, saveWaterContainers } from './modules/water/waterStorage.js';
+import { calculateWaterReserves } from './modules/water/waterCalculations.js';
+import { calculatePantryReserves, PANTRY_GUIDELINES } from './modules/food/pantryCalculations.js';
+import { calculateReadinessScore } from './modules/readiness/readinessCalculator.js';
+import { ACTION_MODULES } from './modules/tools/actionModules.js';
+import {
+  loadProfile,
+  saveProfile,
+  loadFavorites,
+  saveFavorites,
+  loadReadGuides,
+  saveReadGuides,
+  loadLastAccessed,
+  saveLastAccessed,
+  loadDashboardWidgets,
+  saveDashboardWidgets
+} from './modules/profile/sosProfileStore.js';
+
+import DashboardView from './components/dashboard/DashboardView.jsx';
+import WaterInventoryPanel from './components/water/WaterInventoryPanel.jsx';
+import PantryPanel from './components/food/PantryPanel.jsx';
+import ReadinessPanel from './components/readiness/ReadinessPanel.jsx';
+import ActionGuidesPanel from './components/actions/ActionGuidesPanel.jsx';
+import ProfileSettingsPanel from './components/settings/ProfileSettingsPanel.jsx';
+import CrawlerControls from './components/crawler/CrawlerControls.jsx';
 
 const API_BASE = `http://${window.location.hostname}:3001`;
 
@@ -37,7 +75,26 @@ function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [viewMode, setViewMode] = useState('files'); // 'files' or 'chat'
+  const [viewMode, setViewMode] = useState('dashboard'); // 'dashboard', 'files', 'chat', 'water', 'food', 'readiness', 'action-guides', 'settings'
+  const [profile, setProfile] = useState(() => loadProfile());
+  const [waterContainers, setWaterContainers] = useState(() => loadWaterContainers());
+  const [favorites, setFavorites] = useState(() => loadFavorites());
+  const [readGuides, setReadGuides] = useState(() => loadReadGuides());
+  const [lastAccessed, setLastAccessed] = useState(() => loadLastAccessed());
+  const [dashboardWidgets, setDashboardWidgets] = useState(() => loadDashboardWidgets());
+  const [editingContainer, setEditingContainer] = useState(null);
+  const [showAddContainer, setShowAddContainer] = useState(false);
+  const [containerForm, setContainerForm] = useState({
+    name: '',
+    capacity: 0,
+    currentLevel: 0,
+    unit: 'Gallons',
+    filterType: '',
+    filterChangeDate: '',
+    lastTestDate: '',
+    lastTestResult: 'Safe',
+    notes: ''
+  });
   const [mediaTab, setMediaTab] = useState('all');
   const [collapsedFolders, setCollapsedFolders] = useState({});
 
@@ -173,6 +230,77 @@ function App() {
       window.speechSynthesis.cancel();
     };
   }, [isVoiceChatActive, isLiveGuide]); // Depend on voice chat state to keep fetch callbacks aligned
+
+  useEffect(() => {
+    saveProfile(profile);
+  }, [profile]);
+
+  useEffect(() => {
+    saveWaterContainers(waterContainers);
+  }, [waterContainers]);
+
+  useEffect(() => {
+    saveFavorites(favorites);
+  }, [favorites]);
+
+  useEffect(() => {
+    saveReadGuides(readGuides);
+  }, [readGuides]);
+
+  useEffect(() => {
+    saveLastAccessed(lastAccessed);
+  }, [lastAccessed]);
+
+  useEffect(() => {
+    saveDashboardWidgets(dashboardWidgets);
+  }, [dashboardWidgets]);
+
+  const resetContainerForm = () => {
+    setContainerForm({
+      name: '',
+      capacity: 0,
+      currentLevel: 0,
+      unit: 'Gallons',
+      filterType: '',
+      filterChangeDate: '',
+      lastTestDate: '',
+      lastTestResult: 'Safe',
+      notes: ''
+    });
+  };
+
+  const handleAddContainer = (e) => {
+    if (e) e.preventDefault();
+    const newContainer = {
+      ...containerForm,
+      id: Date.now(),
+      capacity: parseFloat(containerForm.capacity) || 0,
+      currentLevel: parseFloat(containerForm.currentLevel) || 0
+    };
+    setWaterContainers(prev => [...prev, newContainer]);
+    setShowAddContainer(false);
+    resetContainerForm();
+  };
+
+  const handleEditContainer = (e) => {
+    if (e) e.preventDefault();
+    if (!editingContainer) return;
+    const updated = waterContainers.map(c => c.id === editingContainer.id ? {
+      ...containerForm,
+      id: editingContainer.id,
+      capacity: parseFloat(containerForm.capacity) || 0,
+      currentLevel: parseFloat(containerForm.currentLevel) || 0
+    } : c);
+    setWaterContainers(updated);
+    setEditingContainer(null);
+    resetContainerForm();
+  };
+
+  const handleDeleteContainer = (id) => {
+    if (window.confirm("Are you sure you want to delete this water storage container?")) {
+      setWaterContainers(prev => prev.filter(c => c.id !== id));
+    }
+  };
 
   const getFilteredFiles = () => {
     let files = [];
@@ -575,18 +703,69 @@ function App() {
           
           <div className="nav-menu">
             <div 
+              className={`nav-item ${viewMode === 'dashboard' ? 'active' : ''}`}
+              onClick={() => { setViewMode('dashboard'); setSidebarOpen(false); }}
+            >
+              <LayoutDashboard size={18} className={viewMode === 'dashboard' ? 'text-glow' : ''}/>
+              <span style={{color: viewMode === 'dashboard' ? 'var(--brand-primary)' : ''}}>DASHBOARD</span>
+            </div>
+
+            <div 
               className={`nav-item ${viewMode === 'chat' ? 'active' : ''}`}
               onClick={() => { setViewMode('chat'); setSidebarOpen(false); }}
-              style={{marginBottom: '24px'}}
             >
               <Cpu size={18} className={viewMode === 'chat' ? 'text-glow' : ''}/>
               <span style={{color: viewMode === 'chat' ? 'var(--brand-primary)' : ''}}>J.A.R.V.I.S. (LOCAL AI)</span>
             </div>
 
-            <div style={{ margin: '0 0 12px 16px', fontSize: '0.75rem', color: 'var(--brand-primary)', letterSpacing: '1px' }}>
-              DATA MODULES
+            <div style={{ margin: '16px 0 8px 16px', fontSize: '0.75rem', color: 'var(--brand-primary)', letterSpacing: '1px', textTransform: 'uppercase' }}>
+              Homestead Modules
             </div>
-            
+
+            <div 
+              className={`nav-item ${viewMode === 'water' ? 'active' : ''}`}
+              onClick={() => { setViewMode('water'); setSidebarOpen(false); }}
+            >
+              <Droplet size={18} className={viewMode === 'water' ? 'text-glow' : ''}/>
+              <span style={{color: viewMode === 'water' ? 'var(--brand-primary)' : ''}}>WATER INVENTORY</span>
+            </div>
+
+            <div 
+              className={`nav-item ${viewMode === 'food' ? 'active' : ''}`}
+              onClick={() => { setViewMode('food'); setSidebarOpen(false); }}
+            >
+              <Wheat size={18} className={viewMode === 'food' ? 'text-glow' : ''}/>
+              <span style={{color: viewMode === 'food' ? 'var(--brand-primary)' : ''}}>FOOD & PANTRY</span>
+            </div>
+
+            <div 
+              className={`nav-item ${viewMode === 'readiness' ? 'active' : ''}`}
+              onClick={() => { setViewMode('readiness'); setSidebarOpen(false); }}
+            >
+              <ShieldAlert size={18} className={viewMode === 'readiness' ? 'text-glow' : ''}/>
+              <span style={{color: viewMode === 'readiness' ? 'var(--brand-primary)' : ''}}>READINESS SCORE</span>
+            </div>
+
+            <div 
+              className={`nav-item ${viewMode === 'action-guides' ? 'active' : ''}`}
+              onClick={() => { setViewMode('action-guides'); setSidebarOpen(false); }}
+            >
+              <ClipboardList size={18} className={viewMode === 'action-guides' ? 'text-glow' : ''}/>
+              <span style={{color: viewMode === 'action-guides' ? 'var(--brand-primary)' : ''}}>ACTION GUIDES</span>
+            </div>
+
+            <div 
+              className={`nav-item ${viewMode === 'settings' ? 'active' : ''}`}
+              onClick={() => { setViewMode('settings'); setSidebarOpen(false); }}
+            >
+              <Settings size={18} className={viewMode === 'settings' ? 'text-glow' : ''}/>
+              <span style={{color: viewMode === 'settings' ? 'var(--brand-primary)' : ''}}>SETTINGS / PROFILE</span>
+            </div>
+
+            <div style={{ margin: '16px 0 8px 16px', fontSize: '0.75rem', color: 'var(--brand-primary)', letterSpacing: '1px', textTransform: 'uppercase' }}>
+              Library Browser
+            </div>
+
             {loading ? (
               <div style={{padding: '0 16px', color: 'var(--brand-primary)'}}>SYNCING...</div>
             ) : error ? (
@@ -999,6 +1178,62 @@ function App() {
                     <Send size={20} />
                   </button>
                 </div>
+              </div>
+            )}
+
+            {!error && !loading && viewMode === 'dashboard' && (
+              <DashboardView 
+                profile={profile}
+                waterContainers={waterContainers}
+                crawlerStatus={crawlerStatus}
+                setViewMode={setViewMode}
+                categories={categories}
+                metadata={metadata}
+              />
+            )}
+
+            {!error && !loading && viewMode === 'water' && (
+              <WaterInventoryPanel 
+                waterContainers={waterContainers}
+                setWaterContainers={setWaterContainers}
+                profile={profile}
+              />
+            )}
+
+            {!error && !loading && viewMode === 'food' && (
+              <PantryPanel 
+                profile={profile}
+                setProfile={setProfile}
+              />
+            )}
+
+            {!error && !loading && viewMode === 'readiness' && (
+              <ReadinessPanel 
+                profile={profile}
+                waterContainers={waterContainers}
+              />
+            )}
+
+            {!error && !loading && viewMode === 'action-guides' && (
+              <ActionGuidesPanel 
+                setViewMode={setViewMode}
+                setChatInput={setChatInput}
+                handleSendMessage={handleSendMessage}
+              />
+            )}
+
+            {!error && !loading && viewMode === 'settings' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '32px', width: '100%', paddingBottom: '40px' }}>
+                <ProfileSettingsPanel 
+                  profile={profile}
+                  setProfile={setProfile}
+                  dashboardWidgets={dashboardWidgets}
+                  setDashboardWidgets={setDashboardWidgets}
+                />
+                <CrawlerControls 
+                  crawlerStatus={crawlerStatus}
+                  API_BASE={API_BASE}
+                />
               </div>
             )}
           </div>
