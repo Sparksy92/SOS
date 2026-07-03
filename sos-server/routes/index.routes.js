@@ -3,9 +3,9 @@ const router = express.Router();
 const fs = require('fs');
 const path = require('path');
 const ai = require('../ai');
-const { checkDocumentIndexedStatus, auditIndex, repairIndex } = require('../services/indexIntegrityService');
+const { auditIndex, repairIndex } = require('../services/indexIntegrityService');
+const { webPathToMaterialAbsolutePath, checkDocumentIndexedStatus } = require('../services/documentIndexingService');
 
-const MATERIALS_DIR = path.join(__dirname, '..', '..');
 const MANIFEST_FILE = path.join(__dirname, '..', 'material_manifest.json');
 
 // GET /api/index/status?path=/materials/...
@@ -14,16 +14,21 @@ router.get('/status', (req, res) => {
     const { path: webPath } = req.query;
     if (!webPath) return res.status(400).json({ error: "path parameter is required" });
     
+    // Traversal validation
+    webPathToMaterialAbsolutePath(webPath);
+    
     const status = checkDocumentIndexedStatus(webPath);
     res.json(status);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(400).json({ error: err.message });
   }
 });
 
 // Helper function to index a single document and update manifest cache flag
 const performDocumentIndexing = async (webPath) => {
-  const absolutePath = path.join(MATERIALS_DIR, webPath.replace('/materials/', ''));
+  // Safe normalization & traversal validation
+  const absolutePath = webPathToMaterialAbsolutePath(webPath);
+  
   if (!fs.existsSync(absolutePath)) {
     throw new Error(`File not found: ${absolutePath}`);
   }
@@ -69,7 +74,7 @@ router.post('/document', async (req, res) => {
     res.json(result);
   } catch (err) {
     console.error("[INDEX ROUTE] Error indexing document:", err);
-    res.status(500).json({ error: err.message });
+    res.status(400).json({ error: err.message });
   }
 });
 
@@ -102,7 +107,7 @@ router.post('/', async (req, res) => {
     const result = await performDocumentIndexing(filePath);
     res.json(result);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(400).json({ error: err.message });
   }
 });
 

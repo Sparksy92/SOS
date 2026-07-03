@@ -1,32 +1,9 @@
 const fs = require('fs');
 const path = require('path');
-const { db } = require('../db');
 const { loadManifest } = require('./manifestService');
+const { checkDocumentIndexedStatus } = require('./documentIndexingService');
 
 const MANIFEST_FILE = path.join(__dirname, '..', 'material_manifest.json');
-
-/**
- * Checks SQLite for actual chunks and indexed status.
- */
-const checkDocumentIndexedStatus = (webPath) => {
-  try {
-    const chunkStmt = db.prepare("SELECT COUNT(*) as count FROM document_chunks WHERE document_path = ?");
-    const docStmt = db.prepare("SELECT 1 FROM indexed_docs WHERE path = ?");
-    
-    const chunkCount = chunkStmt.get(webPath)?.count || 0;
-    const isIndexed = !!docStmt.get(webPath);
-    
-    return {
-      path: webPath,
-      indexed: isIndexed && chunkCount > 0,
-      chunks: chunkCount,
-      hasIndexedDocEntry: isIndexed
-    };
-  } catch (err) {
-    console.error(`[INTEGRITY] Error checking status for ${webPath}:`, err);
-    return { path: webPath, indexed: false, chunks: 0, hasIndexedDocEntry: false };
-  }
-};
 
 /**
  * Audit the manifest against actual SQLite counts.

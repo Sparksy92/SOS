@@ -19,6 +19,12 @@ const TEST_MANIFEST_FILE = path.join(__dirname, '..', 'material_manifest_test.js
 
 const { db } = require('../db');
 const { checkDocumentIndexedStatus, auditIndex, repairIndex } = require('../services/indexIntegrityService');
+const { 
+  webPathToMaterialAbsolutePath, 
+  absolutePathToWebPath, 
+  writeDocumentChunksToSqlite 
+} = require('../services/documentIndexingService');
+const ai = require('../ai');
 
 test('SOS Index Integrity Layer Test Suite', async (t) => {
 
@@ -90,7 +96,6 @@ test('SOS Index Integrity Layer Test Suite', async (t) => {
     markIndexed.run(webPathFiltration, new Date().toISOString());
 
     // Override service manifest file path for testing
-    // Note: We use the mock manifest path we populated in beforeEach
     const originalManifestFile = path.join(__dirname, '..', 'material_manifest.json');
     
     // Backup and overwrite
@@ -127,6 +132,88 @@ test('SOS Index Integrity Layer Test Suite', async (t) => {
   await t.test('3. Auto-crawler flag is checked and stays off by default', () => {
     const autoCrawlEnv = process.env.SOS_AUTO_CRAWL === 'true';
     assert.strictEqual(autoCrawlEnv, false); // Config default check
+  });
+
+  await t.test('4. webPathToMaterialAbsolutePath validates materials path and blocks traversal', () => {
+    // Correct paths resolve correctly
+    const abs = webPathToMaterialAbsolutePath('/materials/cook.pdf');
+    assert.ok(abs.endsWith('cook.pdf'));
+
+    // Non-/materials path throws error
+    assert.throws(() => {
+      webPathToMaterialAbsolutePath('/unauthorized/cook.pdf');
+    }, /must start with \/materials\//);
+
+    // Traversal attempts throw error
+    assert.throws(() => {
+      webPathToMaterialAbsolutePath('/materials/../../sos-server/index.js');
+    }, /Invalid material path/);
+  });
+
+  await t.test('5. writeDocumentChunksToSqlite replaces chunks and prevents duplicates', () => {
+    const webPath = '/materials/cook.pdf';
+    
+    // Write initially
+    writeDocumentChunksToSqlite(webPath, ["Page 1 text", "Page 2 text"]);
+    let status = checkDocumentIndexedStatus(webPath);
+    assert.strictEqual(status.chunks, 2);
+
+    // Re-indexing replaces the chunks rather than appending duplicates
+    writeDocumentChunksToSqlite(webPath, ["New Page 1 text"]);
+    status = checkDocumentIndexedStatus(webPath);
+    assert.strictEqual(status.chunks, 1); // Shrunk to 1, no duplicate entries!
+  });
+
+  await t.test('6. zero-chunk indexed_docs entries get repaired by re-indexing', () => {
+    const webPath = '/materials/CD3WD Extracted Manuals/water_treatment/sanitization.pdf';
+
+    // Simulated broken state: has index entry but 0 chunks
+    const markIndexed = db.prepare("INSERT INTO indexed_docs (path, indexed_at) VALUES (?, ?)");
+    markIndexed.run(webPath, new Date().toISOString());
+
+    let status = checkDocumentIndexedStatus(webPath);
+    assert.strictEqual(status.indexed, false); // False because chunkCount is 0!
+
+    // Simulated re-indexing logic
+    writeDocumentChunksToSqlite(webPath, ["Sanitizing water with chlorine."]);
+    status = checkDocumentIndexedStatus(webPath);
+    assert.strictEqual(status.indexed, true);
+    assert.strictEqual(status.chunks, 1);
+  });
+
+  await t.test('7. indexFile returns success and warning on vector store failure if SQLite succeeded', async () => {
+    // Mock HNSWLib to force failure
+    const { HNSWLib } = require("@langchain/community/vectorstores/hnswlib");
+    const originalLoad = HNSWLib.load;
+    const originalFromDocuments = HNSWLib.fromDocuments;
+    
+    HNSWLib.load = () => Promise.reject(new Error("Mock load failure"));
+    HNSWLib.fromDocuments = () => Promise.reject(new Error("Mock fromDocuments failure"));
+
+    // Create a temporary text file to index
+    const tempFile = path.join(__dirname, 'temp_test_doc.txt');
+    fs.writeFileSync(tempFile, 'Emergency sanitation guidelines.');
+
+    try {
+      // Execute indexing. It should write to SQLite successfully even if Ollama vector store fails
+      const result = await ai.indexFile(tempFile);
+      
+      assert.strictEqual(result.success, true);
+      assert.strictEqual(result.sqliteIndexed, true);
+      assert.strictEqual(result.vectorIndexed, false); // False because HNSWLib is mocked to fail
+      assert.ok(result.vectorWarning.includes('Vector store update failed'));
+
+      // Check SQLite chunks are present
+      const webPath = '/materials/' + path.relative(path.join(__dirname, '..', '..'), tempFile).replace(/\\/g, '/');
+      const status = checkDocumentIndexedStatus(webPath);
+      assert.strictEqual(status.indexed, true);
+      assert.strictEqual(status.chunks, 1);
+    } finally {
+      // Restore HNSWLib methods
+      HNSWLib.load = originalLoad;
+      HNSWLib.fromDocuments = originalFromDocuments;
+      if (fs.existsSync(tempFile)) fs.unlinkSync(tempFile);
+    }
   });
 
 });

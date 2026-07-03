@@ -8,6 +8,7 @@ const { PromptTemplate } = require("@langchain/core/prompts");
 const { StringOutputParser } = require("@langchain/core/output_parsers");
 const { RunnableSequence } = require("@langchain/core/runnables");
 const { db } = require('./db');
+const { writeDocumentChunksToSqlite, checkDocumentIndexedStatus } = require('./services/documentIndexingService');
 
 // Configuration
 const ROOT_DIR = path.join(__dirname, '..');
@@ -77,46 +78,56 @@ const indexFile = async (filePath) => {
       throw new Error(`Unsupported file type: ${ext}`);
     }
 
-    // SQLite Indexing Block
+    // SQLite Indexing Block - Primary Source of Truth
     const relativePath = '/materials/' + path.relative(ROOT_DIR, filePath).replace(/\\/g, '/');
-    const checkStmt = db.prepare("SELECT 1 FROM indexed_docs WHERE path = ?");
-    const isAlreadyIndexed = !!checkStmt.get(relativePath);
+    const status = checkDocumentIndexedStatus(relativePath);
 
-    if (!isAlreadyIndexed) {
-      console.log(`[SQLITE] Unified Indexing to SQLite: ${relativePath}`);
-      const insertChunk = db.prepare("INSERT INTO document_chunks (document_path, chunk_index, content) VALUES (?, ?, ?)");
-      for (let i = 0; i < pages.length; i++) {
-        insertChunk.run(relativePath, i, pages[i]);
+    // Re-index if not fully indexed or if chunk count is zero (Blocker 3 & 4)
+    if (!status.indexed || status.chunks === 0) {
+      console.log(`[SQLITE] Primary Indexing to SQLite: ${relativePath}`);
+      writeDocumentChunksToSqlite(relativePath, pages);
+    }
+
+    // Vector-Store Indexing Block - Best-Effort / Optional (Blocker 2)
+    let vectorIndexed = false;
+    let vectorWarning = null;
+    try {
+      // 2. Split Text
+      const textSplitter = new RecursiveCharacterTextSplitter({
+        chunkSize: 1000,
+        chunkOverlap: 200,
+      });
+      const splitDocs = await textSplitter.splitDocuments(docs);
+      
+      console.log(`Generated ${splitDocs.length} chunks. Generating embeddings...`);
+
+      // 3. Create or Update Vector Store
+      if (!vectorStore) {
+        vectorStore = await loadVectorStore();
       }
-      const markIndexed = db.prepare("INSERT INTO indexed_docs (path, indexed_at) VALUES (?, ?)");
-      markIndexed.run(relativePath, new Date().toISOString());
-    }
-
-    // 2. Split Text
-    const textSplitter = new RecursiveCharacterTextSplitter({
-      chunkSize: 1000,
-      chunkOverlap: 200,
-    });
-    const splitDocs = await textSplitter.splitDocuments(docs);
-    
-    console.log(`Generated ${splitDocs.length} chunks. Generating embeddings...`);
-
-    // 3. Create or Update Vector Store
-    if (!vectorStore) {
-      vectorStore = await loadVectorStore();
+      
+      if (vectorStore) {
+        await vectorStore.addDocuments(splitDocs);
+      } else {
+        vectorStore = await HNSWLib.fromDocuments(splitDocs, embeddings);
+      }
+      
+      // 4. Save to disk
+      await vectorStore.save(VECTOR_STORE_PATH);
+      vectorIndexed = true;
+      console.log(`Successfully indexed vector store for ${filePath}`);
+    } catch (vectorErr) {
+      console.warn(`[OLLAMA] Vector store update failed for ${filePath}:`, vectorErr.message);
+      vectorWarning = 'Vector store update failed; SQLite retrieval index is available.';
     }
     
-    if (vectorStore) {
-      await vectorStore.addDocuments(splitDocs);
-    } else {
-      vectorStore = await HNSWLib.fromDocuments(splitDocs, embeddings);
-    }
-    
-    // 4. Save to disk
-    await vectorStore.save(VECTOR_STORE_PATH);
-    
-    console.log(`Successfully indexed ${filePath}`);
-    return { success: true, chunks: splitDocs.length };
+    return { 
+      success: true, 
+      chunks: pages.length,
+      sqliteIndexed: true,
+      vectorIndexed,
+      vectorWarning
+    };
   } catch (err) {
     console.error(`Error indexing ${filePath}:`, err);
     return { success: false, error: err.message };

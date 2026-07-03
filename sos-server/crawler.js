@@ -3,7 +3,7 @@ const path = require('path');
 const { exec } = require('child_process');
 const ai = require('./ai');
 const { db } = require('./db');
-const { PDFLoader } = require("@langchain/community/document_loaders/fs/pdf");
+const { checkDocumentIndexedStatus, extractDocumentTextPages, writeDocumentChunksToSqlite } = require('./services/documentIndexingService');
 
 const ROOT_DIR = path.join(__dirname, '..');
 const BACKUP_DIR = path.join(__dirname, '..', '..', 'survival_zip_backups');
@@ -71,61 +71,17 @@ function scanDir(dir, filesList = { zips: [], docs: [] }) {
   return filesList;
 }
 
-// Helper to check if doc is already indexed in SQLite
-function isIndexedInSql(docRelativePath) {
-  try {
-    const stmt = db.prepare("SELECT 1 FROM indexed_docs WHERE path = ?");
-    const result = stmt.get(docRelativePath);
-    return !!result;
-  } catch (err) {
-    console.error("SQL query error:", err);
-    return false;
-  }
-}
-
-// Index doc to SQLite FTS5
+// Index doc to SQLite FTS5 using unified service
 async function indexToSqlite(docPath, relativePath) {
-  if (isIndexedInSql(relativePath)) {
+  const status = checkDocumentIndexedStatus(relativePath);
+  if (status.indexed && status.chunks > 0) {
     return true;
   }
   
-  const ext = path.extname(docPath).toLowerCase();
-  let pages = [];
-  
   try {
     console.log(`[SQLITE] Reading content for FTS5 indexing: ${relativePath}`);
-    
-    // Check if a pre-processed markdown file exists in markdown_materials
-    const relPath = path.relative(ROOT_DIR, docPath);
-    const parsed = path.parse(relPath);
-    const mdRelPath = path.join(parsed.dir, parsed.name + '.md');
-    const mdPath = path.join(ROOT_DIR, 'markdown_materials', mdRelPath);
-    
-    if (ext === '.pdf' && fs.existsSync(mdPath)) {
-      console.log(`[SQLITE] Found high-fidelity olmOCR Markdown: ${mdPath}`);
-      const text = fs.readFileSync(mdPath, 'utf8');
-      pages = [text];
-    } else if (ext === '.pdf') {
-      const loader = new PDFLoader(docPath);
-      const docs = await loader.load();
-      pages = docs.map(d => d.pageContent);
-    } else if (ext === '.txt') {
-      const text = fs.readFileSync(docPath, 'utf8');
-      pages = [text];
-    } else {
-      return false;
-    }
-    
-    // Insert into virtual table
-    const insertChunk = db.prepare("INSERT INTO document_chunks (document_path, chunk_index, content) VALUES (?, ?, ?)");
-    for (let i = 0; i < pages.length; i++) {
-      insertChunk.run(relativePath, i, pages[i]);
-    }
-    
-    // Mark as indexed
-    const markIndexed = db.prepare("INSERT INTO indexed_docs (path, indexed_at) VALUES (?, ?)");
-    markIndexed.run(relativePath, new Date().toISOString());
-    
+    const pages = await extractDocumentTextPages(docPath);
+    writeDocumentChunksToSqlite(relativePath, pages);
     console.log(`[SQLITE] Successfully indexed ${pages.length} pages/chunks for ${relativePath}`);
     return true;
   } catch (err) {
