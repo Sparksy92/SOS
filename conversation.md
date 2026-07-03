@@ -689,6 +689,77 @@ Do not start coding Phase 10 until the plan is approved.
 
 ## Recommended Commit Message for Phase 10 Planning Response
 
-```text
 Acknowledge Phase 10 material boundary hardening plan
 ```
+
+---
+
+## Response from Local LLM (Antigravity) - July 3, 2026 (Phase 10 Planning Response)
+
+### 1. Understanding of Risks
+*   **Static Serving Risks**: Currently, `/materials` uses `express.static` to serve the entire repository root, potentially exposing sensitive files like `.env`, database backups, configuration files (`package.json`, `metadata.json`), source files (`sos-server/index.js`), or private `.git` folders if someone crafted a request or if the static server was misconfigured.
+*   **Crawler Risks**: The manual crawler start automatically scans folders, indexes files, and extracts zip files in one monolithic action. This can cause unwanted resource usage, CPU bottlenecks, and disk space depletion without the user's explicit intent.
+
+### 2. Files to Inspect & Modify
+*   `sos-server/index.js`
+*   `sos-server/crawler.js`
+*   `sos-server/services/materialRootService.js` (to be created)
+*   `sos-server/services/manifestService.js`
+*   `sos-server/services/documentIndexingService.js`
+*   `sos-server/routes/materials.routes.js`
+*   `sos-server/routes/crawler.routes.js`
+*   `sos-server/routes/media.routes.js`
+*   `sos-server/routes/index.routes.js`
+*   `sos-app/src/App.jsx`
+*   `sos-app/src/components/crawler/CrawlerControls.jsx` (to be created or modified)
+
+### 3. Proposed Backend Design for Material Root Resolution
+We will implement `sos-server/services/materialRootService.js` containing:
+*   `getMaterialRoot()`: Checks `process.env.SOS_MATERIALS_DIR` first (resolved as absolute path). Defaults to the repository root directory (where `material_manifest.json` resides).
+*   `getAppRoot()`: Resolves parent directory of `sos-server`.
+*   `isBlockedMaterialPath(absolutePath)`: Validates that the path does not belong to or reside in any code, config, database, metadata, or hidden system folders (`.git`, `.gemini`, `sos-app`, `sos-server`, `node_modules`, `.env`, `*.db`, `material_manifest.json`, etc.).
+*   `resolveMaterialPath(webPath)`: Takes a `/materials/...` path, converts it to absolute path under `getMaterialRoot()`, checks for path traversal boundary violations, and runs `isBlockedMaterialPath`.
+
+We will replace the static Express middleware with a custom guarded route:
+```javascript
+app.get('/materials/*', (req, res) => {
+  try {
+    const decodedPath = decodeURIComponent(req.path);
+    const absolutePath = resolveMaterialPath(decodedPath);
+    if (!fs.existsSync(absolutePath) || fs.statSync(absolutePath).isDirectory()) {
+      return res.status(404).send("File not found");
+    }
+    res.sendFile(absolutePath);
+  } catch (err) {
+    res.status(403).send(`Access denied: ${err.message}`);
+  }
+});
+```
+
+### 4. Proposed Crawler Mode Design
+Refactor `crawler.js` to accept `mode` and `confirmationPhrase`:
+*   **`inventory` mode**: Lightweight directory scan. Rebuilds manifest cache without indexing or zip extraction.
+*   **`index` mode**: Standard indexing of supported documents (does not extract zips).
+*   **`extract-zips` mode**: Runs ZIP extraction, requiring `confirmationPhrase === 'EXTRACT ZIP ARCHIVES'`.
+*   *Default/Auto-crawl*: Runs in `inventory` mode without automatic extraction.
+
+### 5. Preserving Compatibility
+If `process.env.SOS_MATERIALS_DIR` is not set, we default back to the repository root directory where Blair's manual files reside. This guarantees that his existing folders (`CD3WD Extracted Manuals`, etc.) will continue to work perfectly out-of-the-box.
+
+### 6. Tests to Add
+In `sos-server/tests/indexIntegrity.test.mjs` or a new test suite, we will add tests for:
+*   Path resolution with/without `SOS_MATERIALS_DIR`.
+*   Traversal rejection using `../../` and non-`/materials` prefix.
+*   Deny-list checks for blocked source/config/runtime files.
+*   Static `/materials` route blocking access to `.env` or source code files.
+*   Crawler inventory scans bypass zip extraction.
+*   Crawler zip extraction requires the correct `EXTRACT ZIP ARCHIVES` confirmation phrase.
+
+### 7. Risks & Uncertainties
+*   *PowerShell `Expand-Archive` command dependency*: We must make sure that our zip extraction method remains completely offline and platform-compatible for Windows environments. We will retain the existing PowerShell zip extraction code but wrap it inside the explicit confirmation flow.
+
+---
+
+I explicitly confirm that **no cloud sync, logins, or remote persistence integrations** will be added. All features will remain strictly local-first.
+
+I am awaiting your approval of the implementation plan before proceeding to the coding phase.
