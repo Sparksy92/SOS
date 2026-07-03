@@ -35,6 +35,7 @@ Field notes are manual observation records you write yourself. Under **NOTES / R
 If you attempt to save an answer, source, or field note that contains high-risk operational advice (such as *medical first aid, electrical wiring, chemical handling, or water purification*):
 *   A critical safety dialog will appear.
 *   The save action will be blocked until you check the box acknowledging that **"I understand this saved item may involve high-risk material and should be verified before use."**
+*   **Post-Save Navigation**: If you click "Add to Report" on a high-risk answer, navigation to the Reports panel is safely queued and will execute only after you acknowledge and confirm the safety modal.
 
 ---
 
@@ -50,13 +51,14 @@ Accessible via the **NOTES / REPORTS** sidebar option:
 
 ## 5. Session Report Builder & Exports
 
-Click **BUILD SESSION REPORT** inside the Notes & Reports panel to bundle notes and research citations into a consolidated report packet.
+Click **BUILD REPORT** inside the Notes & Reports panel to bundle notes and research citations into a consolidated report packet.
 
 ### Report Fields
 *   **Title & Type**: Set report context (e.g. *Incident Log, Readiness Assessment*).
 *   **Callsign**: Set the reporting operator callsign (defaults to your profile homestead name).
 *   **Overview**: Write a situation overview.
 *   **Checklist Items**: Check/uncheck which saved answers, field notes, and library sources to append.
+*   **Autosave Active**: The report draft is automatically saved to local storage in the background as you edit. An indicator at the top header flashes `// AUTOSAVING...` and confirms `// DRAFT AUTOSAVED` once written.
 
 ### Exporting Options
 *   **Export Markdown**: Downloads a formatted `.md` file containing Situation Overviews, Jarvis logs, Field Notes, Source lists, safety warnings, and directives. Useful for printing or viewing in local markdown readers.
@@ -68,5 +70,17 @@ Click **BUILD SESSION REPORT** inside the Notes & Reports panel to bundle notes 
 ## 6. How to Clear Local Data
 
 If you want to clear your local session logs and notes:
-*   Open the browser Developer Console (`F12`), go to the **Application** tab, select **Local Storage**, and clear keys beginning with `sos_`.
+*   Open the **NOTES / REPORTS** tab.
+*   Click the **CLEAR ALL** button in the header.
+*   A tactical wipe confirmation dialog will appear. You must type the verification phrase **`CLEAR ALL`** to confirm deletion.
 *   Alternatively, clearing your browser cookies and site data for the SurvivalOS port will reset all logs.
+
+---
+
+## 7. Local Backups & Restores
+
+Under the **NOTES / REPORTS** header, you can perform offline backup operations:
+*   **Export Backup**: Downloads a consolidated JSON backup file containing all saved answers, saved sources, field notes, active session parameters, and report drafts.
+*   **Import Backup**: Allows uploading a previously exported JSON backup file.
+    *   **Deduplication Merge**: If the backup contains items with matching IDs, it compares timestamps (`updatedAt` or `createdAt`). The imported item overwrites the existing item only if it has a newer timestamp; otherwise, the existing record is preserved.
+    *   **Validation Checks**: Files are strictly validated for type headers (`sos_session_backup`), versions, array shapes, and required fields before importing. Corrupted or invalid files will be rejected cleanly without modifying your local database.

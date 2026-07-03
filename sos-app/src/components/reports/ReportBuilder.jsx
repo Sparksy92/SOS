@@ -24,6 +24,7 @@ const ReportBuilder = ({
 
   // Preview toggle
   const [isPreviewMode, setIsPreviewMode] = useState(true);
+  const [autosaveStatus, setAutosaveStatus] = useState('idle'); // 'idle' | 'saving' | 'saved'
 
   // Initialize checks (auto check all items when launching)
   useEffect(() => {
@@ -31,6 +32,26 @@ const ReportBuilder = ({
     setSelectedNotes(fieldNotes.map(n => n.id));
     setSelectedSources(savedSources.map(s => s.id));
   }, [savedAnswers, fieldNotes, savedSources]);
+
+  // Debounced Autosave Effect
+  useEffect(() => {
+    setAutosaveStatus('saving');
+    const timer = setTimeout(() => {
+      const reportObj = buildReportObject();
+      if (onSaveDraft) {
+        onSaveDraft(reportObj);
+      }
+      setAutosaveStatus('saved');
+      
+      const fadeTimer = setTimeout(() => {
+        setAutosaveStatus('idle');
+      }, 2000);
+      
+      return () => clearTimeout(fadeTimer);
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, [title, reportType, author, summary, manualNotes, nextActions, selectedAnswers, selectedNotes, selectedSources]);
 
   // Compile full report object
   const buildReportObject = () => {
@@ -126,6 +147,16 @@ const ReportBuilder = ({
           <h2 style={{ margin: 0, fontSize: '1.2rem', fontFamily: 'var(--font-mono)', fontWeight: 'bold', letterSpacing: '1px' }}>
             TACTICAL REPORT BUILDER
           </h2>
+          {autosaveStatus === 'saving' && (
+            <span style={{ fontSize: '0.7rem', color: 'var(--brand-primary)', fontFamily: 'var(--font-mono)', animation: 'pulse 1s infinite', marginLeft: '12px' }}>
+              // AUTOSAVING...
+            </span>
+          )}
+          {autosaveStatus === 'saved' && (
+            <span style={{ fontSize: '0.7rem', color: '#00ff66', fontFamily: 'var(--font-mono)', marginLeft: '12px' }}>
+              // DRAFT AUTOSAVED
+            </span>
+          )}
         </div>
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
           <button 

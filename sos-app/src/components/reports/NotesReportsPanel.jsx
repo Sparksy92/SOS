@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { 
   FileText, Cpu, Link2, BookOpen, Trash2, Search, Filter, 
-  ExternalLink, FileSpreadsheet, Plus, AlertTriangle 
+  ExternalLink, FileSpreadsheet, Plus, AlertTriangle, Database, Download, Upload, ShieldAlert
 } from 'lucide-react';
 import { 
   loadSavedAnswers, saveAnswers,
   loadSavedSources, saveSources,
   loadFieldNotes, saveFieldNotes,
   loadReportDrafts, saveReportDrafts,
-  addReportDraft
+  addReportDraft,
+  exportAllSavedData, importSavedData, clearAllSavedData
 } from '../../modules/session/sessionStore.js';
 import FieldNoteEditor from '../notes/FieldNoteEditor.jsx';
 import ReportBuilder from './ReportBuilder.jsx';
@@ -32,6 +33,54 @@ const NotesReportsPanel = ({ callSign = 'Operator' }) => {
   const [isCreatingNote, setIsCreatingNote] = useState(false);
   const [activeReportBuilder, setActiveReportBuilder] = useState(false);
   const [selectedItemDetails, setSelectedItemDetails] = useState(null);
+
+  // Backup & Restore states
+  const [showClearModal, setShowClearModal] = useState(false);
+  const [clearInput, setClearInput] = useState('');
+  const [importError, setImportError] = useState(null);
+
+  const handleExportBackup = () => {
+    const backupObj = exportAllSavedData();
+    const json = JSON.stringify(backupObj, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `sos_backup_${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImportBackup = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const backupObj = JSON.parse(event.target.result);
+        importSavedData(backupObj);
+        alert("Backup imported and deduped successfully!");
+        reloadData();
+        setImportError(null);
+      } catch (err) {
+        console.error("Backup import error:", err);
+        setImportError(err.message);
+        alert(`IMPORT FAILED: ${err.message}`);
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
+
+  const handleClearAllConfirm = () => {
+    if (clearInput !== 'CLEAR ALL') return;
+    clearAllSavedData();
+    reloadData();
+    setShowClearModal(false);
+    setClearInput('');
+    alert("All saved data has been successfully deleted.");
+  };
 
   // Reload everything from local storage
   const reloadData = () => {
@@ -149,20 +198,53 @@ const NotesReportsPanel = ({ callSign = 'Operator' }) => {
           </p>
         </div>
         
-        <div style={{ display: 'flex', gap: '12px' }}>
+        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+          <button 
+            className="btn-tactical" 
+            onClick={handleExportBackup}
+            style={{ padding: '10px 14px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px' }}
+            title="Export all saved answers, sources, field notes, and reports to a JSON file"
+          >
+            <Download size={15} /> EXPORT
+          </button>
+          
+          <label 
+            className="btn-tactical" 
+            style={{ padding: '10px 14px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', margin: 0 }}
+            title="Restore local data from JSON backup"
+          >
+            <Upload size={15} /> IMPORT
+            <input 
+              type="file" 
+              accept=".json" 
+              onChange={handleImportBackup} 
+              style={{ display: 'none' }} 
+            />
+          </label>
+
+          <button 
+            className="btn-tactical" 
+            onClick={() => setShowClearModal(true)}
+            style={{ padding: '10px 14px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px', borderColor: 'var(--brand-danger)', color: 'var(--brand-danger)' }}
+            title="Wipe all local saved records"
+          >
+            <Trash2 size={15} /> CLEAR ALL
+          </button>
+
           <button 
             className="btn-tactical" 
             onClick={() => setIsCreatingNote(true)}
-            style={{ padding: '10px 16px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px', borderColor: 'var(--brand-primary)' }}
+            style={{ padding: '10px 14px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px', borderColor: 'var(--brand-primary)' }}
           >
-            <Plus size={16} /> NEW FIELD NOTE
+            <Plus size={15} /> NEW NOTE
           </button>
+          
           <button 
             className="btn-tactical" 
             onClick={() => setActiveReportBuilder(true)}
-            style={{ padding: '10px 16px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px', borderColor: 'var(--brand-primary)' }}
+            style={{ padding: '10px 14px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px', borderColor: 'var(--brand-primary)' }}
           >
-            <FileSpreadsheet size={16} /> BUILD SESSION REPORT
+            <FileSpreadsheet size={15} /> BUILD REPORT
           </button>
         </div>
       </div>
@@ -563,7 +645,88 @@ const NotesReportsPanel = ({ callSign = 'Operator' }) => {
           </div>
         </div>
       )}
+      {/* Clear Confirmation Modal */}
+      {showClearModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.85)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 3000,
+          padding: '20px'
+        }}>
+          <div className="glass-panel" style={{
+            maxWidth: '460px',
+            width: '100%',
+            padding: '24px',
+            borderColor: 'var(--brand-danger)',
+            backgroundColor: '#0c0202',
+            boxShadow: '0 0 20px rgba(255, 0, 0, 0.2)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '16px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--brand-danger)' }}>
+              <ShieldAlert size={22} />
+              <h3 style={{ margin: 0, fontSize: '1.1rem', fontFamily: 'var(--font-mono)', fontWeight: 'bold' }}>
+                WIPE LOCAL DATABASES
+              </h3>
+            </div>
 
+            <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-main)', lineHeight: '1.5' }}>
+              CRITICAL WARNING: This action will permanently erase all saved answers, field notes, references, and report drafts. This operation cannot be undone.
+            </p>
+
+            <div>
+              <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '8px', fontFamily: 'var(--font-mono)' }}>
+                TYPE "CLEAR ALL" TO CONFIRM:
+              </label>
+              <input 
+                type="text" 
+                className="search-input glass-panel" 
+                style={{ width: '100%', padding: '10px', borderColor: clearInput === 'CLEAR ALL' ? '#00ff66' : 'var(--brand-danger)' }}
+                value={clearInput}
+                onChange={e => setClearInput(e.target.value)}
+                placeholder="CLEAR ALL"
+              />
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '8px' }}>
+              <button 
+                className="btn-tactical" 
+                onClick={() => {
+                  setShowClearModal(false);
+                  setClearInput('');
+                }}
+                style={{ padding: '8px 16px', fontSize: '0.85rem' }}
+              >
+                ABORT
+              </button>
+              
+              <button 
+                className="btn-tactical" 
+                disabled={clearInput !== 'CLEAR ALL'}
+                onClick={handleClearAllConfirm}
+                style={{ 
+                  padding: '8px 16px', 
+                  fontSize: '0.85rem',
+                  borderColor: clearInput === 'CLEAR ALL' ? 'var(--brand-danger)' : 'var(--border-subtle)',
+                  color: clearInput === 'CLEAR ALL' ? 'var(--brand-danger)' : 'var(--text-muted)',
+                  cursor: clearInput === 'CLEAR ALL' ? 'pointer' : 'not-allowed',
+                  opacity: clearInput === 'CLEAR ALL' ? 1 : 0.5
+                }}
+              >
+                CONFIRM WIPE
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

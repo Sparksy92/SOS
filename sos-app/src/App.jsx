@@ -218,10 +218,11 @@ function App() {
     return { risk: 'LOW', category: null };
   };
 
-  const executeSaveAnswer = (msg) => {
+  const executeSaveAnswer = (msg, index) => {
+    const userQuery = index > 0 ? messages[index - 1]?.text : 'User Query';
     addSavedAnswer({
       title: msg.text.substring(0, 40) + '...',
-      relatedQuestion: messages[messages.indexOf(msg) - 1]?.text || 'User Query',
+      relatedQuestion: userQuery || 'User Query',
       relatedAnswerStatus: msg.answerStatus || 'verified_local',
       riskCategory: getRiskySourceCategory(msg.sources) || getRiskLevel({ name: msg.text, path: '' }).category,
       body: msg.text,
@@ -231,13 +232,24 @@ function App() {
     alert("Answer saved successfully!");
   };
 
-  const handleSaveAnswer = (msg) => {
+  const handleSaveAnswer = (msg, index, navigateToReportsAfter = false) => {
     const riskCat = getRiskySourceCategory(msg.sources) || getRiskLevel({ name: msg.text, path: '' }).category;
+    const actionObj = {
+      actionType: navigateToReportsAfter ? 'save_answer_add_to_report' : 'save_answer',
+      riskCategory: riskCat,
+      execute: () => {
+        executeSaveAnswer(msg, index);
+        if (navigateToReportsAfter) {
+          setViewMode('reports-panel');
+        }
+      }
+    };
+
     if (riskCat) {
       setPendingSaveRiskCategory(riskCat);
-      setPendingSaveAction(() => () => executeSaveAnswer(msg));
+      setPendingSaveAction(actionObj);
     } else {
-      executeSaveAnswer(msg);
+      actionObj.execute();
     }
   };
 
@@ -256,7 +268,7 @@ function App() {
     alert(`Saved ${sourcesList.length} source references!`);
   };
 
-  const handleSaveSources = (sourcesList) => {
+  const handleSaveSources = (sourcesList, navigateToReportsAfter = false) => {
     let riskCat = null;
     for (const s of sourcesList) {
       if (s.riskCategory) {
@@ -264,16 +276,28 @@ function App() {
         break;
       }
     }
+
+    const actionObj = {
+      actionType: navigateToReportsAfter ? 'save_sources_add_to_report' : 'save_sources',
+      riskCategory: riskCat,
+      execute: () => {
+        executeSaveSources(sourcesList);
+        if (navigateToReportsAfter) {
+          setViewMode('reports-panel');
+        }
+      }
+    };
+
     if (riskCat) {
       setPendingSaveRiskCategory(riskCat);
-      setPendingSaveAction(() => () => executeSaveSources(sourcesList));
+      setPendingSaveAction(actionObj);
     } else {
-      executeSaveSources(sourcesList);
+      actionObj.execute();
     }
   };
 
-  const handleCreateFieldNoteFromMsg = (msg) => {
-    const userQuery = messages[messages.indexOf(msg) - 1]?.text || '';
+  const handleCreateFieldNoteFromMsg = (msg, index) => {
+    const userQuery = index > 0 ? messages[index - 1]?.text : '';
     const riskCat = getRiskySourceCategory(msg.sources) || getRiskLevel({ name: msg.text, path: '' }).category;
     
     const prefill = {
@@ -1281,7 +1305,7 @@ function App() {
                           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '12px', borderTop: '1px solid rgba(255,255,255,0.03)', paddingTop: '10px' }}>
                             <button 
                               className="btn-tactical" 
-                              onClick={() => handleSaveAnswer(msg)}
+                              onClick={() => handleSaveAnswer(msg, i)}
                               style={{ padding: '4px 10px', fontSize: '0.7rem' }}
                             >
                               SAVE ANSWER
@@ -1289,7 +1313,7 @@ function App() {
                             {msg.sources && msg.sources.length > 0 && (
                               <button 
                                 className="btn-tactical" 
-                                onClick={() => handleSaveSources(msg.sources)}
+                                onClick={() => handleSaveSources(msg.sources, false)}
                                 style={{ padding: '4px 10px', fontSize: '0.7rem' }}
                               >
                                 SAVE SOURCES
@@ -1297,17 +1321,14 @@ function App() {
                             )}
                             <button 
                               className="btn-tactical" 
-                              onClick={() => handleCreateFieldNoteFromMsg(msg)}
+                              onClick={() => handleCreateFieldNoteFromMsg(msg, i)}
                               style={{ padding: '4px 10px', fontSize: '0.7rem' }}
                             >
                               CREATE FIELD NOTE
                             </button>
                             <button 
                               className="btn-tactical" 
-                              onClick={() => {
-                                handleSaveAnswer(msg);
-                                setViewMode('reports-panel');
-                              }}
+                              onClick={() => handleSaveAnswer(msg, i, true)}
                               style={{ padding: '4px 10px', fontSize: '0.7rem' }}
                             >
                               ADD TO REPORT
@@ -2018,7 +2039,11 @@ function App() {
             setPendingSaveRiskCategory(null);
           }}
           onConfirm={() => {
-            pendingSaveAction();
+            if (pendingSaveAction && pendingSaveAction.execute) {
+              pendingSaveAction.execute();
+            } else if (typeof pendingSaveAction === 'function') {
+              pendingSaveAction();
+            }
             setPendingSaveAction(null);
             setPendingSaveRiskCategory(null);
           }}

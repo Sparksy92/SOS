@@ -73,3 +73,116 @@ export const loadActiveSession = () => localStore.get(ACTIVE_SESSION_KEY, {
   notes: []
 });
 export const saveActiveSession = (session) => localStore.set(ACTIVE_SESSION_KEY, session);
+
+// --- PURE JS BACKUP & RESTORE UTILITIES (Testable under Node.js) ---
+
+export const validateBackup = (backupObject) => {
+  if (!backupObject || typeof backupObject !== 'object') {
+    return { valid: false, error: 'Backup is not a valid JSON object.' };
+  }
+  if (backupObject.backupType !== 'sos_session_backup') {
+    return { valid: false, error: 'Invalid backup identifier (backupType mismatch).' };
+  }
+  if (typeof backupObject.version !== 'number') {
+    return { valid: false, error: 'Backup version metadata is missing or invalid.' };
+  }
+  if (!backupObject.data || typeof backupObject.data !== 'object') {
+    return { valid: false, error: 'Backup payload data object is missing.' };
+  }
+
+  const collections = ['savedAnswers', 'savedSources', 'fieldNotes', 'reportDrafts'];
+  for (const col of collections) {
+    const arr = backupObject.data[col];
+    if (!arr) {
+      return { valid: false, error: `Backup data payload is missing collection: ${col}` };
+    }
+    if (!Array.isArray(arr)) {
+      return { valid: false, error: `Collection ${col} is not a valid array.` };
+    }
+    for (const item of arr) {
+      if (!item.id || !item.createdAt) {
+        return { valid: false, error: `Item inside collection ${col} is missing required 'id' or 'createdAt' fields.` };
+      }
+    }
+  }
+
+  return { valid: true };
+};
+
+export const mergeCollections = (existingList, importedList) => {
+  const merged = [...existingList];
+
+  importedList.forEach(importedItem => {
+    const existingIdx = merged.findIndex(x => x.id === importedItem.id);
+    if (existingIdx !== -1) {
+      const existingItem = merged[existingIdx];
+      const existingTime = new Date(existingItem.updatedAt || existingItem.createdAt).getTime();
+      const importedTime = new Date(importedItem.updatedAt || importedItem.createdAt).getTime();
+      
+      // Imported item wins only if it has a newer timestamp
+      if (importedTime > existingTime) {
+        merged[existingIdx] = { ...existingItem, ...importedItem };
+      }
+    } else {
+      merged.push(importedItem);
+    }
+  });
+
+  return merged;
+};
+
+// --- BROWSER LOCALSTORE ACTIONS ---
+
+export const exportAllSavedData = () => {
+  return {
+    backupType: 'sos_session_backup',
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    data: {
+      savedAnswers: loadSavedAnswers(),
+      savedSources: loadSavedSources(),
+      fieldNotes: loadFieldNotes(),
+      reportDrafts: loadReportDrafts(),
+      activeSession: loadActiveSession()
+    }
+  };
+};
+
+export const importSavedData = (backupObject) => {
+  const validation = validateBackup(backupObject);
+  if (!validation.valid) {
+    throw new Error(validation.error);
+  }
+
+  const data = backupObject.data;
+
+  if (data.savedAnswers) {
+    const merged = mergeCollections(loadSavedAnswers(), data.savedAnswers);
+    saveAnswers(merged);
+  }
+  if (data.savedSources) {
+    const merged = mergeCollections(loadSavedSources(), data.savedSources);
+    saveSources(merged);
+  }
+  if (data.fieldNotes) {
+    const merged = mergeCollections(loadFieldNotes(), data.fieldNotes);
+    saveFieldNotes(merged);
+  }
+  if (data.reportDrafts) {
+    const merged = mergeCollections(loadReportDrafts(), data.reportDrafts);
+    saveReportDrafts(merged);
+  }
+  if (data.activeSession) {
+    saveActiveSession(data.activeSession);
+  }
+
+  return true;
+};
+
+export const clearAllSavedData = () => {
+  localStore.remove(SAVED_ANSWERS_KEY);
+  localStore.remove(SAVED_SOURCES_KEY);
+  localStore.remove(FIELD_NOTES_KEY);
+  localStore.remove(REPORT_DRAFTS_KEY);
+  localStore.remove(ACTIVE_SESSION_KEY);
+};
