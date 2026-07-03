@@ -104,29 +104,98 @@ const indexFile = async (filePath) => {
 
 const { db, hasFts5 } = require('./db');
 
+const RISKY_PATTERNS = {
+  'medical': /medical|first aid|triage|burn|wound|poison|injury/i,
+  'water_treatment': /water treatment|purification|filter|sanitize|chlorine/i,
+  'wild_plants': /wild plant|foraging|edible weed|herbal/i,
+  'mushrooms': /mushroom|fungi|amanita|mycology/i,
+  'food_preservation': /canning|fermentation|preservation|botulism|curing/i,
+  'electrical': /electrical|wiring|generator|inverter|solar battery|breaker/i,
+  'fuel_generator': /fuel|generator|propane|butane|gasoline|kerosene/i,
+  'firearms': /firearms|ammo|ballistics|reloading|shooting|gunsmith/i,
+  'mechanical': /mechanical|engine|pump|transmission|weld|turbine/i,
+  'chemical': /chemical|bleach|acid|lye|pesticide|herbicide/i
+};
+
+function getRiskCategory(text) {
+  if (!text) return null;
+  for (const [category, pattern] of Object.entries(RISKY_PATTERNS)) {
+    if (pattern.test(text)) {
+      return category;
+    }
+  }
+  return null;
+}
+
 /**
  * Query the AI using RAG (SQLite Retrieval)
  */
-const askQuestion = async (query, isLiveGuide = false) => {
+const askQuestion = async (query, isLiveGuide = false, useGeneralKnowledge = false) => {
   // Check if database is empty
-  try {
-    const checkStmt = db.prepare("SELECT COUNT(*) as count FROM indexed_docs");
-    const countResult = checkStmt.get();
-    if (!countResult || countResult.count === 0) {
-      return {
-        answer: "My memory banks are currently empty! I cannot answer questions yet because no files have been indexed into my database. The background sync crawler is currently unzipping and indexing your database. Please wait for it to index some documents, then ask me again.",
-        sources: []
-      };
+  if (!useGeneralKnowledge) {
+    try {
+      const checkStmt = db.prepare("SELECT COUNT(*) as count FROM indexed_docs");
+      const countResult = checkStmt.get();
+      if (!countResult || countResult.count === 0) {
+        return {
+          answer: "My memory banks are currently empty! I cannot answer questions yet because no files have been indexed into my database. Please wait for the background crawler to index documents.",
+          answerStatus: "insufficient_context",
+          sources: []
+        };
+      }
+    } catch (err) {
+      console.error("Error checking indexed docs count:", err);
     }
-  } catch (err) {
-    console.error("Error checking indexed docs count:", err);
   }
+
+  // Determine if high-risk topic exists in query
+  const queryRisk = getRiskCategory(query);
+  let resolvedRisk = queryRisk;
 
   // 1. Clean query (remove punctuation that could break parsing)
   const sanitizedQuery = query.replace(/[^\w\s]/g, ' ').trim();
   if (!sanitizedQuery) {
     return {
       answer: "Please enter a valid search query containing keywords.",
+      answerStatus: "insufficient_context",
+      sources: []
+    };
+  }
+
+  // Handle uncited model fallback
+  if (useGeneralKnowledge) {
+    if (resolvedRisk) {
+      return {
+        answer: `CRITICAL BLOCK: Unverified fallback requests are blocked for high-risk topic [${resolvedRisk.toUpperCase()}]. Answers must be verified against your offline survival library. Please refine your search keywords or consult physical reference manuals directly.`,
+        answerStatus: "insufficient_context",
+        sources: []
+      };
+    }
+
+    console.log(`[LLM] General knowledge query: "${sanitizedQuery}"`);
+    let template = `You are the SOS (Survival Operating System) AI Assistant. 
+You are answering the user's question using your general pre-trained knowledge base because no verified local sources were requested.
+Clearly advise the user that this answer is general knowledge and has not been verified against their offline survival library.
+
+QUESTION:
+{question}
+
+ANSWER:`;
+
+    const prompt = PromptTemplate.fromTemplate(template);
+    const chain = RunnableSequence.from([
+      prompt,
+      llm,
+      new StringOutputParser(),
+    ]);
+
+    const response = await chain.invoke({
+      question: query,
+    });
+
+    return {
+      answer: response,
+      answerStatus: "uncited_model",
       sources: []
     };
   }
@@ -137,7 +206,7 @@ const askQuestion = async (query, isLiveGuide = false) => {
   if (hasFts5) {
     try {
       const searchStmt = db.prepare(`
-        SELECT document_path, content 
+        SELECT document_path, chunk_index, content 
         FROM document_chunks 
         WHERE content MATCH ? 
         ORDER BY rank 
@@ -153,7 +222,7 @@ const askQuestion = async (query, isLiveGuide = false) => {
   if (matches.length === 0) {
     try {
       const fallbackStmt = db.prepare(`
-        SELECT document_path, content 
+        SELECT document_path, chunk_index, content 
         FROM document_chunks 
         WHERE content LIKE ? 
         LIMIT 5
@@ -166,25 +235,78 @@ const askQuestion = async (query, isLiveGuide = false) => {
 
   if (matches.length === 0) {
     return {
-      answer: `I searched the database for "${sanitizedQuery}" but couldn't find any matching documents. Please try using different keywords.`,
+      answer: "I do not have enough verified local information to answer this query.",
+      answerStatus: "insufficient_context",
       sources: []
     };
   }
 
-  const relevantDocs = matches.map(m => ({
-    pageContent: m.content,
-    metadata: { source: m.document_path }
-  }));
+  // Check matched document contents for risk categories
+  if (!resolvedRisk) {
+    for (const m of matches) {
+      const pathRisk = getRiskCategory(`${m.document_path} ${m.content}`);
+      if (pathRisk) {
+        resolvedRisk = pathRisk;
+        break;
+      }
+    }
+  }
 
-  const contextText = relevantDocs.map(doc => doc.pageContent).join("\n\n---\n\n");
+  const sources = matches.map((m, idx) => {
+    const rank = idx + 1;
+    const documentPath = m.document_path;
+    const chunkIndex = m.chunk_index;
+    const ext = path.extname(documentPath).toLowerCase();
+    
+    // Page/section mapping
+    let page = null;
+    let section = null;
+    // Check if high-fidelity OCR markdown exists
+    const relPath = path.relative(ROOT_DIR, path.join(ROOT_DIR, documentPath.replace('/materials/', '')));
+    const parsed = path.parse(relPath);
+    const mdRelPath = path.join(parsed.dir, parsed.name + '.md');
+    const mdPath = path.join(ROOT_DIR, 'markdown_materials', mdRelPath);
+    const isOcrMarkdown = fs.existsSync(mdPath);
+
+    if (ext === '.pdf' && !isOcrMarkdown) {
+      page = chunkIndex + 1;
+    } else {
+      section = chunkIndex + 1;
+    }
+
+    // Match labels
+    let matchLabel = 'Weak Match';
+    if (rank === 1) matchLabel = 'Strong Match';
+    else if (rank === 2) matchLabel = 'Good Match';
+    else if (rank === 3) matchLabel = 'Related Match';
+
+    return {
+      source: documentPath,
+      documentPath,
+      chunkIndex,
+      rank,
+      excerpt: m.content.substring(0, 300), // Excerpt of chunk
+      matchLabel,
+      riskCategory: getRiskCategory(`${documentPath} ${m.content}`),
+      page,
+      section
+    };
+  });
+
+  const contextText = matches.map(m => m.content).join("\n\n---\n\n");
   
   // 2. Construct Prompt
   let template = `You are the SOS (Survival Operating System) AI Assistant. 
 You must answer the user's question based strictly on the provided context from the survival database. 
-If the answer is not contained within the context, state that you do not have the information. Do not invent answers.`;
+If the answer is not contained within the context, state that you do not have the information. Do not invent answers.
+If the context does not contain enough information to answer the question, respond with exactly: "I do not have enough verified local information to answer this query."`;
 
   if (isLiveGuide) {
     template += `\n\nFORMATTING RULE: Since you are guiding the user live in a critical situation, format your response strictly as a clear, step-by-step numbered list. Keep each step extremely brief, actionable, and direct (maximum 2 sentences per step). Avoid preambles.`;
+  }
+
+  if (resolvedRisk) {
+    template += `\n\nWARNING: This topic is flagged as high-risk. Emphasize safety precautions, state that the information is extracted from offline local manuals, recommend professional verification where appropriate, and avoid presenting theoretical guidance as absolute fact.`;
   }
 
   template += `\n\nCONTEXT:
@@ -210,12 +332,22 @@ ANSWER:`;
     question: query,
   });
 
+  const responseText = response.trim();
+  const insufficientPhrase = "I do not have enough verified local information to answer this query.";
+  const isInsufficient = responseText.includes(insufficientPhrase) || responseText.toLowerCase().includes("not have enough verified local information");
+
+  if (isInsufficient) {
+    return {
+      answer: "I do not have enough verified local information to answer this query.",
+      answerStatus: "insufficient_context",
+      sources: []
+    };
+  }
+
   return {
     answer: response,
-    sources: relevantDocs.map(doc => ({
-      source: doc.metadata.source,
-      page: doc.metadata.loc?.pageNumber
-    }))
+    answerStatus: "verified_local",
+    sources
   };
 };
 

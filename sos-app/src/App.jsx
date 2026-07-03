@@ -147,6 +147,54 @@ function App() {
   const [isVoiceChatActive, setIsVoiceChatActive] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [activeStepIndex, setActiveStepIndex] = useState(0);
+
+  const findDocumentByPath = (path) => {
+    if (!categories) return null;
+    for (const catFiles of Object.values(categories)) {
+      const doc = catFiles.find(d => d.path === path);
+      if (doc) return doc;
+    }
+    const name = path.split('/').pop();
+    const ext = name.includes('.') ? name.substring(name.lastIndexOf('.')) : '';
+    return {
+      name,
+      path,
+      extension: ext,
+      rawCategory: 'Uncategorized',
+      category: 'General Materials',
+      subdirectories: []
+    };
+  };
+
+  const openSourceDocument = (source) => {
+    const doc = findDocumentByPath(source);
+    if (doc) {
+      setSelectedDocument(doc);
+    }
+  };
+
+  const readSourceAloud = (source) => {
+    const doc = findDocumentByPath(source);
+    if (doc) {
+      activateAudioReader(doc);
+    }
+  };
+
+  const getSourceTitle = (source) => {
+    if (metadata && metadata[source]?.title) {
+      return metadata[source].title;
+    }
+    const parts = source.split('/');
+    return parts[parts.length - 1] || 'Source Document';
+  };
+
+  const getSourceRisk = (source) => {
+    const doc = findDocumentByPath(source);
+    if (doc) {
+      return getRiskLevel(doc);
+    }
+    return { risk: 'LOW', category: null };
+  };
   
   const recognitionRef = useRef(null);
 
@@ -634,7 +682,7 @@ function App() {
     return null;
   };
 
-  const handleSendMessage = async (overrideText = null) => {
+  const handleSendMessage = async (overrideText = null, useGeneralKnowledge = false) => {
     const textToSend = overrideText || chatInput;
     if (!textToSend.trim() || chatLoading) return;
     
@@ -649,13 +697,18 @@ function App() {
       const res = await fetch(`${API_BASE}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: textToSend, isLiveGuide })
+        body: JSON.stringify({ message: textToSend, isLiveGuide, useGeneralKnowledge })
       });
       const data = await res.json();
       
       if (data.error) throw new Error(data.error);
       
-      setMessages(prev => [...prev, { role: 'ai', text: data.answer, sources: data.sources }]);
+      setMessages(prev => [...prev, { 
+        role: 'ai', 
+        text: data.answer, 
+        sources: data.sources,
+        answerStatus: data.answerStatus
+      }]);
       
       // Auto Speech Feedback
       if (isVoiceChatActive) {
@@ -1124,33 +1177,252 @@ function App() {
                         )}
 
                         {(() => {
-                          const riskyCategory = getRiskySourceCategory(msg.sources);
+                          let riskyCategory = getRiskySourceCategory(msg.sources);
+                          if (!riskyCategory && msg.role === 'ai') {
+                            // Re-evaluate query and answer text for high-risk categories
+                            const itemToCheck = { name: msg.text, path: '' };
+                            const risk = getRiskLevel(itemToCheck);
+                            if (risk.risk === 'HIGH') {
+                              riskyCategory = risk.category;
+                            }
+                          }
+
                           if (!riskyCategory) return null;
                           return (
                             <div style={{
-                              marginTop: '12px',
-                              padding: '10px 12px',
+                              marginTop: '16px',
+                              padding: '16px',
                               border: '1px solid var(--brand-danger)',
-                              borderRadius: '4px',
-                              backgroundColor: 'rgba(255, 0, 0, 0.1)',
+                              borderRadius: '8px',
+                              backgroundColor: 'rgba(255, 0, 0, 0.05)',
                               color: 'var(--brand-danger)',
-                              fontSize: '0.8rem',
-                              lineHeight: '1.4',
-                              fontFamily: 'var(--font-mono)'
+                              fontSize: '0.85rem',
+                              lineHeight: '1.5',
+                              fontFamily: 'var(--font-mono)',
+                              boxShadow: '0 0 10px rgba(255,0,0,0.1)'
                             }}>
-                              <strong>[SAFETY CAUTION]</strong> {getSafetyWarning(riskyCategory)}
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold', marginBottom: '8px' }}>
+                                <ShieldAlert size={18} />
+                                <span>CRITICAL SAFETY ADVISORY // CATEGORY: {riskyCategory.toUpperCase()}</span>
+                              </div>
+                              <p style={{ margin: '0 0 8px 0' }}>
+                                This response contains information regarding high-risk logistical operations. This advice is generated from offline local manual excerpts and should be cross-verified with physical books or verified checklists.
+                              </p>
+                              <strong style={{ display: 'block', borderTop: '1px dashed rgba(255,0,0,0.2)', paddingTop: '8px' }}>
+                                ⚠️ DO NOT treat this advice as a substitute for professional emergency, medical, electrical, chemical, mechanical, or legal expertise. Recommend professional verification before proceeding.
+                              </strong>
                             </div>
                           );
                         })()}
-                        
+
                         {msg.sources && msg.sources.length > 0 && (
-                          <div style={{ marginTop: '16px', paddingTop: '12px', borderTop: '1px dashed var(--border-subtle)', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                            <strong>SOURCES:</strong>
-                            <ul style={{ paddingLeft: '20px', marginTop: '4px' }}>
-                              {msg.sources.map((s, idx) => (
-                                <li key={idx}>{s.source.split('\\').pop().split('/').pop()}</li>
-                              ))}
-                            </ul>
+                          <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px dashed var(--border-subtle)' }}>
+                            <div style={{ fontSize: '0.8rem', color: 'var(--brand-primary)', fontFamily: 'var(--font-mono)', letterSpacing: '1px', marginBottom: '12px', fontWeight: 'bold' }}>
+                              VERIFIED OFFLINE SOURCES ATTRIBUTION:
+                            </div>
+                            
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                              {msg.sources.map((s, idx) => {
+                                const title = getSourceTitle(s.source);
+                                const risk = getSourceRisk(s.source);
+                                const locationLabel = s.page ? `PAGE ${s.page}` : s.section ? `SECTION ${s.section}` : null;
+                                
+                                return (
+                                  <div 
+                                    key={idx} 
+                                    className="glass-panel" 
+                                    style={{ 
+                                      padding: '14px', 
+                                      display: 'flex', 
+                                      flexDirection: 'column', 
+                                      gap: '10px', 
+                                      borderColor: risk.risk === 'HIGH' ? 'var(--brand-danger)' : 'var(--border-subtle)',
+                                      backgroundColor: 'rgba(255,255,255,0.01)'
+                                    }}
+                                  >
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '8px' }}>
+                                      <div>
+                                        <div style={{ fontWeight: 'bold', fontSize: '0.85rem', color: 'var(--brand-primary)', fontFamily: 'var(--font-mono)' }}>
+                                          {title.toUpperCase()}
+                                        </div>
+                                        <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '2px', wordBreak: 'break-all' }}>
+                                          PATH: {s.source}
+                                        </div>
+                                      </div>
+                                      
+                                      <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
+                                        {locationLabel && (
+                                          <span style={{ fontSize: '0.65rem', backgroundColor: 'rgba(255,255,255,0.06)', border: '1px solid var(--border-subtle)', padding: '2px 6px', borderRadius: '3px', fontFamily: 'var(--font-mono)' }}>
+                                            {locationLabel}
+                                          </span>
+                                        )}
+                                        {s.matchLabel && (
+                                          <span style={{ 
+                                            fontSize: '0.65rem', 
+                                            backgroundColor: s.matchLabel.includes('Strong') ? 'rgba(0, 255, 102, 0.1)' : 'rgba(255,255,255,0.05)', 
+                                            border: `1px solid ${s.matchLabel.includes('Strong') ? '#00ff66' : 'var(--border-subtle)'}`,
+                                            color: s.matchLabel.includes('Strong') ? '#00ff66' : 'var(--text-main)',
+                                            padding: '2px 6px', 
+                                            borderRadius: '3px',
+                                            fontWeight: 'bold',
+                                            fontFamily: 'var(--font-mono)'
+                                          }}>
+                                            {s.matchLabel.toUpperCase()}
+                                          </span>
+                                        )}
+                                        {risk.risk === 'HIGH' && (
+                                          <span style={{ fontSize: '0.65rem', backgroundColor: 'var(--brand-danger)', color: 'white', padding: '2px 6px', borderRadius: '3px', fontWeight: 'bold', fontFamily: 'var(--font-mono)' }}>
+                                            RISK: {risk.category.toUpperCase()}
+                                          </span>
+                                        )}
+                                      </div>
+                                    </div>
+
+                                    {s.excerpt && (
+                                      <div style={{ 
+                                        fontSize: '0.75rem', 
+                                        color: 'var(--text-muted)', 
+                                        lineHeight: '1.4', 
+                                        backgroundColor: 'rgba(0,0,0,0.2)', 
+                                        padding: '8px 10px', 
+                                        borderRadius: '4px',
+                                        borderLeft: '2px solid var(--brand-primary)',
+                                        whiteSpace: 'pre-wrap'
+                                      }}>
+                                        {s.excerpt.trim()}...
+                                      </div>
+                                    )}
+
+                                    <div style={{ display: 'flex', gap: '10px', alignSelf: 'flex-end', marginTop: '4px' }}>
+                                      <button 
+                                        className="btn-tactical" 
+                                        onClick={() => openSourceDocument(s.source)}
+                                        style={{ padding: '6px 12px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}
+                                      >
+                                        <ExternalLink size={12} /> OPEN DOCUMENT
+                                      </button>
+                                      {['.pdf', '.txt', '.md'].includes(s.source.split('.').pop().toLowerCase()) && (
+                                        <button 
+                                          className="btn-tactical" 
+                                          onClick={() => readSourceAloud(s.source)}
+                                          style={{ padding: '6px 12px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}
+                                        >
+                                          <Volume2 size={12} /> READ ALOUD
+                                        </button>
+                                      )}
+                                    </div>
+
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+
+                        {msg.answerStatus === 'insufficient_context' && (
+                          <div className="glass-panel" style={{
+                            marginTop: '16px',
+                            padding: '16px',
+                            borderColor: 'var(--brand-primary)',
+                            backgroundColor: 'rgba(255, 183, 0, 0.02)',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '12px'
+                          }}>
+                            <div style={{ fontSize: '0.8rem', color: 'var(--brand-primary)', fontWeight: 'bold', letterSpacing: '1px', fontFamily: 'var(--font-mono)' }}>
+                              SYSTEM FALLBACK OPERATION REQUIRED // INSUFFICIENT LOCAL CONTEXT
+                            </div>
+                            
+                            <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: '1.4' }}>
+                              Jarvis could not verify enough facts inside your local library to answer this query. Select an alternative protocol:
+                            </p>
+
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '4px' }}>
+                              <button 
+                                className="btn-tactical" 
+                                onClick={() => {
+                                  const userMsg = messages[i - 1];
+                                  if (userMsg) {
+                                    setChatInput(userMsg.text);
+                                  }
+                                }}
+                                style={{ padding: '8px 12px', fontSize: '0.75rem' }}
+                              >
+                                REFINE SEARCH KEYWORDS
+                              </button>
+                              <button 
+                                className="btn-tactical" 
+                                onClick={() => setViewMode('files')}
+                                style={{ padding: '8px 12px', fontSize: '0.75rem' }}
+                              >
+                                SEARCH LIBRARY MANUALLY
+                              </button>
+                              <button 
+                                className="btn-tactical" 
+                                onClick={() => setViewMode('settings')}
+                                style={{ padding: '8px 12px', fontSize: '0.75rem' }}
+                              >
+                                REBUILD/REFRESH MANIFEST
+                              </button>
+                              
+                              {(() => {
+                                const userQueryMsg = messages[i - 1];
+                                const isQueryRisky = userQueryMsg ? !!getSourceRisk(userQueryMsg.text).category : false;
+                                
+                                if (isQueryRisky) {
+                                  return (
+                                    <button 
+                                      className="btn-tactical" 
+                                      disabled
+                                      style={{ 
+                                        padding: '8px 12px', 
+                                        fontSize: '0.75rem', 
+                                        borderColor: 'var(--brand-danger)', 
+                                        color: 'var(--brand-danger)', 
+                                        cursor: 'not-allowed',
+                                        opacity: 0.6
+                                      }}
+                                      title="Unverified fallback is disabled for high-risk topics."
+                                    >
+                                      🚨 WITHOUT LOCAL SOURCES (BLOCKED)
+                                    </button>
+                                  );
+                                } else {
+                                  return (
+                                    <button 
+                                      className="btn-tactical" 
+                                      onClick={() => {
+                                        if (userQueryMsg) {
+                                          handleSendMessage(userQueryMsg.text, true);
+                                        }
+                                      }}
+                                      style={{ padding: '8px 12px', fontSize: '0.75rem', borderColor: 'var(--brand-primary)' }}
+                                    >
+                                      ASK JARVIS WITHOUT LOCAL SOURCES
+                                    </button>
+                                  );
+                                }
+                              })()}
+                            </div>
+                            
+                            {(() => {
+                              const userQueryMsg = messages[i - 1];
+                              const isQueryRisky = userQueryMsg ? !!getSourceRisk(userQueryMsg.text).category : false;
+                              if (!isQueryRisky) {
+                                return (
+                                  <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontStyle: 'italic', marginTop: '2px' }}>
+                                    ⚠️ WARNING: Requesting an answer "Without Local Sources" will rely on Jarvis's pre-trained weights. This output is not checked or cited against your local survival books.
+                                  </div>
+                                );
+                              } else {
+                                return (
+                                  <div style={{ fontSize: '0.7rem', color: 'var(--brand-danger)', fontWeight: 'bold', marginTop: '2px' }}>
+                                    ⚠️ SAFETY BLOCK: High-risk topic identified. You cannot request unverified general answers on risky logistical categories. Please consult verified reference books manually.
+                                  </div>
+                                );
+                              }
+                            })()}
+
                           </div>
                         )}
                       </div>

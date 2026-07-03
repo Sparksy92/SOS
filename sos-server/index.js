@@ -45,10 +45,10 @@ app.use(express.json()); // Add JSON parser for POST requests
 
 app.post('/api/chat', async (req, res) => {
   try {
-    const { message, isLiveGuide } = req.body;
+    const { message, isLiveGuide, useGeneralKnowledge } = req.body;
     if (!message) return res.status(400).json({ error: "Message is required" });
     
-    const response = await ai.askQuestion(message, isLiveGuide);
+    const response = await ai.askQuestion(message, isLiveGuide, useGeneralKnowledge);
     res.json(response);
   } catch (err) {
     console.error("AI Error:", err);
