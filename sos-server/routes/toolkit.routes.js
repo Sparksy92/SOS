@@ -31,8 +31,10 @@ function detectMetadata(filename) {
       return {
         detectedCategory: item.category,
         riskCategory: item.risk,
-        licenseStatus: item.license,
-        verificationStatus: item.verified
+        licenseStatus: "unknown",
+        suggestedLicenseStatus: item.license,
+        verificationStatus: "requires_operator_review",
+        matchConfidence: "filename_match_only"
       };
     }
   }
@@ -41,7 +43,9 @@ function detectMetadata(filename) {
     detectedCategory: "general_survival",
     riskCategory: null,
     licenseStatus: "unknown",
-    verificationStatus: "unverified"
+    suggestedLicenseStatus: "unknown",
+    verificationStatus: "requires_operator_review",
+    matchConfidence: "none"
   };
 }
 
@@ -91,8 +95,8 @@ router.get('/staging', (req, res) => {
 // 2. GET /api/toolkit/zim
 router.get('/zim', (req, res) => {
   try {
-    // Read folder path from query or env var, fallback to relative staging path
-    let targetFolder = req.query.folder || process.env.SOS_ZIM_DIR;
+    // Ignore req.query.folder completely. Only use process.env.SOS_ZIM_DIR if configured.
+    let targetFolder = process.env.SOS_ZIM_DIR;
     let isFallback = false;
 
     if (!targetFolder) {
@@ -108,7 +112,8 @@ router.get('/zim', (req, res) => {
     }
 
     if (!fs.existsSync(targetFolder)) {
-      return res.status(404).json({ error: `Configured folder does not exist: ${targetFolder}` });
+      // Never return raw configured folder paths in errors to prevent home path leaks
+      return res.status(404).json({ error: "Configured ZIM folder does not exist." });
     }
 
     const files = fs.readdirSync(targetFolder);

@@ -202,7 +202,12 @@ test('Toolkit Routes Handler Metadata-Only Verification', () => {
         const fileRecord = result.body.stagedFiles.find(f => f.filename === 'FM_21-76_Survival_Manual.pdf');
         assert.ok(fileRecord, 'Staging file should be listed.');
         assert.strictEqual(fileRecord.detectedCategory, 'general_survival');
-        assert.strictEqual(fileRecord.licenseStatus, 'official_free');
+        
+        // Hardened: licenseStatus is unknown by default, suggested is official_free
+        assert.strictEqual(fileRecord.licenseStatus, 'unknown');
+        assert.strictEqual(fileRecord.suggestedLicenseStatus, 'official_free');
+        assert.strictEqual(fileRecord.verificationStatus, 'requires_operator_review');
+        assert.strictEqual(fileRecord.matchConfidence, 'filename_match_only');
         assert.strictEqual(fileRecord.sanitizedPath, '[IMPORT_STAGING]/FM_21-76_Survival_Manual.pdf');
         
         // Ensure no actual user home paths or system paths are returned
@@ -225,7 +230,7 @@ test('Toolkit Routes Handler Metadata-Only Verification', () => {
 
     stagingHandler(req, res);
   }).then(() => {
-    // Verify ZIM catalog listing ZIM filenames and sanitizing paths
+    // Verify ZIM catalog listing ZIM filenames, ignoring folder query parameter, and hiding home path leaks
     return new Promise((resolve, reject) => {
       const zimDir = path.resolve('import-staging', 'kiwix');
       if (!fs.existsSync(zimDir)) {
@@ -234,14 +239,15 @@ test('Toolkit Routes Handler Metadata-Only Verification', () => {
       const testZim = path.join(zimDir, 'wikipedia_en_medicine.zim');
       fs.writeFileSync(testZim, 'dummy zim binary');
 
-      const { req, res } = mockReqRes({ query: { folder: zimDir } }, (result) => {
+      // Send a fake folder query parameter. The ZIM handler MUST ignore it.
+      const { req, res } = mockReqRes({ query: { folder: 'C:/Users/Blair/FakeSensitivePath' } }, (result) => {
         try {
           assert.strictEqual(result.statusCode, 200);
           assert.strictEqual(result.body.zimFolder, '[ZIM_FOLDER]');
           assert.ok(Array.isArray(result.body.archives));
           
           const archiveRecord = result.body.archives.find(a => a.filename === 'wikipedia_en_medicine.zim');
-          assert.ok(archiveRecord);
+          assert.ok(archiveRecord, 'ZIM file from default staging folder should be found, ignoring query folder path');
           assert.strictEqual(archiveRecord.path, '[ZIM_FOLDER]/wikipedia_en_medicine.zim');
           
           // Ensure no user home directory leak
@@ -257,6 +263,29 @@ test('Toolkit Routes Handler Metadata-Only Verification', () => {
           if (fs.existsSync(testZim)) {
             fs.unlinkSync(testZim);
           }
+          reject(err);
+        }
+      });
+
+      zimHandler(req, res);
+    });
+  }).then(() => {
+    // Verify ZIM 404 does not leak path names
+    return new Promise((resolve, reject) => {
+      // Set target env path to something non-existent
+      const oldEnv = process.env.SOS_ZIM_DIR;
+      process.env.SOS_ZIM_DIR = 'C:/Users/Blair/Downloads/SomeNonExistentFolderKey';
+
+      const { req, res } = mockReqRes({}, (result) => {
+        try {
+          // Restore env
+          process.env.SOS_ZIM_DIR = oldEnv;
+
+          assert.strictEqual(result.statusCode, 404);
+          assert.strictEqual(result.body.error, 'Configured ZIM folder does not exist.');
+          resolve();
+        } catch (err) {
+          process.env.SOS_ZIM_DIR = oldEnv;
           reject(err);
         }
       });

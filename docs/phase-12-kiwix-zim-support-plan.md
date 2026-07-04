@@ -5,19 +5,20 @@ Kiwix distributes highly-compressed offline encyclopedia copies using the `.zim`
 ## Structural Design
 
 ### 1. ZIM Directory Scanner
-SOS will allow configuration of a custom local directory path where the operator stores their ZIM files.
+SOS scans ZIM files using a server-side configured directory path (`process.env.SOS_ZIM_DIR` or default fallback `import-staging/kiwix/`).
 The server-side scanner:
 *   Lists files matching the `.zim` extension in the configured path.
+*   Ignores any client-supplied folder parameters in requests to prevent scanning arbitrary paths or system folders.
 *   Extracts filename, file path, and file size.
 *   Does **not** read inside the `.zim` binary.
 *   Does **not** index the contents of ZIM articles.
-*   ZIM paths returned to the frontend must be sanitized. Do not expose full user home paths. Use placeholders such as `[ZIM_FOLDER]`. Scans must be shallow/capped and must ignore system directories.
+*   Never exposes raw local paths in payloads or error messages. ZIM paths returned to the frontend must be sanitized. Use placeholders such as `[ZIM_FOLDER]`.
 
 ### 2. Catalog Registry Schema
 The scanned list is exposed to the frontend via `GET /api/toolkit/zim` in this format:
 ```json
 {
-  "zimFolder": "C:/Users/Blair/Downloads/Kiwix",
+  "zimFolder": "[ZIM_FOLDER]",
   "archives": [
     {
       "filename": "wikipedia_en_medicine_novid_2026-05.zim",

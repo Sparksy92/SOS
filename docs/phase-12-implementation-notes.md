@@ -29,14 +29,15 @@ This document details the unified components, storage structures, routes, and sa
     > "The audit does not prove copyright clearance. Unknown or restricted items require manual review. Only operator-approved allowlist items with official source evidence may be considered for any future download tool."
 
 ### 5. Kiwix/ZIM Catalog (`zimCatalog.js` & `ZimCatalogPanel.jsx`)
-*   Exposes a configured folder scan interface via `GET /api/toolkit/zim`.
-*   ZIM route scans target folder for `.zim` filenames and returns size and title metadata. Does not read inside binary structures or run local servers.
-*   Fully sanitizes paths in payloads: replaces actual system folders with the `[ZIM_FOLDER]` placeholder to prevent user directory structure leaks.
+*   Exposes a server-controlled folder scan interface via `GET /api/toolkit/zim`.
+*   ZIM route scans the configured folder (`process.env.SOS_ZIM_DIR` or default `import-staging/kiwix/`) for `.zim` filenames and returns size and title metadata. Does not read inside binary structures or run local servers.
+*   Strict safety: ignores arbitrary paths submitted by the client (frontend does not submit paths), never leaks raw local paths in error responses, and returns paths sanitized as `[ZIM_FOLDER]/`.
 
 ### 6. Manual Import Staging (`manualImportQueueStore.js` & `ManualImportQueuePanel.jsx`)
 *   Enforces a manual staging workflow inside the gitignored `import-staging/offline-library/` directory.
 *   Exposes staging files metadata (filename, extension, size, mtime, sanitized path) via `GET /api/toolkit/staging`.
-*   Category and license status are mapped via filename heuristics and gap analyzer metadata; file contents are never opened or parsed.
+*   Category and risk category are mapped via filename heuristics. The `licenseStatus` is set to `"unknown"` by default, and heuristic matches are served as a `suggestedLicenseStatus` with `matchConfidence: "filename_match_only"`.
+*   Verification status is set to `requires_operator_review`. Heuristics do not prove copyright clearance. UI requires operators to verify file source validity.
 *   Includes a **Dismiss** action that saves to local storage key `sos_import_queue_dismissed` to hide listings without deleting files from disk.
 
 ### 7. Conversational J.A.R.V.I.S. Guidance (`App.jsx`)

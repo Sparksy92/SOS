@@ -13,7 +13,7 @@ export default function ZimCatalogPanel() {
     setLoading(true);
     setError(null);
     try {
-      const url = `http://${window.location.hostname}:3001/api/toolkit/zim${customPath ? `?folder=${encodeURIComponent(customPath)}` : ''}`;
+      const url = `http://${window.location.hostname}:3001/api/toolkit/zim`;
       const res = await fetch(url);
       const data = await res.json();
       if (res.ok) {
@@ -99,8 +99,8 @@ export default function ZimCatalogPanel() {
             </button>
           </div>
         </div>
-        <p style={{ margin: '8px 0 0 0', fontSize: '0.78rem', color: '#888' }}>
-          Leave empty to scan the default local staging folder (`import-staging/kiwix/`). Paths are fully sanitized in the API.
+        <p style={{ margin: '8px 0 0 0', fontSize: '0.78rem', color: '#888', lineHeight: '1.3' }}>
+          Backend scan path is controlled by SOS_ZIM_DIR or the default import-staging/kiwix folder. The path shown here is an operator note only and is not sent to the server.
         </p>
       </div>
 

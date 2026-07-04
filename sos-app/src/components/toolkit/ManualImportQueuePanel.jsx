@@ -117,7 +117,7 @@ export default function ManualImportQueuePanel({ setViewMode }) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {visibleFiles.map((file, idx) => {
               const hasRisk = file.riskCategory !== null;
-              const isRestricted = file.licenseStatus === 'restricted';
+              const isRestricted = file.suggestedLicenseStatus === 'restricted';
               return (
                 <div 
                   key={idx} 
@@ -152,15 +152,27 @@ export default function ManualImportQueuePanel({ setViewMode }) {
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px', marginTop: '12px', fontSize: '0.82rem', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '12px' }}>
                     <div><strong>Detected Category:</strong> {file.detectedCategory.replace(/_/g, ' ')}</div>
                     <div>
-                      <strong>License Clearance:</strong>{' '}
-                      <span style={{ 
-                        color: isRestricted ? '#ff4500' : file.licenseStatus === 'official_free' || file.licenseStatus === 'public_domain' ? '#00ff7f' : '#ffd700',
-                        fontWeight: 'bold'
-                      }}>
+                      <strong>License Status:</strong>{' '}
+                      <span style={{ color: '#ffd700', fontWeight: 'bold' }}>
                         {file.licenseStatus.toUpperCase()}
                       </span>
                     </div>
-                    <div><strong>Verification Status:</strong> {file.verificationStatus.toUpperCase()}</div>
+                    <div>
+                      <strong>Suggested License:</strong>{' '}
+                      <span style={{ 
+                        color: isRestricted ? '#ff4500' : file.suggestedLicenseStatus === 'official_free' || file.suggestedLicenseStatus === 'public_domain' ? '#00ff7f' : '#ffd700',
+                        fontWeight: 'bold'
+                      }}>
+                        {(file.suggestedLicenseStatus || 'unknown').toUpperCase()}
+                      </span>
+                    </div>
+                    <div><strong>Verification Status:</strong> <span style={{ color: '#ffd700' }}>{file.verificationStatus.replace(/_/g, ' ').toUpperCase()}</span></div>
+                    <div><strong>Match Confidence:</strong> {(file.matchConfidence || '').replace(/_/g, ' ')}</div>
+                  </div>
+
+                  {/* License Safety Wording Banner */}
+                  <div style={{ marginTop: '12px', fontSize: '0.8rem', color: '#ff7f50', backgroundColor: 'rgba(255, 69, 0, 0.02)', padding: '10px', borderRadius: '4px', borderLeft: '3px solid #ff7f50', lineHeight: '1.3' }}>
+                    💡 Suggested license status is based on filename/audit metadata only. The operator must verify the file came from the official source before moving it into materials.
                   </div>
 
                   {/* Risk Disclaimer */}

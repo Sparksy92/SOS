@@ -28,18 +28,23 @@ graph TD
 ## Staging API (`/api/toolkit/staging`)
 The server exposes a read-only endpoint that lists files inside `import-staging/offline-library/`:
 *   **Security Restrictions**: The endpoint must never read file contents for any staged file. It may only return filename, extension, file size, modified time, and sanitized relative path. It must not open PDFs, EPUBs, ZIMs, ZIPs, executables, media files, or archives. Risk/category/license labels must come from filename heuristics and existing audit metadata, not file content parsing.
+*   **Copyright & License Hardening**: The audit and filename heuristics do not prove copyright clearance. To prevent false confidence, `licenseStatus` defaults to `"unknown"`, filename heuristic matches are served as a `suggestedLicenseStatus` with `matchConfidence: "filename_match_only"`, and `verificationStatus` is always `"requires_operator_review"`. Operators must verify source license clearances manually.
 *   **Response Payload**:
     ```json
     {
       "stagedFiles": [
         {
           "filename": "FM_21-76_Survival_Manual.pdf",
+          "extension": ".pdf",
           "size": 5242880,
           "mtime": 1783132601000,
+          "sanitizedPath": "[IMPORT_STAGING]/FM_21-76_Survival_Manual.pdf",
           "detectedCategory": "general_survival",
           "riskCategory": null,
-          "licenseStatus": "official_free",
-          "verificationStatus": "verified"
+          "licenseStatus": "unknown",
+          "suggestedLicenseStatus": "official_free",
+          "verificationStatus": "requires_operator_review",
+          "matchConfidence": "filename_match_only"
         }
       ]
     }
