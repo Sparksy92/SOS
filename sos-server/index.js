@@ -1,7 +1,13 @@
+const path = require('path');
+const dotenv = require('dotenv');
+
+// Load .env from backend directory first, then root directory fallback
+dotenv.config({ path: path.join(__dirname, '.env') });
+dotenv.config({ path: path.join(__dirname, '..', '.env') });
+
 const express = require('express');
 const cors = require('cors');
 const fs = require('fs');
-const path = require('path');
 const { spawn } = require('child_process');
 
 const app = express();

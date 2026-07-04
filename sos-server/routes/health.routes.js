@@ -39,6 +39,15 @@ router.get('/', async (req, res) => {
   }
 
   const ollamaReachable = await checkOllama();
+  const crawlerStatusVal = crawler.getStatus();
+  const crawlerSummary = {
+    isCrawling: !!crawlerStatusVal.isCrawling,
+    mode: crawlerStatusVal.mode || "idle",
+    totalDocs: Number.isFinite(crawlerStatusVal.totalDocs) ? crawlerStatusVal.totalDocs : 0,
+    processedDocs: Number.isFinite(crawlerStatusVal.processedDocs) ? crawlerStatusVal.processedDocs : 0,
+    totalZips: Number.isFinite(crawlerStatusVal.totalZips) ? crawlerStatusVal.totalZips : 0,
+    processedZips: Number.isFinite(crawlerStatusVal.processedZips) ? crawlerStatusVal.processedZips : 0
+  };
 
   res.json({
     ok: true,
@@ -55,7 +64,7 @@ router.get('/', async (req, res) => {
     status: "healthy",
     timestamp: Date.now(),
     autoCrawl: process.env.SOS_AUTO_CRAWL === 'true',
-    crawlerStatus: crawler.getStatus(),
+    crawlerSummary,
     indexedDocumentCount: docCount,
     manifestExists: fs.existsSync(MANIFEST_FILE),
     metadataExists: fs.existsSync(METADATA_FILE),

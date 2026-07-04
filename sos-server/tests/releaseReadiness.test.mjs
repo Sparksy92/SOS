@@ -108,6 +108,19 @@ test('API Health endpoint safety checks', () => {
   // Verify it does not expose absolute material paths, database names or secrets
   assert.ok(!routeContent.includes("SOS_MATERIALS_DIR: process.env.SOS_MATERIALS_DIR,"), "Health API must not return raw material folder paths");
   assert.ok(!routeContent.includes("sos_database.db"), "Health API must not return raw database file name");
+
+  // Verify crawler safety requirements: does NOT return raw crawlerStatus, returns crawlerSummary
+  assert.ok(!routeContent.includes("crawlerStatus:"), "Health API must not return raw crawlerStatus");
+  assert.ok(!routeContent.includes("currentFile"), "Health API must not return currentFile");
+  assert.ok(!routeContent.includes("statusText"), "Health API must not return statusText");
+  assert.ok(!routeContent.includes("dryRunZips"), "Health API must not return dryRunZips");
+  assert.ok(routeContent.includes("crawlerSummary"), "Health API must return crawlerSummary");
+  assert.ok(routeContent.includes("isCrawling:"), "Health API must return isCrawling");
+  assert.ok(routeContent.includes("mode:"), "Health API must return mode");
+  assert.ok(routeContent.includes("totalDocs:"), "Health API must return totalDocs");
+  assert.ok(routeContent.includes("processedDocs:"), "Health API must return processedDocs");
+  assert.ok(routeContent.includes("totalZips:"), "Health API must return totalZips");
+  assert.ok(routeContent.includes("processedZips:"), "Health API must return processedZips");
 });
 
 test('Jarvis Release Guidance Matches & Boundaries', () => {
@@ -153,6 +166,7 @@ test('Release Documentation and Config Verification', () => {
   const readmeContent = fs.readFileSync(readmePath, 'utf8');
   assert.ok(readmeContent.includes("Install Dependencies"), "README must detail dependencies install");
   assert.ok(readmeContent.includes("start.bat"), "README must reference startup script");
+  assert.ok(readmeContent.includes("cp .env.example .env"), "README must say to copy .env.example to .env");
 
   // Operator Runbook checks
   const runbookPath = path.resolve('docs', 'operator-runbook.md');
@@ -160,6 +174,7 @@ test('Release Documentation and Config Verification', () => {
   const runbookContent = fs.readFileSync(runbookPath, 'utf8');
   assert.ok(runbookContent.includes("SurvivalOS does not call emergency services."), "Runbook must declare emergency limits");
   assert.ok(runbookContent.includes("SurvivalOS does not provide medical diagnosis or treatment."), "Runbook must declare medical limits");
+  assert.ok(runbookContent.includes("Copy `.env.example` to `.env`"), "Runbook must say to copy .env.example to .env");
 
   // Release Checklist checks
   const checklistPath = path.resolve('docs', 'release-candidate-checklist.md');
@@ -171,4 +186,13 @@ test('Release Documentation and Config Verification', () => {
   const envContent = fs.readFileSync(envPath, 'utf8');
   assert.ok(!envContent.includes('C:/'), ".env.example must not contain real local paths");
   assert.ok(!envContent.includes('blair'), ".env.example must not contain real usernames");
+
+  // Dotenv runtime loading checks
+  const pkgPath = path.resolve('sos-server', 'package.json');
+  const pkgContent = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+  assert.ok(pkgContent.dependencies && pkgContent.dependencies.dotenv, "package.json must include dotenv");
+
+  const idxPath = path.resolve('sos-server', 'index.js');
+  const idxContent = fs.readFileSync(idxPath, 'utf8');
+  assert.ok(idxContent.includes("dotenv.config("), "index.js must call dotenv.config()");
 });

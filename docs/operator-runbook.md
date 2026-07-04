@@ -41,7 +41,7 @@ To verify that the server is online and running safely:
 
 ## 5. Configuring Materials safely
 The default materials library directory is the project root. To configure a dedicated, separate folder:
-1.  Create a file named `.env` inside `sos-server/` (or copy `.env.example`).
+1.  Copy `.env.example` to `.env` (either in the root folder or inside `sos-server/`).
 2.  Set `SOS_MATERIALS_DIR` to the absolute path of your target folder (e.g. `SOS_MATERIALS_DIR=D:/offline-libraries/survival-guides`).
 3.  Restart the backend server.
 4.  Verify that **RELEASE CHECK** registers `materialRootConfigured` as `ready`.
