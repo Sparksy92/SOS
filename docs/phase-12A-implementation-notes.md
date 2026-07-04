@@ -1,6 +1,7 @@
-# Phase 12A Implementation Notes — Setup Wizard & Offline Toolkit UI Cards
+# Phase 12A Implementation Notes (Deprecated)
 
-This document summarizes the core UI layout and progress stores created in Phase 12A.
+> [!IMPORTANT]
+> Phase 12A was an internal implementation slice. The final project feature is **[Phase 12 — Offline Toolkit & Content Gap Analyzer](file:///c:/Users/Blair/Downloads/survival/docs/phase-12-implementation-notes.md)**. Please refer to that file for complete implementation logs.
 
 ## Components and Stores Added
 

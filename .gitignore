@@ -51,3 +51,18 @@ sos-server/*.bak
 # Python cache
 __pycache__/
 *.pyc
+
+# Phase 12 Staging and Offline Formats
+/import-staging/
+/import-staging/offline-library/
+*.zim
+*.zip
+*.7z
+*.rar
+*.epub
+*.mobi
+*.djvu
+*.iso
+*.exe
+*.msi
+*.dmg

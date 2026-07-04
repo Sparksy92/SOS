@@ -162,8 +162,5 @@ interface StagedFile {
 *   **Varying ZIM Folder Paths**: Operators might configure deep nested directories. The server-side scan must have short timeouts and ignore deep system folders.
 *   **Browser Storage Limits**: Large custom import manifests could exceed localStorage quotas. We must restrict client-side staging tracking to lightweight metadata.
 
-## Recommended Implementation Phases
-1.  **Phase 12A**: Core Setup Wizard & Offline Toolkit UI cards.
-2.  **Phase 12B**: Content Provider Registry & ZIM Catalog metadata scanning.
-3.  **Phase 12C**: Manual Import Staging folder API & Content Gap Analyzer Panel.
-4.  **Phase 12D**: Jarvis Conversational Readiness checklist integration.
+## Implementation Summary
+Phase 12 is implemented and completed as one unified phase: **Phase 12 — Offline Toolkit & Content Gap Analyzer**. All sub-features (Setup Wizard, Tool Guides, Content Providers, Gap Analyzer, ZIM Catalog, Manual Import) are integrated inside the unified Offline Toolkit panel workspace.

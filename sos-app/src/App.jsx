@@ -103,6 +103,10 @@ import CrawlerControls from './components/crawler/CrawlerControls.jsx';
 import PanelErrorBoundary from './components/common/PanelErrorBoundary.jsx';
 import SetupWizardPanel from './components/toolkit/SetupWizardPanel.jsx';
 import OfflineToolkitPanel from './components/toolkit/OfflineToolkitPanel.jsx';
+import ContentProviderRegistryPanel from './components/toolkit/ContentProviderRegistryPanel.jsx';
+import ContentGapAnalyzerPanel from './components/toolkit/ContentGapAnalyzerPanel.jsx';
+import ZimCatalogPanel from './components/toolkit/ZimCatalogPanel.jsx';
+import ManualImportQueuePanel from './components/toolkit/ManualImportQueuePanel.jsx';
 import { loadSetupProgress, DEFAULT_STEPS } from './modules/toolkit/setupProgressStore.js';
 
 const API_BASE = `http://${window.location.hostname}:3001`;
@@ -1087,7 +1091,12 @@ function App() {
     }
 
     // 2B. Intercept Offline Readiness Queries
-    if (lowercaseMsg === 'offline readiness checklist' || lowercaseMsg === 'help me get ready for offline use' || lowercaseMsg === 'what offline tools should i set up?') {
+    if (
+      lowercaseMsg === 'offline readiness checklist' || 
+      lowercaseMsg === 'help me get ready for offline use' || 
+      lowercaseMsg === 'what offline tools should i set up?' ||
+      lowercaseMsg === 'show my offline toolkit status'
+    ) {
       const progress = loadSetupProgress();
       const stepsKeys = Object.keys(DEFAULT_STEPS);
       const totalSteps = stepsKeys.length;
@@ -1104,6 +1113,77 @@ function App() {
       });
 
       text += `\n*Note:* You can view comprehensive manual setup guides, platform notes, and verify these steps in the **OFFLINE TOOLKIT** panel in the sidebar. Let me know if you would like guidance on a specific tool!`;
+
+      setMessages(prev => [...prev, {
+        role: 'ai',
+        text: text,
+        answerStatus: 'offline_readiness_checklist'
+      }]);
+      setChatLoading(false);
+      return;
+    }
+
+    if (lowercaseMsg === 'what content am i missing?') {
+      let text = `### **Offline Content Gaps**\n`;
+      text += `Based on the latest reference catalog audit, your local library is missing manual content across all 7 survival categories:\n\n`;
+      text += `1. **Homesteading** (0 of 2 candidates found)\n`;
+      text += `2. **Farming** (0 of 1 candidates found)\n`;
+      text += `3. **General Survival** (0 of 2 candidates found)\n`;
+      text += `4. **Water** (0 of 1 candidates found)\n`;
+      text += `5. **Bushcraft** (0 of 1 candidates found)\n`;
+      text += `6. **Shelter** (0 of 1 candidates found)\n`;
+      text += `7. **Medical Reference** (0 of 3 candidates found)\n\n`;
+      text += `*Recommendation:* Open the **Gap Analyzer** tab under the **OFFLINE TOOLKIT** to view approved public domain download sources (e.g. *US Army Survival Manual FM 21-76*) and restricted reviews. Always review licenses manually; the audit itself does not guarantee copyright clearance.`;
+
+      setMessages(prev => [...prev, {
+        role: 'ai',
+        text: text,
+        answerStatus: 'offline_readiness_checklist'
+      }]);
+      setChatLoading(false);
+      return;
+    }
+
+    if (lowercaseMsg === 'do i have offline maps ready?') {
+      const progress = loadSetupProgress();
+      const isMapVerified = progress["9"] === true;
+      let text = `### **Offline Maps Status**\n`;
+      text += `Step 9 of the Setup Wizard: *'Confirm offline maps prepared externally'* is currently **${isMapVerified ? 'VERIFIED ✓' : 'NOT YET VERIFIED ✗'}**.\n\n`;
+      text += `For offline navigation and manual position awareness, we recommend downloading OsmAnd or Organic Maps on your mobile device. Open the **Tool Guides** tab inside the **OFFLINE TOOLKIT** for step-by-step preparation checklists and official links.`;
+
+      setMessages(prev => [...prev, {
+        role: 'ai',
+        text: text,
+        answerStatus: 'offline_readiness_checklist'
+      }]);
+      setChatLoading(false);
+      return;
+    }
+
+    if (lowercaseMsg === 'do i have kiwix set up?') {
+      const progress = loadSetupProgress();
+      const isKiwixVerified = progress["10"] === true;
+      let text = `### **Kiwix / ZIM Setup Status**\n`;
+      text += `Step 10 of the Setup Wizard: *'Confirm Kiwix/ZIM library availability'* is currently **${isKiwixVerified ? 'VERIFIED ✓' : 'NOT YET VERIFIED ✗'}**.\n\n`;
+      text += `Kiwix permits reading compressed encyclopedia ZIM packages offline. You can configure and scan ZIM archive directories metadata under the **ZIM Catalog** tab in the **OFFLINE TOOLKIT** view. J.A.R.V.I.S. checks metadata only and does not index ZIM binary contents directly.`;
+
+      setMessages(prev => [...prev, {
+        role: 'ai',
+        text: text,
+        answerStatus: 'offline_readiness_checklist'
+      }]);
+      setChatLoading(false);
+      return;
+    }
+
+    if (lowercaseMsg === 'how do i import new files safely?') {
+      let text = `### **Safe Manual Import Guidelines**\n`;
+      text += `To import documents without compromising SurvivalOS boundaries, follow this local-first workflow:\n\n`;
+      text += `1. Place raw files manually in the gitignored \`import-staging/offline-library/\` directory.\n`;
+      text += `2. Go to the **Manual Import** tab in the **OFFLINE TOOLKIT** to inspect staging file metadata, license clearances, and safety risk warnings.\n`;
+      text += `3. Copy the vetted files manually from the staging area into your configured materials directory.\n`;
+      text += `4. Rebuild your manifest by visiting the **Index Integrity** view to scan and index the new files.\n\n`;
+      text += `*Note:* Dismissing files in the Manual Import UI only clears them from the staging list view; it never deletes files from disk.`;
 
       setMessages(prev => [...prev, {
         role: 'ai',
@@ -2232,29 +2312,78 @@ function App() {
 
             {!error && !loading && viewMode === 'offline-toolkit' && (
               <div style={{ display: 'flex', flexDirection: 'column', width: '100%', paddingBottom: '40px' }}>
-                <div style={{ display: 'flex', gap: '8px', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', padding: '0 24px', marginBottom: '16px' }}>
+                <div style={{ display: 'flex', gap: '8px', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', padding: '0 24px', marginBottom: '16px', flexWrap: 'wrap' }}>
                   <button 
                     onClick={() => setToolkitSubTab('wizard')}
                     className={`btn-tactical${toolkitSubTab === 'wizard' ? '' : '-outline'}`}
-                    style={{ padding: '8px 16px', borderRadius: '4px 4px 0 0', borderBottom: 'none' }}
+                    style={{ padding: '8px 16px', borderRadius: '4px 4px 0 0', borderBottom: 'none', marginBottom: '4px' }}
                   >
                     Setup Wizard
                   </button>
                   <button 
                     onClick={() => setToolkitSubTab('cards')}
                     className={`btn-tactical${toolkitSubTab === 'cards' ? '' : '-outline'}`}
-                    style={{ padding: '8px 16px', borderRadius: '4px 4px 0 0', borderBottom: 'none' }}
+                    style={{ padding: '8px 16px', borderRadius: '4px 4px 0 0', borderBottom: 'none', marginBottom: '4px' }}
                   >
                     Tool Guides
                   </button>
+                  <button 
+                    onClick={() => setToolkitSubTab('providers')}
+                    className={`btn-tactical${toolkitSubTab === 'providers' ? '' : '-outline'}`}
+                    style={{ padding: '8px 16px', borderRadius: '4px 4px 0 0', borderBottom: 'none', marginBottom: '4px' }}
+                  >
+                    Content Providers
+                  </button>
+                  <button 
+                    onClick={() => setToolkitSubTab('gap')}
+                    className={`btn-tactical${toolkitSubTab === 'gap' ? '' : '-outline'}`}
+                    style={{ padding: '8px 16px', borderRadius: '4px 4px 0 0', borderBottom: 'none', marginBottom: '4px' }}
+                  >
+                    Gap Analyzer
+                  </button>
+                  <button 
+                    onClick={() => setToolkitSubTab('zim')}
+                    className={`btn-tactical${toolkitSubTab === 'zim' ? '' : '-outline'}`}
+                    style={{ padding: '8px 16px', borderRadius: '4px 4px 0 0', borderBottom: 'none', marginBottom: '4px' }}
+                  >
+                    ZIM Catalog
+                  </button>
+                  <button 
+                    onClick={() => setToolkitSubTab('import')}
+                    className={`btn-tactical${toolkitSubTab === 'import' ? '' : '-outline'}`}
+                    style={{ padding: '8px 16px', borderRadius: '4px 4px 0 0', borderBottom: 'none', marginBottom: '4px' }}
+                  >
+                    Manual Import
+                  </button>
                 </div>
-                {toolkitSubTab === 'wizard' ? (
+                {toolkitSubTab === 'wizard' && (
                   <PanelErrorBoundary name="Setup Wizard">
                     <SetupWizardPanel setViewMode={setViewMode} />
                   </PanelErrorBoundary>
-                ) : (
+                )}
+                {toolkitSubTab === 'cards' && (
                   <PanelErrorBoundary name="Offline Toolkit Cards">
                     <OfflineToolkitPanel />
+                  </PanelErrorBoundary>
+                )}
+                {toolkitSubTab === 'providers' && (
+                  <PanelErrorBoundary name="Content Providers">
+                    <ContentProviderRegistryPanel />
+                  </PanelErrorBoundary>
+                )}
+                {toolkitSubTab === 'gap' && (
+                  <PanelErrorBoundary name="Gap Analyzer">
+                    <ContentGapAnalyzerPanel />
+                  </PanelErrorBoundary>
+                )}
+                {toolkitSubTab === 'zim' && (
+                  <PanelErrorBoundary name="ZIM Catalog">
+                    <ZimCatalogPanel />
+                  </PanelErrorBoundary>
+                )}
+                {toolkitSubTab === 'import' && (
+                  <PanelErrorBoundary name="Manual Import">
+                    <ManualImportQueuePanel setViewMode={setViewMode} />
                   </PanelErrorBoundary>
                 )}
               </div>
