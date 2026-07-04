@@ -28,6 +28,7 @@ export const isAbsolutePath = (p) => {
   const trimmed = p.trim();
   if (/^[a-zA-Z]:[\\\/]/.test(trimmed)) return true;
   if (trimmed.startsWith('/') && !trimmed.startsWith('/..')) return true;
+  if (/[a-zA-Z]:[\\\/]/.test(trimmed)) return true;
   if (
     trimmed.includes('Users/') || 
     trimmed.includes('Users\\') || 
@@ -70,7 +71,7 @@ export const saveRecord = (record) => {
   if (!record.operatorDecision || !Object.values(DECISIONS).includes(record.operatorDecision)) {
     throw new Error("Invalid or missing operator decision.");
   }
-  if (isAbsolutePath(record.sanitizedPath)) {
+  if (isAbsolutePath(record.filename) || isAbsolutePath(record.sanitizedPath)) {
     throw new Error("Absolute file paths are not allowed.");
   }
   if (!isValidUrl(record.officialSourceUrl) || !isValidUrl(record.thirdPartyMirrorUrl)) {
@@ -140,7 +141,7 @@ export const validateAndImport = (jsonStr) => {
       if (!record.operatorDecision || !Object.values(DECISIONS).includes(record.operatorDecision)) {
         throw new Error(`Invalid decision for file ${record.filename}.`);
       }
-      if (isAbsolutePath(record.sanitizedPath)) {
+      if (isAbsolutePath(record.filename) || isAbsolutePath(record.sanitizedPath)) {
         throw new Error(`Absolute paths not allowed in record: ${record.filename}`);
       }
       if (!isValidUrl(record.officialSourceUrl) || !isValidUrl(record.thirdPartyMirrorUrl)) {

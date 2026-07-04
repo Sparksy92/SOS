@@ -69,6 +69,33 @@ export default function ManualImportQueuePanel({ setViewMode, setToolkitSubTab }
     }
   };
 
+  const getLedgerRecordStatus = (record) => {
+    if (!record) return null;
+    switch (record.operatorDecision) {
+      case 'approved':
+        return {
+          label: 'Operator-approved record exists.',
+          color: '#00ff7f'
+        };
+      case 'rejected':
+        return {
+          label: 'Rejected by operator.',
+          color: '#ff4500'
+        };
+      case 'needs_more_evidence':
+        return {
+          label: 'Needs more evidence.',
+          color: '#ffd700'
+        };
+      case 'pending':
+      default:
+        return {
+          label: 'Review record exists — pending.',
+          color: '#a0a0a0'
+        };
+    }
+  };
+
   const formatSize = (bytes) => {
     if (!bytes) return '0 B';
     const k = 1024;
@@ -161,8 +188,8 @@ export default function ManualImportQueuePanel({ setViewMode, setToolkitSubTab }
                     <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
                       {existingRecord ? (
                         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                          <span style={{ fontSize: '0.78rem', color: '#00ff7f', fontWeight: 'bold' }}>
-                            Operator-approved record exists.
+                          <span style={{ fontSize: '0.78rem', color: getLedgerRecordStatus(existingRecord).color, fontWeight: 'bold' }}>
+                            {getLedgerRecordStatus(existingRecord).label}
                           </span>
                           <button 
                             className="btn-tactical" 

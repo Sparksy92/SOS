@@ -118,7 +118,7 @@ export default function ContentGapAnalyzerPanel() {
 
       {/* Candidate list */}
       <div style={{ marginBottom: '24px' }}>
-        <h4 style={{ color: '#fff', fontSize: '1.1rem', margin: '0 0 12px 0' }}>Available Candidate Sources (Safe & Public Domain)</h4>
+        <h4 style={{ color: '#fff', fontSize: '1.1rem', margin: '0 0 12px 0' }}>Candidate Sources for Operator Review</h4>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {candidateItems.filter(item => item.recommendedAction === 'approved_download').map((item, idx) => {
             const ledgerStatus = getLedgerStatus(item);

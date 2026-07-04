@@ -112,6 +112,7 @@ test('Ledger Validation Rules (Absolute Paths & Injection URL schemes)', () => {
   assert.ok(isAbsolutePath("C:\\Users\\Blair\\Downloads\\File.pdf"));
   assert.ok(isAbsolutePath("/home/blair/survival/File.pdf"));
   assert.ok(isAbsolutePath("D:/materials/book.pdf"));
+  assert.ok(isAbsolutePath("[IMPORT_STAGING]/D:/materials/book.pdf"), "embedded windows drive paths anywhere in string are absolute");
   assert.ok(!isAbsolutePath("[IMPORT_STAGING]/FM_21-76_Survival_Manual.pdf"));
   assert.ok(!isAbsolutePath("FM_21-76_Survival_Manual.pdf"));
 
@@ -123,13 +124,31 @@ test('Ledger Validation Rules (Absolute Paths & Injection URL schemes)', () => {
   assert.ok(!isValidUrl("file:///C:/Users/Blair/secret.txt"));
   assert.ok(!isValidUrl("ftp://ftp.server.com/"));
 
-  // Validation rejections
-  const badPathRecord = {
-    filename: "test.pdf",
-    sanitizedPath: "C:\\Users\\Blair\\secret.pdf",
+  // Validation rejections for filename
+  assert.throws(() => saveRecord({
+    filename: "C:/Users/Blair/secret.pdf",
+    sanitizedPath: "[IMPORT_STAGING]/secret.pdf",
     operatorDecision: "pending"
-  };
-  assert.throws(() => saveRecord(badPathRecord), /Absolute file paths are not allowed/);
+  }), /Absolute file paths are not allowed/);
+
+  assert.throws(() => saveRecord({
+    filename: "D:/materials/book.pdf",
+    sanitizedPath: "[IMPORT_STAGING]/book.pdf",
+    operatorDecision: "pending"
+  }), /Absolute file paths are not allowed/);
+
+  assert.throws(() => saveRecord({
+    filename: "/home/blair/book.pdf",
+    sanitizedPath: "[IMPORT_STAGING]/book.pdf",
+    operatorDecision: "pending"
+  }), /Absolute file paths are not allowed/);
+
+  // Validation rejections for sanitizedPath
+  assert.throws(() => saveRecord({
+    filename: "book.pdf",
+    sanitizedPath: "[IMPORT_STAGING]/D:/materials/book.pdf",
+    operatorDecision: "pending"
+  }), /Absolute file paths are not allowed/);
 
   const badUrlRecord = {
     filename: "test.pdf",
@@ -144,6 +163,23 @@ test('Ledger Validation Rules (Absolute Paths & Injection URL schemes)', () => {
     sanitizedPath: "[IMPORT_STAGING]/test.pdf"
   };
   assert.throws(() => saveRecord(missingDecisionRecord), /Invalid or missing operator decision/);
+});
+
+test('UI Components Hardening Wording Checks', () => {
+  const gapAnalyzerPath = path.resolve('sos-app', 'src', 'components', 'toolkit', 'ContentGapAnalyzerPanel.jsx');
+  const manualImportPath = path.resolve('sos-app', 'src', 'components', 'toolkit', 'ManualImportQueuePanel.jsx');
+
+  const gapContent = fs.readFileSync(gapAnalyzerPath, 'utf8');
+  const importContent = fs.readFileSync(manualImportPath, 'utf8');
+
+  // Gap Analyzer heading checks
+  assert.ok(!gapContent.includes("Available Candidate Sources (Safe & Public Domain)"), "Gap Analyzer heading must not say Safe & Public Domain");
+  assert.ok(gapContent.includes("Candidate Sources for Operator Review"), "Gap Analyzer must use Operator Review header");
+
+  // Manual Import status text checks
+  assert.ok(importContent.includes("getLedgerRecordStatus"), "Manual Import must call getLedgerRecordStatus");
+  assert.ok(importContent.includes("Review record exists — pending."), "Manual Import must display pending review text");
+  assert.ok(importContent.includes("Rejected by operator."), "Manual Import must display rejected text");
 });
 
 test('Ledger JSON Export/Import & Markdown Report', () => {
