@@ -41,6 +41,17 @@ router.get('/', async (req, res) => {
   const ollamaReachable = await checkOllama();
 
   res.json({
+    ok: true,
+    app: "SurvivalOS",
+    server: "sos-server",
+    checkedAt: new Date().toISOString(),
+    materialRootConfigured: !!process.env.SOS_MATERIALS_DIR,
+    autoCrawlEnabled: process.env.SOS_AUTO_CRAWL === 'true',
+    environment: {
+      node: process.version,
+      platform: process.platform
+    },
+    // Keep backward compatible properties:
     status: "healthy",
     timestamp: Date.now(),
     autoCrawl: process.env.SOS_AUTO_CRAWL === 'true',

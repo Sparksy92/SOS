@@ -14,11 +14,13 @@ export default function LibraryLifecyclePanel({ setToolkitSubTab, setViewMode })
   const [search, setSearch] = useState('');
   const [filterCategory, setFilterCategory] = useState('all');
   const [filterStage, setFilterStage] = useState('all');
+  const [manifestChecked, setManifestChecked] = useState(true);
 
   const loadAllMetadata = async () => {
     setLoading(true);
     let staged = [];
     let manifestCats = {};
+    let checked = false;
     
     try {
       const res = await fetch(`http://${window.location.hostname}:3001/api/toolkit/staging`);
@@ -37,16 +39,18 @@ export default function LibraryLifecyclePanel({ setToolkitSubTab, setViewMode })
         const data = await res.json();
         manifestCats = data.categories || {};
         setManifestCategories(manifestCats);
+        checked = true;
       }
     } catch (e) {
       console.warn("Failed fetching materials categories for lifecycle overlays:", e);
     }
+    setManifestChecked(checked);
 
     const ledger = loadLedger();
     const queue = loadQueue();
     const allowlist = loadAllowlist();
 
-    const lifeRecords = computeLifecycleRecords(GAP_ANALYSIS_DATA, ledger, queue, allowlist, staged, manifestCats);
+    const lifeRecords = computeLifecycleRecords(GAP_ANALYSIS_DATA, ledger, queue, allowlist, staged, manifestCats, checked);
     setRecords(lifeRecords);
     setLoading(false);
   };
@@ -135,6 +139,18 @@ export default function LibraryLifecyclePanel({ setToolkitSubTab, setViewMode })
           This reconciler provides cross-referencing audit checks on local store catalogs. SurvivalOS never automates downloads, handles file movements, clears legal copyrights, or auto-indexes content in the background.
         </p>
       </div>
+
+      {!manifestChecked && (
+        <div style={{ backgroundColor: 'rgba(255, 215, 0, 0.05)', border: '1px solid rgba(255, 215, 0, 0.25)', borderRadius: '6px', padding: '14px', marginBottom: '24px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#ffd700', fontWeight: 'bold', fontSize: '0.88rem', marginBottom: '6px' }}>
+            <AlertTriangle size={16} />
+            <span>Materials Manifest Offline / Unreachable</span>
+          </div>
+          <p style={{ margin: 0, fontSize: '0.78rem', color: '#b0b0b0', lineHeight: '1.4' }}>
+            Unable to fetch category items from `/api/materials`. Some files may display manifest status as <strong>UNKNOWN</strong>. Open Index Integrity or refresh materials manifest.
+          </p>
+        </div>
+      )}
 
       {/* Metrics Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '10px', marginBottom: '24px' }}>

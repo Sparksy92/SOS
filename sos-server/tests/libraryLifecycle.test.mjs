@@ -183,3 +183,36 @@ test('Jarvis Lifecycle Guidance Checks', () => {
   assert.ok(!appContent.includes('text += "I indexed'), "Jarvis must not say 'I indexed'");
   assert.ok(!appContent.includes('text += "I verified copyright'), "Jarvis must not say 'I verified copyright'");
 });
+
+test('manifestChecked Fallback Rules', () => {
+  const gapData = {
+    candidateItems: [
+      {
+        title: "FM 21-76 Survival",
+        filename: "fm21_76.pdf",
+        category: "general_survival",
+        recommendedAction: "approved_download"
+      }
+    ]
+  };
+
+  const ledger = [
+    {
+      id: "led_01",
+      filename: "fm21_76.pdf",
+      operatorDecision: "approved",
+      officialSourceUrl: "https://government.gov/fm21_76.pdf",
+      licenseEvidence: "public domain"
+    }
+  ];
+
+  // 1. manifestChecked = false => manifestStatus/indexStatus should be unknown
+  const recordsUnchecked = computeLifecycleRecords(gapData, ledger, [], [], [], {}, false);
+  assert.strictEqual(recordsUnchecked[0].manifestStatus, "unknown");
+  assert.strictEqual(recordsUnchecked[0].indexStatus, "unknown");
+  assert.strictEqual(recordsUnchecked[0].recommendedNextStep, "Open Index Integrity or refresh materials manifest.");
+
+  // 2. manifestChecked = true => manifestStatus should be not_found_in_manifest
+  const recordsChecked = computeLifecycleRecords(gapData, ledger, [], [], [], {}, true);
+  assert.strictEqual(recordsChecked[0].manifestStatus, "not_found_in_manifest");
+});

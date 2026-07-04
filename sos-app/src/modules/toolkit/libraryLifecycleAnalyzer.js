@@ -3,7 +3,7 @@ import { loadQueue } from './acquisitionQueueStore.js';
 import { loadAllowlist } from './sourceAllowlistStore.js';
 import { GAP_ANALYSIS_DATA } from './gapAnalysisData.js';
 
-export const computeLifecycleRecords = (gapData, ledger, queue, allowlist, stagedFiles = [], manifestCategories = {}) => {
+export const computeLifecycleRecords = (gapData, ledger, queue, allowlist, stagedFiles = [], manifestCategories = {}, manifestChecked = true) => {
   const mergedMap = new Map();
 
   const normalize = (str) => (str || '').toLowerCase().trim().replace(/[^a-z0-9]/g, '');
@@ -26,7 +26,7 @@ export const computeLifecycleRecords = (gapData, ledger, queue, allowlist, stage
     let staged = stagedFiles.find(s => (qItem.filenameHint && normalize(s.filename) === normalize(qItem.filenameHint)) || normalize(s.filename) === normalize(qItem.title));
     let manifestFile = manifestFiles.find(m => qItem.filenameHint && normalize(m.name) === normalize(qItem.filenameHint));
 
-    const rec = buildRecord(qItem.title, qItem.filenameHint || ledgerRec?.filename || gapItem?.filename || '', qItem.category, qItem, ledgerRec, gapItem, allowEntry, staged, manifestFile);
+    const rec = buildRecord(qItem.title, qItem.filenameHint || ledgerRec?.filename || gapItem?.filename || '', qItem.category, qItem, ledgerRec, gapItem, allowEntry, staged, manifestFile, manifestChecked);
     mergedMap.set(key, rec);
   });
 
@@ -46,7 +46,7 @@ export const computeLifecycleRecords = (gapData, ledger, queue, allowlist, stage
       let staged = stagedFiles.find(s => normalize(s.filename) === normalize(lItem.filename));
       let manifestFile = manifestFiles.find(m => normalize(m.name) === normalize(lItem.filename));
 
-      const rec = buildRecord(lItem.filename.replace(/\.[^/.]+$/, "").replace(/_/g, " "), lItem.filename, lItem.detectedCategory, null, lItem, gapItem, allowEntry, staged, manifestFile);
+      const rec = buildRecord(lItem.filename.replace(/\.[^/.]+$/, "").replace(/_/g, " "), lItem.filename, lItem.detectedCategory, null, lItem, gapItem, allowEntry, staged, manifestFile, manifestChecked);
       mergedMap.set(key, rec);
     }
   });
@@ -66,7 +66,7 @@ export const computeLifecycleRecords = (gapData, ledger, queue, allowlist, stage
       let staged = stagedFiles.find(s => normalize(s.filename) === normalize(gItem.filename));
       let manifestFile = manifestFiles.find(m => normalize(m.name) === normalize(gItem.filename));
 
-      const rec = buildRecord(gItem.title, gItem.filename || '', gItem.category, null, null, gItem, allowEntry, staged, manifestFile);
+      const rec = buildRecord(gItem.title, gItem.filename || '', gItem.category, null, null, gItem, allowEntry, staged, manifestFile, manifestChecked);
       mergedMap.set(key, rec);
     }
   });
@@ -83,7 +83,7 @@ export const computeLifecycleRecords = (gapData, ledger, queue, allowlist, stage
     if (!isMatched) {
       const key = `staged_${normalize(sItem.filename)}`;
       let manifestFile = manifestFiles.find(m => normalize(m.name) === normalize(sItem.filename));
-      const rec = buildRecord(sItem.filename.replace(/\.[^/.]+$/, "").replace(/_/g, " "), sItem.filename, sItem.detectedCategory || 'general_survival', null, null, null, null, sItem, manifestFile);
+      const rec = buildRecord(sItem.filename.replace(/\.[^/.]+$/, "").replace(/_/g, " "), sItem.filename, sItem.detectedCategory || 'general_survival', null, null, null, null, sItem, manifestFile, manifestChecked);
       mergedMap.set(key, rec);
     }
   });
@@ -91,14 +91,18 @@ export const computeLifecycleRecords = (gapData, ledger, queue, allowlist, stage
   return Array.from(mergedMap.values());
 };
 
-function buildRecord(title, filenameHint, category, qItem, lItem, gItem, allowEntry, staged, manifestFile) {
+function buildRecord(title, filenameHint, category, qItem, lItem, gItem, allowEntry, staged, manifestFile, manifestChecked = true) {
   const gapStatus = gItem ? (gItem.recommendedAction === 'manual_review' ? 'restricted_candidate' : 'candidate') : 'not_in_gap_audit';
   const ledgerStatus = lItem ? lItem.operatorDecision : 'none';
   const queueStatus = qItem ? qItem.acquisitionStatus : 'none';
   const allowlistStatus = allowEntry ? (allowEntry.operatorTrusted ? 'operator_trusted' : 'listed') : 'none';
   const stagingStatus = staged ? 'staged_metadata_only' : 'not_staged';
-  const manifestStatus = manifestFile ? 'present_in_manifest' : 'not_found_in_manifest';
-  const indexStatus = manifestFile ? (manifestFile.indexed ? 'indexed' : 'not_indexed') : 'unknown';
+  const manifestStatus = manifestFile 
+    ? 'present_in_manifest' 
+    : (manifestChecked ? 'not_found_in_manifest' : 'unknown');
+  const indexStatus = manifestFile 
+    ? (manifestFile.indexed ? 'indexed' : 'not_indexed') 
+    : 'unknown';
 
   let matchConfidence = 'exact_filename';
   if (qItem && lItem && qItem.ledgerRecordId !== lItem.id) matchConfidence = 'possible_match';
@@ -170,6 +174,10 @@ function buildRecord(title, filenameHint, category, qItem, lItem, gItem, allowEn
     recommendedNextStep = ledgerStatus === 'needs_more_evidence' ? 'Add source URL and evidence notes.' : 'Complete operator review.';
   } else if (ledgerStatus === 'approved' && queueStatus === 'none') {
     recommendedNextStep = 'Add to Acquisition Queue.';
+  }
+
+  if (!manifestChecked && (lifecycleStage === 'in_materials' || manifestStatus === 'unknown')) {
+    recommendedNextStep = 'Open Index Integrity or refresh materials manifest.';
   }
 
   return {

@@ -40,7 +40,8 @@ import {
   AlertTriangle,
   FileSpreadsheet,
   Square,
-  Compass
+  Compass,
+  ShieldCheck
 } from 'lucide-react';
 import './App.css';
 import { getRiskLevel, requiresAcknowledgement, getSafetyWarning } from './modules/safety/riskRules.js';
@@ -112,6 +113,7 @@ import AcquisitionQueuePanel from './components/toolkit/AcquisitionQueuePanel.js
 import SourceAllowlistPanel from './components/toolkit/SourceAllowlistPanel.jsx';
 import LibraryLifecyclePanel from './components/toolkit/LibraryLifecyclePanel.jsx';
 import OfflineToolkitBackupPanel from './components/toolkit/OfflineToolkitBackupPanel.jsx';
+import LocalReleaseCandidatePanel from './components/release/LocalReleaseCandidatePanel.jsx';
 import { loadSetupProgress, DEFAULT_STEPS } from './modules/toolkit/setupProgressStore.js';
 import { loadLedger } from './modules/toolkit/importApprovalLedgerStore.js';
 import { loadQueue } from './modules/toolkit/acquisitionQueueStore.js';
@@ -1204,6 +1206,30 @@ function App() {
       return;
     }
 
+    if (
+      lowercaseMsg === 'is survivalos ready?' ||
+      lowercaseMsg === 'run release check' ||
+      lowercaseMsg === 'show release readiness' ||
+      lowercaseMsg === 'how do i start survivalos?' ||
+      lowercaseMsg === 'what should i do first?' ||
+      lowercaseMsg === 'how do i troubleshoot survivalos?' ||
+      lowercaseMsg === 'is my local setup healthy?'
+    ) {
+      let text = `### **SurvivalOS Release Candidate Readiness**\n\n`;
+      text += `Open RELEASE CHECK to verify backend, materials, index, toolkit state, and backup status.\n`;
+      text += `Start the backend and frontend using the commands in the README.\n`;
+      text += `Create a local JSON backup before major changes.\n\n`;
+      text += `*Safety Policy:* J.A.R.V.I.S. runs local health checks only. I do not automatically fix your setup, scan your drive, upload logs, sync data to a cloud, download libraries, or index files in the background without explicit manual instruction.`;
+
+      setMessages(prev => [...prev, {
+        role: 'ai',
+        text: text,
+        answerStatus: 'offline_readiness_checklist'
+      }]);
+      setChatLoading(false);
+      return;
+    }
+
     if (lowercaseMsg === 'what imports need review?') {
       const ledger = loadLedger();
       const pending = ledger.filter(r => r.operatorDecision === 'pending');
@@ -1882,6 +1908,14 @@ function App() {
             >
               <Database size={18} className={viewMode === 'index-integrity' ? 'text-glow' : ''}/>
               <span style={{color: viewMode === 'index-integrity' ? 'var(--brand-primary)' : ''}}>INDEX INTEGRITY</span>
+            </div>
+
+            <div 
+              className={`nav-item ${viewMode === 'release' ? 'active' : ''}`}
+              onClick={() => { setViewMode('release'); setSidebarOpen(false); }}
+            >
+              <ShieldCheck size={18} className={viewMode === 'release' ? 'text-glow' : ''}/>
+              <span style={{color: viewMode === 'release' ? 'var(--brand-primary)' : ''}}>RELEASE CHECK</span>
             </div>
 
             <div style={{ margin: '16px 0 8px 16px', fontSize: '0.75rem', color: 'var(--brand-primary)', letterSpacing: '1px', textTransform: 'uppercase' }}>
@@ -2918,6 +2952,16 @@ function App() {
                   />
                 </PanelErrorBoundary>
               </div>
+            )}
+
+            {!error && !loading && viewMode === 'release' && (
+              <PanelErrorBoundary name="Release Diagnostics">
+                <LocalReleaseCandidatePanel 
+                  setViewMode={setViewMode} 
+                  setToolkitSubTab={setToolkitSubTab} 
+                  API_BASE={API_BASE} 
+                />
+              </PanelErrorBoundary>
             )}
           </div>
         </div>
