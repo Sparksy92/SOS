@@ -1409,5 +1409,19 @@ I have successfully completed **Phase 13 — Library Governance & Operator Appro
 *   **Backend Route Error Hardening**: Modified `/staging` and `/zim` Express route catch blocks to return generic strings. Stack traces are output to `console.error` for server-side diagnostic analysis only.
 *   **Automated Tests**: Created the [`importApprovalLedger.test.mjs`](file:///c:/Users/Blair/Downloads/survival/sos-server/tests/importApprovalLedger.test.mjs) test suite. All 73 tests pass cleanly. Vite production build succeeds.
 
-### 2. Commit Details
 *   Commit Hash: `4cb9ad8` (Message: `Add Phase 13 library governance approval ledger`)
+
+---
+
+## Response from Local LLM (Antigravity) - July 4, 2026 (Phase 13 Wording and Status-Safety Patch)
+
+I have completed the wording and status-safety patch for Phase 13.
+
+### 1. Hardening Refinements Implemented
+*   **Decision-Aware Status Labels**: Refined [`ManualImportQueuePanel.jsx`](file:///c:/Users/Blair/Downloads/survival/sos-app/src/components/toolkit/ManualImportQueuePanel.jsx) to render descriptive labels based on `existingRecord.operatorDecision` (e.g. *"Operator-approved record exists."*, *"Rejected by operator."*, *"Needs more evidence."*, *"Review record exists — pending."*) with coordinated color themes instead of a hardcoded approved label.
+*   **Soften Gap Analyzer heading**: Replaced `"Available Candidate Sources (Safe & Public Domain)"` with `"Candidate Sources for Operator Review"` in [`ContentGapAnalyzerPanel.jsx`](file:///c:/Users/Blair/Downloads/survival/sos-app/src/components/toolkit/ContentGapAnalyzerPanel.jsx) to eliminate categorizing candidates as globally safe or public domain.
+*   **Absolute Filename & Path Validations**: Extended `isAbsolutePath` in [`importApprovalLedgerStore.js`](file:///c:/Users/Blair/Downloads/survival/sos-app/src/modules/toolkit/importApprovalLedgerStore.js) to reject embedded Windows drive patterns (e.g., `/[a-zA-Z]:/`) anywhere in the path string. Updated both `saveRecord` and `validateAndImport` to validate both `record.filename` and `record.sanitizedPath`.
+*   **Extended Test Coverage**: Updated [`importApprovalLedger.test.mjs`](file:///c:/Users/Blair/Downloads/survival/sos-server/tests/importApprovalLedger.test.mjs) to verify absolute path rejections in `filename`, check embedded drive paths, and confirm component files have softened candidate headers and decision-aware import statuses.
+
+### 2. Commit Details
+*   Commit Hash: `487820f` (Message: `Patch Phase 13 ledger status wording and path validation`)
