@@ -80,7 +80,17 @@ import {
   loadActiveMission, saveActiveMission, updateMission, addMissionTimelineEvent,
   attachSavedAnswerToMission, attachSavedSourceToMission, attachFieldNoteToMission
 } from './modules/missions/missionStore.js';
-import { addSourceToReviewQueue } from './modules/search/sourceReviewQueueStore.js';
+import { addSourceToReviewQueue, loadSourceReviewQueue } from './modules/search/sourceReviewQueueStore.js';
+import { 
+  detectMissionIntakeIntent, 
+  startMissionIntake, 
+  getMissionIntakeQuestions, 
+  updateMissionIntakeDraft, 
+  buildMissionDraftFromIntake, 
+  validateMissionDraft, 
+  convertMissionDraftToMission 
+} from './modules/missions/missionIntake.js';
+import { buildMissionBrief } from './modules/missions/missionBriefing.js';
 
 
 import DashboardView from './components/dashboard/DashboardView.jsx';
@@ -124,6 +134,16 @@ function App() {
   });
   const [mediaTab, setMediaTab] = useState('all');
   const [collapsedFolders, setCollapsedFolders] = useState({});
+
+  // Mission Intake State
+  const [intakeState, setIntakeState] = useState({
+    active: false,
+    intentType: null,
+    startedAt: null,
+    currentQuestionIndex: 0,
+    answers: {},
+    draftMission: null
+  });
 
   // Audio Book Reader State
   const [audioChunks, setAudioChunks] = useState([]);
@@ -938,7 +958,211 @@ function App() {
     setMessages(prev => [...prev, { role: 'user', text: textToSend }]);
     setChatInput('');
     setChatLoading(true);
-    
+
+    const lowercaseMsg = textToSend.toLowerCase().trim();
+
+    // 1. Intercept Cancel command at any point during intake
+    if (intakeState.active && (lowercaseMsg === 'cancel' || lowercaseMsg === 'abort')) {
+      setIntakeState({
+        active: false,
+        intentType: null,
+        startedAt: null,
+        currentQuestionIndex: 0,
+        answers: {},
+        draftMission: null
+      });
+      setMessages(prev => [...prev, {
+        role: 'ai',
+        text: 'Mission planning intake has been cancelled and reset.'
+      }]);
+      setChatLoading(false);
+      return;
+    }
+
+    // 2. Intercept Intake Active State responses
+    if (intakeState.active) {
+      // If we are at the approval stage (draft is ready)
+      if (intakeState.draftMission) {
+        if (lowercaseMsg === 'yes' || lowercaseMsg === 'create' || lowercaseMsg === 'approve') {
+          // Convert draft and save mission
+          const finalMission = convertMissionDraftToMission(intakeState.draftMission);
+          
+          // Save active mission locally
+          setActiveMission(finalMission);
+          saveActiveMission(finalMission);
+
+          // Trigger a local storage custom event so other views update
+          window.dispatchEvent(new Event('storage'));
+
+          setIntakeState({
+            active: false,
+            intentType: null,
+            startedAt: null,
+            currentQuestionIndex: 0,
+            answers: {},
+            draftMission: null
+          });
+
+          setMessages(prev => [...prev, {
+            role: 'ai',
+            text: `Mission "${finalMission.title}" created successfully! I have initialized the checkpoints and safety directives. You can manage it now in the Field Mode tab.`
+          }]);
+          setChatLoading(false);
+          return;
+        } else if (lowercaseMsg === 'no' || lowercaseMsg === 'deny') {
+          setIntakeState({
+            active: false,
+            intentType: null,
+            startedAt: null,
+            currentQuestionIndex: 0,
+            answers: {},
+            draftMission: null
+          });
+          setMessages(prev => [...prev, {
+            role: 'ai',
+            text: 'Mission creation aborted. Stored nothing.'
+          }]);
+          setChatLoading(false);
+          return;
+        } else {
+          setMessages(prev => [...prev, {
+            role: 'ai',
+            text: 'I did not catch that. Do you want me to create this mission? (Type YES to approve, or CANCEL to abort)'
+          }]);
+          setChatLoading(false);
+          return;
+        }
+      }
+
+      // We are answering a question
+      const updatedState = { ...intakeState };
+      updateMissionIntakeDraft(updatedState, textToSend);
+
+      if (updatedState.draftMission) {
+        // Draft is ready! Present it for approval.
+        const draft = updatedState.draftMission;
+        let draftText = `Based on your responses, I have prepared a draft mission profile:\n\n`;
+        draftText += `**Draft Mission:** ${draft.title}\n`;
+        draftText += `**Type:** ${draft.missionType?.toUpperCase()}\n`;
+        draftText += `**Overview:** ${draft.overview}\n\n`;
+        
+        draftText += `**Suggested Objectives:**\n`;
+        draft.objectives.forEach(obj => {
+          draftText += `- ${obj.label}\n`;
+        });
+        
+        draftText += `\n**Suggested Logistics Checklist:**\n`;
+        draft.checklist.forEach(t => {
+          draftText += `- [ ] ${t.label}\n`;
+        });
+
+        draftText += `\nDo you want me to create this mission? (Type YES to approve, or CANCEL to abort)`;
+
+        setIntakeState(updatedState);
+        setMessages(prev => [...prev, {
+          role: 'ai',
+          text: draftText
+        }]);
+        setChatLoading(false);
+        return;
+      } else {
+        // Ask the next question
+        const questions = getMissionIntakeQuestions(updatedState.intentType);
+        const nextQ = questions[updatedState.currentQuestionIndex];
+        
+        setIntakeState(updatedState);
+        setMessages(prev => [...prev, {
+          role: 'ai',
+          text: nextQ.text
+        }]);
+        setChatLoading(false);
+        return;
+      }
+    }
+
+    // 3. Intercept Briefing request
+    if (lowercaseMsg === 'mission brief' || lowercaseMsg === 'brief this mission' || lowercaseMsg === 'give me a mission brief' || lowercaseMsg === 'what is the mission status' || lowercaseMsg === 'what still needs review') {
+      if (!activeMission) {
+        setMessages(prev => [...prev, {
+          role: 'ai',
+          text: 'There is no active mission currently. Use a command like "I want to start a mission" or "I wanna go fishing" to plan one!'
+        }]);
+        setChatLoading(false);
+        return;
+      }
+
+      // Generate brief
+      const answersList = loadSavedAnswers();
+      const sourcesList = loadSavedSources();
+      const notesList = loadFieldNotes();
+      const reviewQueue = loadSourceReviewQueue();
+
+      const brief = buildMissionBrief(activeMission, answersList, sourcesList, notesList, reviewQueue);
+
+      let briefText = `Based on your saved local mission data, here is the current mission brief:\n\n`;
+      briefText += `### **${brief.title.toUpperCase()}**\n`;
+      briefText += `* **Status:** ${brief.status.toUpperCase()}\n`;
+      briefText += `* **Mission Organization Score:** ${brief.readiness.score}% (${brief.readiness.label})\n`;
+      if (brief.overview) {
+        briefText += `* **Overview:** ${brief.overview}\n`;
+      }
+      briefText += `\n`;
+
+      if (brief.openObjectives.length > 0) {
+        briefText += `**Open Objectives:**\n`;
+        brief.openObjectives.forEach(o => {
+          briefText += `- [ ] ${o.label}\n`;
+        });
+        briefText += `\n`;
+      }
+
+      if (brief.openTasks.length > 0) {
+        briefText += `**Open Tasks:**\n`;
+        brief.openTasks.forEach(t => {
+          briefText += `- [ ] ${t.label} (${t.priority})\n`;
+        });
+        briefText += `\n`;
+      }
+
+      if (brief.safetyChecklist.length > 0) {
+        briefText += `⚠️ **Safety Warnings & Directives:**\n`;
+        brief.safetyChecklist.forEach(c => {
+          briefText += `* **[${c.category.toUpperCase()}]** *Disclaimer:* ${c.warning}\n`;
+          c.directives.forEach(d => {
+            briefText += `  - ${d}\n`;
+          });
+        });
+      }
+
+      setMessages(prev => [...prev, {
+        role: 'ai',
+        text: briefText,
+        answerStatus: 'local_mission_brief'
+      }]);
+      setChatLoading(false);
+      return;
+    }
+
+    // 4. Intercept Intake Start
+    const detectedType = detectMissionIntakeIntent(textToSend);
+    if (detectedType) {
+      const initialState = startMissionIntake(detectedType);
+      const questions = getMissionIntakeQuestions(detectedType);
+      const firstQ = questions[0];
+
+      setIntakeState(initialState);
+      
+      let welcomeText = `I can help set that up as a mission. A few details first:\n\n`;
+      welcomeText += `1. ${firstQ.text}`;
+
+      setMessages(prev => [...prev, {
+        role: 'ai',
+        text: welcomeText
+      }]);
+      setChatLoading(false);
+      return;
+    }
+
     try {
       const res = await fetch(`${API_BASE}/api/chat`, {
         method: 'POST',

@@ -13,6 +13,7 @@ import { createMissionTask, detectMissionRisks, buildMissionRelatedData, transit
 import { loadSavedAnswers, loadSavedSources, loadFieldNotes, addSavedSource } from '../../modules/session/sessionStore.js';
 import { generateMissionMarkdownReport, generateMissionJSONReport, downloadFile } from '../../modules/reports/reportExport.js';
 import MissionSourceFinder from './MissionSourceFinder.jsx';
+import MissionBriefingPanel from './MissionBriefingPanel.jsx';
 import { 
   addSourceToReviewQueue, loadSourceReviewQueue, removeSourceReviewQueueItem 
 } from '../../modules/search/sourceReviewQueueStore.js';
@@ -344,7 +345,7 @@ const ActiveMissionView = ({ mission, onSendSuggestedPrompt, onUpdateState }) =>
       </div>
 
       {/* Main Workspace split */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '20px', flexWrap: 'wrap' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
         
         {/* Left column: checklist & tasks */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -524,6 +525,18 @@ const ActiveMissionView = ({ mission, onSendSuggestedPrompt, onUpdateState }) =>
             />
           </div>
         </div>
+
+        {/* Third column: J.A.R.V.I.S. Mission Briefing Intel */}
+        <div>
+          <MissionBriefingPanel 
+            mission={mission}
+            relatedAnswers={related.includedAnswers}
+            relatedSources={related.includedSources}
+            relatedNotes={related.includedNotes}
+            reviewQueue={reviewQueue}
+          />
+        </div>
+
       </div>
 
       {/* Suggested Jarvis prompts & Searches */}

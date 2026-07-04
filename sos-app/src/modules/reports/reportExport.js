@@ -1,3 +1,5 @@
+import { calculateReadinessScore, getSafetyChecklist } from '../missions/missionBriefing.js';
+
 /**
  * Report Export Utility
  */
@@ -279,11 +281,12 @@ export const generateMissionMarkdownReport = (mission, relatedData) => {
     highRiskItems.push({ riskCategory: mission.riskCategory });
   }
 
+  const uniqueCats = [...new Set(highRiskItems.map(item => item.riskCategory).filter(Boolean))];
+
   if (highRiskItems.length > 0) {
     md += `> [!WARNING]\n`;
     md += `> **CRITICAL SECURITY RISK WARNING**\n`;
     md += `> This mission report logs active procedures in high-risk categories:\n`;
-    const uniqueCats = [...new Set(highRiskItems.map(item => item.riskCategory).filter(Boolean))];
     uniqueCats.forEach(cat => {
       md += `> - **${cat.toUpperCase()}**\n`;
     });
@@ -291,6 +294,36 @@ export const generateMissionMarkdownReport = (mission, relatedData) => {
     md += `> Cross-verify all technical, electrical, chemical, mechanical, and first-aid checklists with physically printed reference material. AI predictions must not be used as live instructions in hazard contexts.\n\n`;
   } else {
     md += `*No high-risk operations were identified during this mission.*\n\n`;
+  }
+
+  // Section 12: Mission Organization & Readiness Score
+  md += `## SECTION 12: MISSION ORGANIZATION ASSESSMENT\n`;
+  const readiness = calculateReadinessScore(mission, answers, sources, notes, queued);
+  md += `**Mission Organization Score:** ${readiness.score}% (${readiness.label.toUpperCase()})\n\n`;
+  md += `### Score Explanations:\n`;
+  if (readiness.reasons.length === 0) {
+    md += `- Baseline status (no additional setup adjustments).\n`;
+  } else {
+    readiness.reasons.forEach(r => {
+      md += `- ${r}\n`;
+    });
+  }
+  md += `\n`;
+
+  // Section 13: Risk-Aware safety directives
+  if (uniqueCats.length > 0) {
+    md += `## SECTION 13: FIELD SAFETY DIRECTIVES & DISCLAIMERS\n`;
+    const safetyChecklist = getSafetyChecklist(uniqueCats);
+    safetyChecklist.forEach(check => {
+      md += `### Safety Guidelines: ${check.category.toUpperCase()}\n`;
+      md += `> [!CAUTION]\n`;
+      md += `> **Disclaimer:** ${check.warning}\n\n`;
+      md += `**Verifications Checklist:**\n`;
+      check.directives.forEach(d => {
+        md += `- [ ] ${d}\n`;
+      });
+      md += `\n`;
+    });
   }
 
   md += `---\n*END OF FIELD MISSION REPORT // CONFIDENTIAL OFFLINE HOMESTEAD ARCHIVE*\n`;
