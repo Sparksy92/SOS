@@ -1,0 +1,269 @@
+{
+  "generatedAt": "2026-07-04T03:52:11.807936+00:00",
+  "sourcesAudited": [
+    {
+      "name": "WROLPi",
+      "type": "github_repo",
+      "url": "https://github.com/lrnselfreliance/wrolpi.git",
+      "license": "GPL-3.0",
+      "usableForSOS": [
+        "architecture ideas",
+        "feature comparison"
+      ],
+      "doNotUseDirectly": [
+        "source code without license review"
+      ]
+    },
+    {
+      "name": "Project N.O.M.A.D.",
+      "type": "github_repo",
+      "url": "https://github.com/Crosstalk-Solutions/project-nomad.git",
+      "license": "Apache-2.0",
+      "usableForSOS": [
+        "Ollama vector setup architecture",
+        "Kiwix ZIM manager concept"
+      ],
+      "doNotUseDirectly": [
+        "automatic updates",
+        "lan no-auth configurations"
+      ]
+    },
+    {
+      "name": "Internet-in-a-Box",
+      "type": "web_site",
+      "url": "https://internet-in-a-box.org/",
+      "license": "GPL-2.0-or-later",
+      "usableForSOS": [
+        "Wikipedia Medical Encyclopedia concept",
+        "Kiwix ZIM integration workflow"
+      ],
+      "doNotUseDirectly": [
+        "monolithic Raspberry Pi image installs"
+      ]
+    }
+  ],
+  "localMaterialSummary": {
+    "inventoryAvailable": true,
+    "totalFilesKnown": 0,
+    "categoriesKnown": [
+      "homesteading",
+      "farming",
+      "general_survival",
+      "water",
+      "bushcraft",
+      "shelter",
+      "medical_reference"
+    ]
+  },
+  "categoryCoverage": [
+    {
+      "category": "homesteading",
+      "localCount": 0,
+      "externalCandidateCount": 2,
+      "coverage": "missing",
+      "notes": "Operator has 0 of 2 items cataloged."
+    },
+    {
+      "category": "farming",
+      "localCount": 0,
+      "externalCandidateCount": 1,
+      "coverage": "missing",
+      "notes": "Operator has 0 of 1 items cataloged."
+    },
+    {
+      "category": "general_survival",
+      "localCount": 0,
+      "externalCandidateCount": 2,
+      "coverage": "missing",
+      "notes": "Operator has 0 of 2 items cataloged."
+    },
+    {
+      "category": "water",
+      "localCount": 0,
+      "externalCandidateCount": 1,
+      "coverage": "missing",
+      "notes": "Operator has 0 of 1 items cataloged."
+    },
+    {
+      "category": "bushcraft",
+      "localCount": 0,
+      "externalCandidateCount": 1,
+      "coverage": "missing",
+      "notes": "Operator has 0 of 1 items cataloged."
+    },
+    {
+      "category": "shelter",
+      "localCount": 0,
+      "externalCandidateCount": 1,
+      "coverage": "missing",
+      "notes": "Operator has 0 of 1 items cataloged."
+    },
+    {
+      "category": "medical_reference",
+      "localCount": 0,
+      "externalCandidateCount": 3,
+      "coverage": "missing",
+      "notes": "Operator has 0 of 3 items cataloged."
+    }
+  ],
+  "candidateItems": [
+    {
+      "title": "The Homestead Builder",
+      "source": "Swiss Bay PDF Directory Listing",
+      "sourceUrl": "https://theswissbay.ch/pdf/Books/Survival/Farming,%20Animalraising,%20Homesteading/Homesteading/The%20Homestead%20Builder.pdf",
+      "category": "homesteading",
+      "riskCategory": null,
+      "licenseStatus": "public_domain",
+      "alreadyPresent": false,
+      "matchReason": "",
+      "recommendedAction": "approved_download",
+      "notes": "Standard off-grid reference"
+    },
+    {
+      "title": "Storey's Basic Country Skills",
+      "source": "Swiss Bay PDF Directory Listing",
+      "sourceUrl": "https://theswissbay.ch/pdf/Books/Survival/Farming,%20Animalraising,%20Homesteading/Homesteading/Storey%20Basic%20Country%20Skills.pdf",
+      "category": "homesteading",
+      "riskCategory": null,
+      "licenseStatus": "restricted",
+      "alreadyPresent": false,
+      "matchReason": "",
+      "recommendedAction": "manual_review",
+      "notes": "Standard off-grid reference"
+    },
+    {
+      "title": "Farming For Self-Sufficiency",
+      "source": "Swiss Bay PDF Directory Listing",
+      "sourceUrl": "https://theswissbay.ch/pdf/Books/Survival/Farming,%20Animalraising,%20Homesteading/Homesteading/Farming%20for%20Self-Sufficiency.pdf",
+      "category": "farming",
+      "riskCategory": null,
+      "licenseStatus": "open_license",
+      "alreadyPresent": false,
+      "matchReason": "",
+      "recommendedAction": "approved_download",
+      "notes": "Standard off-grid reference"
+    },
+    {
+      "title": "US Army Survival Manual FM 21-76",
+      "source": "Swiss Bay PDF Directory Listing",
+      "sourceUrl": "https://theswissbay.ch/pdf/Books/Survival/Survival/FM%2021-76%20Survival%20Manual.pdf",
+      "category": "general_survival",
+      "riskCategory": null,
+      "licenseStatus": "official_free",
+      "alreadyPresent": false,
+      "matchReason": "",
+      "recommendedAction": "approved_download",
+      "notes": "Standard off-grid reference"
+    },
+    {
+      "title": "SAS Survival Handbook",
+      "source": "Swiss Bay PDF Directory Listing",
+      "sourceUrl": "https://theswissbay.ch/pdf/Books/Survival/Survival/SAS%20Survival%20Handbook.pdf",
+      "category": "general_survival",
+      "riskCategory": null,
+      "licenseStatus": "restricted",
+      "alreadyPresent": false,
+      "matchReason": "",
+      "recommendedAction": "manual_review",
+      "notes": "Standard off-grid reference"
+    },
+    {
+      "title": "Emergency Sanitation and Water",
+      "source": "Swiss Bay PDF Directory Listing",
+      "sourceUrl": "https://theswissbay.ch/pdf/Books/Survival/Survival/Emergency%20Sanitation%20and%20Water.pdf",
+      "category": "water",
+      "riskCategory": "water_treatment",
+      "licenseStatus": "official_free",
+      "alreadyPresent": false,
+      "matchReason": "",
+      "recommendedAction": "approved_download",
+      "notes": "Requires safety-gate validation"
+    },
+    {
+      "title": "Bushcraft Outdoor Skills and Wilderness Survival",
+      "source": "Swiss Bay PDF Directory Listing",
+      "sourceUrl": "https://theswissbay.ch/pdf/Books/Survival/Bushcraft/Bushcraft%20Outdoor%20Skills.pdf",
+      "category": "bushcraft",
+      "riskCategory": null,
+      "licenseStatus": "restricted",
+      "alreadyPresent": false,
+      "matchReason": "",
+      "recommendedAction": "manual_review",
+      "notes": "Standard off-grid reference"
+    },
+    {
+      "title": "Shelters Shacks and Shanties",
+      "source": "Swiss Bay PDF Directory Listing",
+      "sourceUrl": "https://theswissbay.ch/pdf/Books/Survival/Bushcraft/Shelters%20Shacks%20and%20Shanties.pdf",
+      "category": "shelter",
+      "riskCategory": null,
+      "licenseStatus": "public_domain",
+      "alreadyPresent": false,
+      "matchReason": "",
+      "recommendedAction": "approved_download",
+      "notes": "Standard off-grid reference"
+    },
+    {
+      "title": "Where There Is No Doctor",
+      "source": "Swiss Bay PDF Directory Listing",
+      "sourceUrl": "https://theswissbay.ch/pdf/Books/Survival/Bush%20Medicine/Where%20There%20Is%20No%20Doctor.pdf",
+      "category": "medical_reference",
+      "riskCategory": "medical",
+      "licenseStatus": "official_free",
+      "alreadyPresent": false,
+      "matchReason": "",
+      "recommendedAction": "approved_download",
+      "notes": "Requires safety-gate validation"
+    },
+    {
+      "title": "Where There Is No Dentist",
+      "source": "Swiss Bay PDF Directory Listing",
+      "sourceUrl": "https://theswissbay.ch/pdf/Books/Survival/Bush%20Medicine/Where%20There%20Is%20No%20Dentist.pdf",
+      "category": "medical_reference",
+      "riskCategory": "medical",
+      "licenseStatus": "official_free",
+      "alreadyPresent": false,
+      "matchReason": "",
+      "recommendedAction": "approved_download",
+      "notes": "Requires safety-gate validation"
+    },
+    {
+      "title": "Survival Medicine Handbook",
+      "source": "Swiss Bay PDF Directory Listing",
+      "sourceUrl": "https://theswissbay.ch/pdf/Books/Survival/Bush%20Medicine/Survival%20Medicine%20Handbook.pdf",
+      "category": "medical_reference",
+      "riskCategory": "medical",
+      "licenseStatus": "restricted",
+      "alreadyPresent": false,
+      "matchReason": "",
+      "recommendedAction": "manual_review",
+      "notes": "Requires safety-gate validation"
+    }
+  ],
+  "blockedItems": [
+    {
+      "title": "Storey's Basic Country Skills",
+      "source": "Swiss Bay",
+      "reason": "unknown_license_or_restricted",
+      "notes": "Licensing type: restricted. Locked behind operator review."
+    },
+    {
+      "title": "SAS Survival Handbook",
+      "source": "Swiss Bay",
+      "reason": "unknown_license_or_restricted",
+      "notes": "Licensing type: restricted. Locked behind operator review."
+    },
+    {
+      "title": "Bushcraft Outdoor Skills and Wilderness Survival",
+      "source": "Swiss Bay",
+      "reason": "unknown_license_or_restricted",
+      "notes": "Licensing type: restricted. Locked behind operator review."
+    },
+    {
+      "title": "Survival Medicine Handbook",
+      "source": "Swiss Bay",
+      "reason": "unknown_license_or_restricted",
+      "notes": "Licensing type: restricted. Locked behind operator review."
+    }
+  ]
+}
