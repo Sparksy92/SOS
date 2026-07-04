@@ -1,0 +1,189 @@
+import assert from 'node:assert';
+import test from 'node:test';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { dirname } from 'node:path';
+import { createRequire } from 'node:module';
+import express from 'express';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const require = createRequire(import.meta.url);
+
+const { 
+  getMaterialRoot, 
+  setMaterialsDirOverride, 
+  isBlockedMaterialPath, 
+  resolveMaterialPath 
+} = require('../services/materialRootService');
+
+const crawler = require('../crawler');
+const mediaRouter = require('../routes/media.routes');
+
+test('SOS Material Boundary & Crawler Hardening Test Suite', async (t) => {
+
+  const tempMaterialDir = path.join(__dirname, 'temp_materials_fixture');
+
+  t.before(() => {
+    // Create temporary folder structure
+    if (!fs.existsSync(tempMaterialDir)) {
+      fs.mkdirSync(tempMaterialDir, { recursive: true });
+    }
+    // Set materials override
+    setMaterialsDirOverride(tempMaterialDir);
+    
+    // Add safe fixture file
+    fs.writeFileSync(path.join(tempMaterialDir, 'safety_guide.txt'), 'Emergency protocol.');
+    
+    // Add blocked files/directories
+    fs.mkdirSync(path.join(tempMaterialDir, 'node_modules'), { recursive: true });
+    fs.writeFileSync(path.join(tempMaterialDir, 'node_modules', 'exploit.js'), 'malicious code');
+    fs.writeFileSync(path.join(tempMaterialDir, '.env'), 'SECRET_TOKEN=123');
+    fs.writeFileSync(path.join(tempMaterialDir, 'database.db'), 'sqlite content');
+  });
+
+  t.after(() => {
+    // Restore override
+    setMaterialsDirOverride(null);
+    try {
+      if (fs.existsSync(tempMaterialDir)) {
+        fs.rmSync(tempMaterialDir, { recursive: true, force: true });
+      }
+    } catch (e) {}
+  });
+
+  await t.test('1. SOS_MATERIALS_DIR and Fallback compatibility mode', () => {
+    // Override materials directory works
+    assert.strictEqual(getMaterialRoot(), tempMaterialDir);
+
+    // Fallback checks
+    setMaterialsDirOverride(null);
+    // Should fallback to app root
+    const appRoot = path.resolve(__dirname, '..', '..');
+    assert.strictEqual(getMaterialRoot(), appRoot);
+    
+    // Re-apply override for other tests
+    setMaterialsDirOverride(tempMaterialDir);
+  });
+
+  await t.test('2. Path traversal rejection and invalid webPath', () => {
+    // traversal outside getMaterialRoot()
+    assert.throws(() => {
+      resolveMaterialPath('/materials/../../../any-secret.txt');
+    }, /Out of bounds/);
+
+    // non-/materials path or non-string checks
+    assert.throws(() => {
+      resolveMaterialPath(123);
+    }, /filePath is required/);
+  });
+
+  await t.test('3. Blocked source directories and runtime files', () => {
+    // node_modules
+    assert.strictEqual(isBlockedMaterialPath(path.join(tempMaterialDir, 'node_modules', 'exploit.js')), true);
+    // .env
+    assert.strictEqual(isBlockedMaterialPath(path.join(tempMaterialDir, '.env')), true);
+    // .db file extension
+    assert.strictEqual(isBlockedMaterialPath(path.join(tempMaterialDir, 'database.db')), true);
+    // safe txt file is NOT blocked
+    assert.strictEqual(isBlockedMaterialPath(path.join(tempMaterialDir, 'safety_guide.txt')), false);
+  });
+
+  await t.test('4. Guarded /materials Express 5 route integration', async () => {
+    const app = express();
+    app.use(express.json());
+
+    // Register our guarded Express 5 route
+    app.get('/materials/*splat', (req, res) => {
+      try {
+        const decodedPath = decodeURIComponent(req.path);
+        const absolutePath = resolveMaterialPath(decodedPath);
+        
+        if (!fs.existsSync(absolutePath)) {
+          return res.status(404).send("File not found.");
+        }
+        
+        const stat = fs.statSync(absolutePath);
+        if (stat.isDirectory()) {
+          return res.status(403).send("Access denied: Directory listing not allowed.");
+        }
+        
+        res.sendFile(absolutePath);
+      } catch (err) {
+        res.status(403).send(`Access denied: ${err.message}`);
+      }
+    });
+
+    const server = app.listen(0);
+    const port = server.address().port;
+    const baseUrl = `http://localhost:${port}`;
+
+    try {
+      // 4.1. Served allowed fixture file
+      const res1 = await fetch(`${baseUrl}/materials/safety_guide.txt`);
+      assert.strictEqual(res1.status, 200);
+      const text1 = await res1.text();
+      assert.strictEqual(text1, 'Emergency protocol.');
+
+      // 4.2. Rejects blocked runtime/config file
+      const res2 = await fetch(`${baseUrl}/materials/.env`);
+      assert.strictEqual(res2.status, 403);
+
+      // 4.3. Rejects traversal using URL-encoded segments (returns 403 or 404 depending on framework-level normalization)
+      const res3 = await fetch(`${baseUrl}/materials/%2e%2e/%2e%2e/package.json`);
+      assert.ok(res3.status === 403 || res3.status === 404);
+    } finally {
+      server.close();
+    }
+  });
+
+  await t.test('5. Media and Index routes boundary checks', () => {
+    const mockReqRes = (pathVal) => {
+      let code = 200;
+      let bodyText = "";
+      const req = { query: { path: pathVal } };
+      const res = {
+        status(c) { code = c; return this; },
+        send(txt) { bodyText = txt; return this; }
+      };
+      return { req, res, getResult: () => ({ code, bodyText }) };
+    };
+
+    const mediaHandler = mediaRouter.stack[0].route.stack[0].handle;
+
+    // Stream blocked file
+    const { req: req1, res: res1, getResult: getResult1 } = mockReqRes('/materials/.env');
+    mediaHandler(req1, res1);
+    const result1 = getResult1();
+    assert.strictEqual(result1.code, 403);
+    assert.ok(result1.bodyText.includes('Access denied'));
+  });
+
+  await t.test('6. Crawler Modes: inventory, index and extract-zips rules', async () => {
+    const { db } = require('../db');
+    db.exec("DELETE FROM document_chunks");
+    db.exec("DELETE FROM indexed_docs");
+
+    await crawler.start({ mode: 'inventory' });
+    const status = crawler.getStatus();
+    assert.strictEqual(status.processedDocs, 0); // No docs indexed!
+    assert.strictEqual(status.processedZips, 0);
+
+    // 6.2. Extract-zips mode requires confirmation
+    await crawler.start({ mode: 'extract-zips', confirmation: 'INVALID' });
+    const failStatus = crawler.getStatus();
+    assert.ok(failStatus.statusText.includes('invalid confirmation phrase') || failStatus.statusText.includes('failed'));
+
+    // 6.3. Extract-zips dry-run reports zips but does not write or extract
+    const zipFile = path.join(tempMaterialDir, 'archive.zip');
+    fs.writeFileSync(zipFile, 'dummy zip content');
+
+    await crawler.start({ mode: 'extract-zips', dryRun: true });
+    const dryRunStatus = crawler.getStatus();
+    assert.strictEqual(dryRunStatus.dryRunZips.length, 1);
+    assert.strictEqual(dryRunStatus.dryRunZips[0], 'archive.zip');
+    assert.strictEqual(dryRunStatus.processedZips, 0); // No zip processed!
+  });
+
+});

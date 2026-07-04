@@ -2,8 +2,12 @@ const fs = require('fs');
 const path = require('path');
 const { db } = require('../db');
 const { PDFLoader } = require("@langchain/community/document_loaders/fs/pdf");
-
-const MATERIALS_DIR = path.resolve(__dirname, '..', '..');
+const { 
+  resolveMaterialPath, 
+  absoluteToMaterialWebPath, 
+  getMaterialRoot,
+  isBlockedMaterialPath 
+} = require('./materialRootService');
 
 /**
  * Normalizes web path to absolute path and prevents directory traversal.
@@ -12,34 +16,17 @@ function webPathToMaterialAbsolutePath(webPath) {
   if (!webPath || typeof webPath !== 'string') {
     throw new Error('filePath is required');
   }
-
   if (!webPath.startsWith('/materials/')) {
     throw new Error('filePath must start with /materials/');
   }
-
-  const relPath = webPath.replace(/^\/materials\//, '');
-  const absolutePath = path.resolve(MATERIALS_DIR, relPath);
-  const root = path.resolve(MATERIALS_DIR);
-
-  if (absolutePath !== root && !absolutePath.startsWith(root + path.sep)) {
-    throw new Error('Invalid material path');
-  }
-
-  return absolutePath;
+  return resolveMaterialPath(webPath);
 }
 
 /**
  * Converts filesystem absolute path to web path.
  */
 function absolutePathToWebPath(absolutePath) {
-  const resolvedAbsolute = path.resolve(absolutePath);
-  const resolvedRoot = path.resolve(MATERIALS_DIR);
-  
-  if (resolvedAbsolute !== resolvedRoot && !resolvedAbsolute.startsWith(resolvedRoot + path.sep)) {
-    throw new Error('Path is outside materials directory');
-  }
-  
-  return '/materials/' + path.relative(resolvedRoot, resolvedAbsolute).replace(/\\/g, '/');
+  return absoluteToMaterialWebPath(absolutePath);
 }
 
 /**
@@ -47,10 +34,17 @@ function absolutePathToWebPath(absolutePath) {
  */
 async function extractDocumentTextPages(absolutePath) {
   const ext = path.extname(absolutePath).toLowerCase();
-  const relPath = path.relative(MATERIALS_DIR, absolutePath);
+  const materialsRoot = getMaterialRoot();
+  
+  // Boundary check
+  if (isBlockedMaterialPath(absolutePath)) {
+    throw new Error('Access denied to blocked path');
+  }
+
+  const relPath = path.relative(materialsRoot, absolutePath);
   const parsed = path.parse(relPath);
   const mdRelPath = path.join(parsed.dir, parsed.name + '.md');
-  const mdPath = path.join(MATERIALS_DIR, 'markdown_materials', mdRelPath);
+  const mdPath = path.join(materialsRoot, 'markdown_materials', mdRelPath);
 
   if (ext === '.pdf' && fs.existsSync(mdPath)) {
     console.log(`[SQLITE] Found high-fidelity olmOCR Markdown: ${mdPath}`);
@@ -72,7 +66,10 @@ async function extractDocumentTextPages(absolutePath) {
  * Deletes previous chunks, writes fresh chunks, and registers in indexed_docs.
  */
 function writeDocumentChunksToSqlite(webPath, pages) {
-  // Delete previous chunks (Blocker 4)
+  // Check bounds first via resolve
+  resolveMaterialPath(webPath);
+
+  // Delete previous chunks
   const deleteChunks = db.prepare('DELETE FROM document_chunks WHERE document_path = ?');
   deleteChunks.run(webPath);
 
@@ -102,6 +99,9 @@ async function indexDocumentToSqliteByWebPath(webPath) {
  */
 function checkDocumentIndexedStatus(webPath) {
   try {
+    // Resolve validation
+    resolveMaterialPath(webPath);
+
     const chunkStmt = db.prepare("SELECT COUNT(*) as count FROM document_chunks WHERE document_path = ?");
     const docStmt = db.prepare("SELECT 1 FROM indexed_docs WHERE path = ?");
     

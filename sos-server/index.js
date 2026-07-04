@@ -11,11 +11,28 @@ const PORT = 3001;
 app.use(cors());
 app.use(express.json());
 
-// Path to the survival materials
-const MATERIALS_DIR = path.join(__dirname, '..');
+const { resolveMaterialPath } = require('./services/materialRootService');
 
-// Serve the materials folder statically so files can be accessed via URL
-app.use('/materials', express.static(MATERIALS_DIR));
+// Serve the materials folder statically via a custom guarded Express 5 route
+app.get(/^\/materials\/(.+)$/, (req, res) => {
+  try {
+    const decodedPath = decodeURIComponent(req.path);
+    const absolutePath = resolveMaterialPath(decodedPath);
+    
+    if (!fs.existsSync(absolutePath)) {
+      return res.status(404).send("File not found.");
+    }
+    
+    const stat = fs.statSync(absolutePath);
+    if (stat.isDirectory()) {
+      return res.status(403).send("Access denied: Directory listing not allowed.");
+    }
+    
+    res.sendFile(absolutePath);
+  } catch (err) {
+    res.status(403).send(`Access denied: ${err.message}`);
+  }
+});
 
 const ai = require('./ai');
 const crawler = require('./crawler');

@@ -1,12 +1,17 @@
 const fs = require('fs');
 const path = require('path');
 const { db } = require('../db');
-
-let MATERIALS_DIR = path.join(__dirname, '..', '..'); // Root survival directory
+const { 
+  getMaterialRoot, 
+  setMaterialsDirOverride, 
+  isBlockedMaterialPath, 
+  absoluteToMaterialWebPath 
+} = require('./materialRootService');
 
 function setMaterialsDir(dir) {
-  MATERIALS_DIR = dir;
+  setMaterialsDirOverride(dir);
 }
+
 const MANIFEST_FILE = path.join(__dirname, '..', 'material_manifest.json');
 const METADATA_FILE = path.join(__dirname, '..', 'metadata.json');
 
@@ -77,13 +82,16 @@ function loadMetadataKeys() {
 // Recursive directory scan
 function scanDirectory(dirPath, metadataKeys, arrayOfFiles = []) {
   try {
-    const files = fs.readdirSync(dirPath);
+    const resolvedDirPath = path.resolve(dirPath);
+    if (isBlockedMaterialPath(resolvedDirPath)) return;
+
+    const files = fs.readdirSync(resolvedDirPath);
+    const materialsRoot = getMaterialRoot();
 
     files.forEach(file => {
-      // Security: Ignore app source code, config, databases, and markdown materials directories
-      if (['sos-app', 'sos-server', '.git', '.gemini', 'node_modules', '.vscode', 'markdown_materials'].includes(file)) return;
+      const fullPath = path.join(resolvedDirPath, file);
+      if (isBlockedMaterialPath(fullPath)) return;
 
-      const fullPath = path.join(dirPath, file);
       const stat = fs.statSync(fullPath);
 
       if (stat.isDirectory()) {
@@ -91,11 +99,11 @@ function scanDirectory(dirPath, metadataKeys, arrayOfFiles = []) {
       } else {
         const ext = path.extname(file).toLowerCase();
         if (['.pdf', '.epub', '.zim', '.doc', '.docx', '.txt', '.zip', '.mp4', '.avi', '.mkv', '.wmv', '.webm', '.mov', '.iso', '.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp'].includes(ext)) {
-          const relativePath = path.relative(MATERIALS_DIR, fullPath);
+          const relativePath = path.relative(materialsRoot, fullPath);
           const parts = path.dirname(relativePath).split(path.sep);
           const rawCategory = parts[0] || 'Uncategorized';
           const subdirs = parts.slice(1).filter(p => p && p !== '.');
-          const webPath = `/materials/${relativePath.replace(/\\/g, '/')}`;
+          const webPath = absoluteToMaterialWebPath(fullPath);
 
           arrayOfFiles.push({
             name: file,
@@ -106,7 +114,7 @@ function scanDirectory(dirPath, metadataKeys, arrayOfFiles = []) {
             size: stat.size,
             mtime: stat.mtimeMs,
             riskCategory: getRiskCategory(file, relativePath),
-            indexed: checkIndexed(webPath), // maps webPath '/materials/...' as used by crawler
+            indexed: checkIndexed(webPath),
             metadata: metadataKeys.has(webPath)
           });
         }
@@ -134,7 +142,7 @@ function loadManifest() {
   return {
     version: 1,
     generatedAt: new Date().toISOString(),
-    root: MATERIALS_DIR,
+    root: getMaterialRoot(),
     fileCount: 0,
     categories: {},
     manifestReady: false,
@@ -147,7 +155,8 @@ function loadManifest() {
 function rebuildManifest() {
   console.log("[MANIFEST] Rebuilding material manifest (directory scan)...");
   const metadataKeys = loadMetadataKeys();
-  const files = scanDirectory(MATERIALS_DIR, metadataKeys);
+  const materialsRoot = getMaterialRoot();
+  const files = scanDirectory(materialsRoot, metadataKeys);
 
   // Group by mapped category for UI client compatibility
   const categorized = files.reduce((acc, file) => {
@@ -163,7 +172,7 @@ function rebuildManifest() {
   const manifestData = {
     version: 1,
     generatedAt: new Date().toISOString(),
-    root: MATERIALS_DIR,
+    root: materialsRoot,
     fileCount: files.length,
     categories: categorized,
     totalFiles: files.length,

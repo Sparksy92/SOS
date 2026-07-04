@@ -184,14 +184,16 @@ test('SOS Index Integrity Layer Test Suite', async (t) => {
   await t.test('7. indexFile returns success and warning on vector store failure if SQLite succeeded', async () => {
     // Mock HNSWLib to force failure
     const { HNSWLib } = require("@langchain/community/vectorstores/hnswlib");
+    const { getMaterialRoot } = require('../services/materialRootService');
     const originalLoad = HNSWLib.load;
     const originalFromDocuments = HNSWLib.fromDocuments;
     
     HNSWLib.load = () => Promise.reject(new Error("Mock load failure"));
     HNSWLib.fromDocuments = () => Promise.reject(new Error("Mock fromDocuments failure"));
 
-    // Create a temporary text file to index
-    const tempFile = path.join(__dirname, 'temp_test_doc.txt');
+    // Create a temporary text file to index under the safe material root
+    const materialsRoot = getMaterialRoot();
+    const tempFile = path.join(materialsRoot, 'temp_test_doc.txt');
     fs.writeFileSync(tempFile, 'Emergency sanitation guidelines.');
 
     try {
@@ -204,7 +206,7 @@ test('SOS Index Integrity Layer Test Suite', async (t) => {
       assert.ok(result.vectorWarning.includes('Vector store update failed'));
 
       // Check SQLite chunks are present
-      const webPath = '/materials/' + path.relative(path.join(__dirname, '..', '..'), tempFile).replace(/\\/g, '/');
+      const webPath = '/materials/' + path.relative(materialsRoot, tempFile).replace(/\\/g, '/');
       const status = checkDocumentIndexedStatus(webPath);
       assert.strictEqual(status.indexed, true);
       assert.strictEqual(status.chunks, 1);

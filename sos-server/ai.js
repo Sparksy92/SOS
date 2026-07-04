@@ -10,8 +10,9 @@ const { RunnableSequence } = require("@langchain/core/runnables");
 const { db } = require('./db');
 const { writeDocumentChunksToSqlite, checkDocumentIndexedStatus } = require('./services/documentIndexingService');
 
+const { getMaterialRoot } = require('./services/materialRootService');
+
 // Configuration
-const ROOT_DIR = path.join(__dirname, '..');
 const VECTOR_STORE_PATH = path.join(__dirname, 'vector_store');
 const OLLAMA_BASE_URL = "http://localhost:11434"; // Default Ollama port
 const EMBEDDING_MODEL = "nomic-embed-text";
@@ -50,12 +51,13 @@ const indexFile = async (filePath) => {
   try {
     let docs = [];
     const ext = path.extname(filePath).toLowerCase();
+    const materialsRoot = getMaterialRoot();
 
     // Check if a pre-processed markdown file exists in markdown_materials
-    const relPath = path.relative(ROOT_DIR, filePath);
+    const relPath = path.relative(materialsRoot, filePath);
     const parsed = path.parse(relPath);
     const mdRelPath = path.join(parsed.dir, parsed.name + '.md');
-    const mdPath = path.join(ROOT_DIR, 'markdown_materials', mdRelPath);
+    const mdPath = path.join(materialsRoot, 'markdown_materials', mdRelPath);
 
     let pages = [];
 
@@ -79,7 +81,7 @@ const indexFile = async (filePath) => {
     }
 
     // SQLite Indexing Block - Primary Source of Truth
-    const relativePath = '/materials/' + path.relative(ROOT_DIR, filePath).replace(/\\/g, '/');
+    const relativePath = '/materials/' + path.relative(materialsRoot, filePath).replace(/\\/g, '/');
     const status = checkDocumentIndexedStatus(relativePath);
 
     // Re-index if not fully indexed or if chunk count is zero (Blocker 3 & 4)
@@ -294,10 +296,11 @@ ANSWER:`;
     let page = null;
     let section = null;
     // Check if high-fidelity OCR markdown exists
-    const relPath = path.relative(ROOT_DIR, path.join(ROOT_DIR, documentPath.replace('/materials/', '')));
+    const materialsRoot = getMaterialRoot();
+    const relPath = documentPath.replace('/materials/', '');
     const parsed = path.parse(relPath);
     const mdRelPath = path.join(parsed.dir, parsed.name + '.md');
-    const mdPath = path.join(ROOT_DIR, 'markdown_materials', mdRelPath);
+    const mdPath = path.join(materialsRoot, 'markdown_materials', mdRelPath);
     const isOcrMarkdown = fs.existsSync(mdPath);
 
     if (ext === '.pdf' && !isOcrMarkdown) {
@@ -390,10 +393,11 @@ const extractMetadata = async (filePath) => {
   try {
     const ext = path.extname(filePath).toLowerCase();
     // Check if a pre-processed markdown file exists in markdown_materials
-    const relPath = path.relative(ROOT_DIR, filePath);
+    const materialsRoot = getMaterialRoot();
+    const relPath = path.relative(materialsRoot, filePath);
     const parsed = path.parse(relPath);
     const mdRelPath = path.join(parsed.dir, parsed.name + '.md');
-    const mdPath = path.join(ROOT_DIR, 'markdown_materials', mdRelPath);
+    const mdPath = path.join(materialsRoot, 'markdown_materials', mdRelPath);
 
     let sampleText = "";
     if (ext === '.pdf' && fs.existsSync(mdPath)) {

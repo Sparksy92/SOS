@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const crawler = require('../crawler');
 const { db } = require('../db');
+const { getMaterialRoot } = require('../services/materialRootService');
 
 // API endpoint to get background sync status
 router.get('/status', (req, res) => {
@@ -13,20 +14,28 @@ router.get('/status', (req, res) => {
 // API endpoint to manually trigger crawler scan
 router.post('/start', (req, res) => {
   const status = crawler.getStatus();
-  if (status.statusText.includes("Syncing") || status.statusText.includes("scanning") || status.isCrawling) {
+  if (status.isCrawling) {
     return res.status(400).json({ error: "Crawler is already active." });
   }
   
-  const mode = req.body && req.body.mode;
-  const isDeep = mode === 'deep';
+  const mode = (req.body && req.body.mode) || 'inventory';
+  const confirmation = req.body && req.body.confirmation;
+  const dryRun = req.body && req.body.dryRun === true;
+  const rebuild = req.body && req.body.rebuild === true;
   
-  if (isDeep) {
-    const dbPath = path.join(__dirname, '..', 'sos_database.db');
+  if (mode === 'extract-zips') {
+    if (!dryRun && confirmation !== 'EXTRACT ZIP ARCHIVES') {
+      return res.status(400).json({ error: "Confirmation phrase required to extract ZIP archives. Please type: EXTRACT ZIP ARCHIVES" });
+    }
+  }
+  
+  if (rebuild) {
+    const dbPath = process.env.SOS_DB_PATH || path.join(__dirname, '..', 'sos_database.db');
     const metadataPath = path.join(__dirname, '..', 'metadata.json');
     const dbBackupPath = dbPath + '.bak';
     const metadataBackupPath = metadataPath + '.bak';
     
-    console.log("[SQLITE] Deep index requested. Creating backups of database and metadata...");
+    console.log("[SQLITE] Index rebuild requested. Creating backups of database and metadata...");
     try {
       if (fs.existsSync(dbPath)) {
         fs.copyFileSync(dbPath, dbBackupPath);
@@ -35,7 +44,7 @@ router.post('/start', (req, res) => {
         fs.copyFileSync(metadataPath, metadataBackupPath);
       }
     } catch (backupErr) {
-      console.error("[SQLITE] Backup failed, aborting rebuild operation:", backupErr);
+      console.error("[SQLITE] Backup failed, aborting rebuild:", backupErr);
       return res.status(500).json({ error: "Rebuild aborted: Database backup failed." });
     }
     
@@ -61,9 +70,9 @@ router.post('/start', (req, res) => {
   }
   
   // Start crawler asynchronously
-  crawler.start();
-  console.log(`[SQLITE] Crawler triggered manually (mode: ${mode}).`);
-  res.json({ status: "Crawler started manually.", mode });
+  crawler.start({ mode, confirmation, dryRun });
+  console.log(`[SQLITE] Crawler triggered manually (mode: ${mode}, dryRun: ${dryRun}).`);
+  res.json({ status: `Crawler started in ${mode} mode.`, mode, dryRun });
 });
 
 module.exports = router;

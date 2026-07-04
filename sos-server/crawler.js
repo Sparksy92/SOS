@@ -4,9 +4,9 @@ const { exec } = require('child_process');
 const ai = require('./ai');
 const { db } = require('./db');
 const { checkDocumentIndexedStatus, extractDocumentTextPages, writeDocumentChunksToSqlite } = require('./services/documentIndexingService');
+const { getMaterialRoot, isBlockedMaterialPath } = require('./services/materialRootService');
+const manifestService = require('./services/manifestService');
 
-const ROOT_DIR = path.join(__dirname, '..');
-const BACKUP_DIR = path.join(__dirname, '..', '..', 'survival_zip_backups');
 const METADATA_FILE = path.join(__dirname, 'metadata.json');
 
 let status = {
@@ -16,7 +16,9 @@ let status = {
   totalDocs: 0,
   processedDocs: 0,
   currentFile: "None",
-  statusText: "System idle"
+  statusText: "System idle",
+  mode: "idle",
+  dryRunZips: []
 };
 
 // Load metadata cache
@@ -43,17 +45,18 @@ const runCmd = (cmd) => {
   });
 };
 
-// Recursive file scanner
+// Recursive file scanner respecting materialRootService boundaries
 function scanDir(dir, filesList = { zips: [], docs: [] }) {
   try {
-    const files = fs.readdirSync(dir);
+    const resolvedDir = path.resolve(dir);
+    if (isBlockedMaterialPath(resolvedDir)) return filesList;
+
+    const files = fs.readdirSync(resolvedDir);
     for (const file of files) {
-      // Exclude source, hidden, node_modules, backup, and markdown files
-      if (['sos-app', 'sos-server', '.git', '.gemini', 'node_modules', '.vscode', 'survival_zip_backups', 'markdown_materials'].includes(file)) continue;
+      const fullPath = path.join(resolvedDir, file);
+      if (isBlockedMaterialPath(fullPath)) continue;
       
-      const fullPath = path.join(dir, file);
       const stat = fs.statSync(fullPath);
-      
       if (stat.isDirectory()) {
         scanDir(fullPath, filesList);
       } else {
@@ -91,103 +94,139 @@ async function indexToSqlite(docPath, relativePath) {
 }
 
 // Main crawl loop
-async function start() {
+async function start(options = { mode: 'inventory', confirmation: '', dryRun: false }) {
   if (status.isCrawling) return;
+  
+  const mode = options.mode || 'inventory';
+  const confirmation = options.confirmation || '';
+  const dryRun = options.dryRun === true;
+  
   status.isCrawling = true;
-  status.statusText = "Scanning database structure...";
+  status.mode = mode;
+  status.dryRunZips = [];
+  status.totalZips = 0;
+  status.processedZips = 0;
+  status.totalDocs = 0;
+  status.processedDocs = 0;
+  status.currentFile = "None";
+  status.statusText = `Starting crawl in ${mode.toUpperCase()} mode...`;
   
   try {
+    const materialsRoot = getMaterialRoot();
+    const backupDir = path.join(materialsRoot, 'survival_zip_backups');
+    
     // 1. Scan files
-    const scanResults = scanDir(ROOT_DIR);
+    const scanResults = scanDir(materialsRoot);
     status.totalZips = scanResults.zips.length;
     status.totalDocs = scanResults.docs.length;
-    status.processedZips = 0;
-    status.processedDocs = 0;
     
-    // Create backup directory if not exists
-    if (!fs.existsSync(BACKUP_DIR)) {
-      fs.mkdirSync(BACKUP_DIR, { recursive: true });
+    if (mode === 'inventory') {
+      status.statusText = "Running inventory scan only...";
+      console.log("[CRAWLER] Rebuilding material manifest in inventory mode...");
+      manifestService.rebuildManifest();
+      status.statusText = `Inventory Complete. Found ${status.totalDocs} documents and ${status.totalZips} zip files.`;
+      return;
     }
     
-    // 2. Extract and Move Zips
-    for (let i = 0; i < scanResults.zips.length; i++) {
-      const zipPath = scanResults.zips[i];
-      const zipDir = path.dirname(zipPath);
-      const zipName = path.basename(zipPath, '.zip');
-      
-      status.currentFile = path.basename(zipPath);
-      status.statusText = `Extracting ZIP [${i+1}/${status.totalZips}]`;
-      
-      const destExtractDir = path.join(zipDir, zipName);
-      
-      try {
-        console.log(`[ZIP ${i+1}/${status.totalZips}] Extracting ${status.currentFile}...`);
-        // Extract using PowerShell with -LiteralPath to avoid wildcard parsing issues
-        await runCmd(`powershell -Command "Expand-Archive -LiteralPath '${zipPath.replace(/'/g, "''")}' -DestinationPath '${destExtractDir.replace(/'/g, "''")}' -Force"`);
-        
-        // Move original ZIP to backup directory, preserving relative path structure
-        const relativeZipPath = path.relative(ROOT_DIR, zipPath);
-        const backupZipPath = path.join(BACKUP_DIR, relativeZipPath);
-        
-        fs.mkdirSync(path.dirname(backupZipPath), { recursive: true });
-        fs.renameSync(zipPath, backupZipPath);
-        
-        console.log(`[ZIP ${i+1}/${status.totalZips}] Success. Original moved to backup.`);
-        status.processedZips++;
-      } catch (err) {
-        console.error(`[ZIP ${i+1}/${status.totalZips}] Failed to extract/move ZIP: ${zipPath}`, err);
-        status.statusText = `Error extracting ${status.currentFile}`;
+    if (mode === 'extract-zips') {
+      if (dryRun) {
+        status.dryRunZips = scanResults.zips.map(z => path.basename(z));
+        status.statusText = `Dry run complete. Found ${status.totalZips} ZIP files ready for extraction.`;
+        console.log(`[CRAWLER] Dry Run found ${status.totalZips} ZIP archives.`);
+        return;
       }
-      // Brief sleep between zips to prevent CPU bottleneck
-      await new Promise(r => setTimeout(r, 500));
+      
+      if (confirmation !== 'EXTRACT ZIP ARCHIVES') {
+        throw new Error("Missing or invalid confirmation phrase for ZIP extraction.");
+      }
+      
+      // Create backup directory if not exists
+      if (!fs.existsSync(backupDir)) {
+        fs.mkdirSync(backupDir, { recursive: true });
+      }
+      
+      // Extract and Move Zips
+      for (let i = 0; i < scanResults.zips.length; i++) {
+        const zipPath = scanResults.zips[i];
+        const zipDir = path.dirname(zipPath);
+        const zipName = path.basename(zipPath, '.zip');
+        
+        status.currentFile = path.basename(zipPath);
+        status.statusText = `Extracting ZIP [${i+1}/${status.totalZips}]`;
+        
+        const destExtractDir = path.join(zipDir, zipName);
+        
+        try {
+          console.log(`[ZIP ${i+1}/${status.totalZips}] Extracting ${status.currentFile}...`);
+          // Extract using PowerShell with -LiteralPath to avoid wildcard parsing issues
+          await runCmd(`powershell -Command "Expand-Archive -LiteralPath '${zipPath.replace(/'/g, "''")}' -DestinationPath '${destExtractDir.replace(/'/g, "''")}' -Force"`);
+          
+          // Move original ZIP to backup directory, preserving relative path structure
+          const relativeZipPath = path.relative(materialsRoot, zipPath);
+          const backupZipPath = path.join(backupDir, relativeZipPath);
+          
+          fs.mkdirSync(path.dirname(backupZipPath), { recursive: true });
+          fs.renameSync(zipPath, backupZipPath);
+          
+          console.log(`[ZIP ${i+1}/${status.totalZips}] Success. Original moved to backup.`);
+          status.processedZips++;
+        } catch (err) {
+          console.error(`[ZIP ${i+1}/${status.totalZips}] Failed to extract/move ZIP: ${zipPath}`, err);
+          status.statusText = `Error extracting ${status.currentFile}`;
+        }
+        // Brief sleep between zips to prevent CPU bottleneck
+        await new Promise(r => setTimeout(r, 500));
+      }
+      
+      status.statusText = `ZIP extraction finished. Extracted ${status.processedZips} of ${status.totalZips} zips.`;
+      return;
     }
     
-    // 3. Scan again for docs (since we extracted new ones)
-    status.statusText = "Re-scanning database for newly extracted documents...";
-    const postScanResults = scanDir(ROOT_DIR);
-    status.totalDocs = postScanResults.docs.length;
-    
-    // 4. Index and Metadata Extract
-    for (let i = 0; i < postScanResults.docs.length; i++) {
-      const docPath = postScanResults.docs[i];
-      const relativePath = '/materials/' + path.relative(ROOT_DIR, docPath).replace(/\\/g, '/');
-      const ext = path.extname(docPath).toLowerCase();
+    if (mode === 'index') {
+      status.statusText = "Starting document indexing...";
       
-      status.currentFile = path.basename(docPath);
-      status.statusText = `Syncing Document [${i+1}/${status.totalDocs}]`;
-      
-      // Step A: Extract Metadata (only for PDF)
-      if (ext === '.pdf') {
-        if (fs.existsSync(METADATA_FILE)) {
-          try {
-            metadataCache = JSON.parse(fs.readFileSync(METADATA_FILE, 'utf8'));
-          } catch(e){}
-        }
+      // Index and Metadata Extract
+      for (let i = 0; i < scanResults.docs.length; i++) {
+        const docPath = scanResults.docs[i];
+        const relativePath = '/materials/' + path.relative(materialsRoot, docPath).replace(/\\/g, '/');
+        const ext = path.extname(docPath).toLowerCase();
         
-        if (!metadataCache[relativePath] || metadataCache[relativePath].title === 'Unknown Document' || metadataCache[relativePath].title?.startsWith("Error")) {
-          try {
-            const meta = await ai.extractMetadata(docPath);
-            metadataCache[relativePath] = meta;
-            saveMetadataCache();
-          } catch (err) {
-            console.error("AI metadata extraction failed for:", docPath, err);
+        status.currentFile = path.basename(docPath);
+        status.statusText = `Syncing Document [${i+1}/${status.totalDocs}]`;
+        
+        // Step A: Extract Metadata (only for PDF)
+        if (ext === '.pdf') {
+          if (fs.existsSync(METADATA_FILE)) {
+            try {
+              metadataCache = JSON.parse(fs.readFileSync(METADATA_FILE, 'utf8'));
+            } catch(e){}
+          }
+          
+          if (!metadataCache[relativePath] || metadataCache[relativePath].title === 'Unknown Document' || metadataCache[relativePath].title?.startsWith("Error")) {
+            try {
+              const meta = await ai.extractMetadata(docPath);
+              metadataCache[relativePath] = meta;
+              saveMetadataCache();
+            } catch (err) {
+              console.error("AI metadata extraction failed for:", docPath, err);
+            }
           }
         }
+        
+        // Step B: Index document in SQLite FTS5
+        await indexToSqlite(docPath, relativePath);
+        
+        status.processedDocs++;
+        // Sleep between files to prevent Disk I/O bottleneck
+        await new Promise(r => setTimeout(r, 100));
       }
       
-      // Step B: Index document in SQLite FTS5 (lightning fast, zero RAM)
-      await indexToSqlite(docPath, relativePath);
-      
-      status.processedDocs++;
-      // Sleep between files to prevent Disk I/O bottleneck
-      await new Promise(r => setTimeout(r, 100));
+      status.statusText = "Database fully indexed.";
+      status.currentFile = "None";
     }
-    
-    status.statusText = "Database fully synchronized.";
-    status.currentFile = "None";
   } catch (err) {
     console.error("Crawler crashed:", err);
-    status.statusText = "Sync interrupted by system error.";
+    status.statusText = `Crawler failed: ${err.message}`;
   } finally {
     status.isCrawling = false;
   }
