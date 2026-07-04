@@ -101,6 +101,9 @@ import ActionGuidesPanel from './components/actions/ActionGuidesPanel.jsx';
 import ProfileSettingsPanel from './components/settings/ProfileSettingsPanel.jsx';
 import CrawlerControls from './components/crawler/CrawlerControls.jsx';
 import PanelErrorBoundary from './components/common/PanelErrorBoundary.jsx';
+import SetupWizardPanel from './components/toolkit/SetupWizardPanel.jsx';
+import OfflineToolkitPanel from './components/toolkit/OfflineToolkitPanel.jsx';
+import { loadSetupProgress, DEFAULT_STEPS } from './modules/toolkit/setupProgressStore.js';
 
 const API_BASE = `http://${window.location.hostname}:3001`;
 
@@ -175,6 +178,9 @@ function App() {
   const [isIndexingBatch, setIsIndexingBatch] = useState(false);
   const [indexProgress, setIndexProgress] = useState(0);
   const [indexTotal, setIndexTotal] = useState(0);
+
+  // Toolkit Sub-tab State
+  const [toolkitSubTab, setToolkitSubTab] = useState('wizard');
 
   // In-App Viewer state
   const [selectedDocument, setSelectedDocument] = useState(null);
@@ -1080,6 +1086,34 @@ function App() {
       }
     }
 
+    // 2B. Intercept Offline Readiness Queries
+    if (lowercaseMsg === 'offline readiness checklist' || lowercaseMsg === 'help me get ready for offline use' || lowercaseMsg === 'what offline tools should i set up?') {
+      const progress = loadSetupProgress();
+      const stepsKeys = Object.keys(DEFAULT_STEPS);
+      const totalSteps = stepsKeys.length;
+      const completedCount = Object.values(progress).filter(Boolean).length;
+      const pct = Math.round((completedCount / totalSteps) * 100);
+
+      let text = `### **OFFLINE READINESS CHECKLIST**\n`;
+      text += `Current status: **${pct}% Prepared** (${completedCount} of ${totalSteps} verified)\n\n`;
+
+      stepsKeys.forEach(key => {
+        const step = DEFAULT_STEPS[key];
+        const isDone = progress[step.id] === true;
+        text += `${isDone ? '✓' : '✗'} **Step ${step.id}:** ${step.label}\n`;
+      });
+
+      text += `\n*Note:* You can view comprehensive manual setup guides, platform notes, and verify these steps in the **OFFLINE TOOLKIT** panel in the sidebar. Let me know if you would like guidance on a specific tool!`;
+
+      setMessages(prev => [...prev, {
+        role: 'ai',
+        text: text,
+        answerStatus: 'offline_readiness_checklist'
+      }]);
+      setChatLoading(false);
+      return;
+    }
+
     // 3. Intercept Briefing request
     if (lowercaseMsg === 'mission brief' || lowercaseMsg === 'brief this mission' || lowercaseMsg === 'give me a mission brief' || lowercaseMsg === 'what is the mission status' || lowercaseMsg === 'what still needs review') {
       if (!activeMission) {
@@ -1292,6 +1326,14 @@ function App() {
             >
               <FileSpreadsheet size={18} className={viewMode === 'reports-panel' ? 'text-glow' : ''}/>
               <span style={{color: viewMode === 'reports-panel' ? 'var(--brand-primary)' : ''}}>NOTES / REPORTS</span>
+            </div>
+
+            <div 
+              className={`nav-item ${viewMode === 'offline-toolkit' ? 'active' : ''}`}
+              onClick={() => { setViewMode('offline-toolkit'); setSidebarOpen(false); }}
+            >
+              <CheckSquare size={18} className={viewMode === 'offline-toolkit' ? 'text-glow' : ''}/>
+              <span style={{color: viewMode === 'offline-toolkit' ? 'var(--brand-primary)' : ''}}>OFFLINE TOOLKIT</span>
             </div>
 
             <div 
@@ -2186,6 +2228,36 @@ function App() {
                   }}
                 />
               </PanelErrorBoundary>
+            )}
+
+            {!error && !loading && viewMode === 'offline-toolkit' && (
+              <div style={{ display: 'flex', flexDirection: 'column', width: '100%', paddingBottom: '40px' }}>
+                <div style={{ display: 'flex', gap: '8px', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', padding: '0 24px', marginBottom: '16px' }}>
+                  <button 
+                    onClick={() => setToolkitSubTab('wizard')}
+                    className={`btn-tactical${toolkitSubTab === 'wizard' ? '' : '-outline'}`}
+                    style={{ padding: '8px 16px', borderRadius: '4px 4px 0 0', borderBottom: 'none' }}
+                  >
+                    Setup Wizard
+                  </button>
+                  <button 
+                    onClick={() => setToolkitSubTab('cards')}
+                    className={`btn-tactical${toolkitSubTab === 'cards' ? '' : '-outline'}`}
+                    style={{ padding: '8px 16px', borderRadius: '4px 4px 0 0', borderBottom: 'none' }}
+                  >
+                    Tool Guides
+                  </button>
+                </div>
+                {toolkitSubTab === 'wizard' ? (
+                  <PanelErrorBoundary name="Setup Wizard">
+                    <SetupWizardPanel setViewMode={setViewMode} />
+                  </PanelErrorBoundary>
+                ) : (
+                  <PanelErrorBoundary name="Offline Toolkit Cards">
+                    <OfflineToolkitPanel />
+                  </PanelErrorBoundary>
+                )}
+              </div>
             )}
 
             {!error && !loading && viewMode === 'settings' && (

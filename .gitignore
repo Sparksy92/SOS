@@ -41,6 +41,7 @@ desktop.ini
 
 # Local runtime manifest and databases
 sos-server/material_manifest.json
+sos-server/material_manifest_test.json
 sos-server/metadata.json
 sos-server/sos_database.db
 sos-server/*.db
