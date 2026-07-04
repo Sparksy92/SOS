@@ -1206,5 +1206,55 @@ dist/assets/index-BZWy6BfO.js   474.07 kB │ gzip: 124.45 kB
 ✓ built in 705ms
 ```
 
-### 4. Commit Details
 *   Commit Hash: `a706c9a` (Message: `Add conversational mission copilot and briefing support`)
+
+---
+
+## Response from Local LLM (Antigravity) - July 3, 2026 (Offline Library Reference Audit Acknowledgment)
+
+### 1. Understanding of the Copyright/Legal Boundary
+I acknowledge that I must strictly avoid bulk downloading or scraping copyrighted books, PDFs, or directories. Comparison and analysis must be metadata-only. If any candidate files are discovered, they will be classified as `public_domain`, `open_license`, `official_free`, `user_owned`, `unknown`, or `restricted`. Only files verified to be free of copyright limitations can be allowlisted. All others must go to a manual review queue.
+
+### 2. Avoiding Bulk Downloading
+No automated download scripts will be executed during the audit phase. Candidate files will be cataloged only. If we write a candidate staging script in the future, it will be strictly gated behind a manual, operator-approved JSON allowlist and a confirmed operator phrase, placing files only in a gitignored `import-staging/` directory.
+
+### 3. Inspecting Existing Manifest
+I will read `sos-server/indexed.json` and query the SQLite database (`indexed_docs` table in `sos_database.db`) to identify local folders and files currently indexed by Blair's SurvivalOS.
+
+### 4. Category & Duplicate Comparison
+I will write `compare_offline_references.py` to:
+*   Normalize titles (e.g. lowercase, strip special characters, trim extensions).
+*   Fuzzy-match against local indexed records.
+*   Identify matches and flag missing files and missing categories.
+
+### 5. High-Risk Category Classification
+I will match keywords in book titles to flag high-risk domains:
+*   `medical` / `bush_medicine` (reference-only, no diagnostics/treatments).
+*   `firearms` (safety check references only, no tactical/harm instructions).
+*   `water_treatment`, `electrical`, `mechanical`, `chemical`, `mushrooms`, `wild_plants`, `food_preservation`.
+
+### 6. Legal/License Status Classification
+Items will be tagged as `unknown` or `restricted` by default unless their metadata or directory listing explicitly identifies them as open-license (Creative Commons, Project Gutenberg, official government field manuals, public domain).
+
+### 7. Files to Create
+*   `docs/reference-audits/offline-library-reference-audit.md` (Main report)
+*   `docs/reference-audits/offline-library-gap-analysis.json` (Structured JSON coverage payload)
+*   `docs/reference-audits/content-acquisition-candidates.md` (Safe free sources)
+*   `docs/reference-audits/restricted-or-unknown-content-review.md` (Manual review queues)
+*   `docs/reference-audits/reference-project-comparison.md` (NOMAD/WROLPi/IIAB architecture matrix)
+*   `scripts/reference-audit/compare_offline_references.py` (Safe metadata parser and comparer)
+
+### 8. Manual Manifest Refresh
+No full crawler directory scan is needed at startup. The script will simply read active indexed documents from the database.
+
+### 9. Risks & Uncertainties
+*   Retrieving external directory metadata might hit rate limits or return incomplete directory listings. I will use cached/static directory listing catalogs if needed to keep the audit local and reliable.
+
+---
+
+I await your approval before initiating this reference audit.
+
+Recommended planning commit message:
+```text
+Acknowledge offline library reference audit plan
+```
