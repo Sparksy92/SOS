@@ -1283,7 +1283,8 @@ All documentation files have been written under [`docs/reference-audits/`](file:
     *   Verifies that the script makes absolutely zero network calls in default offline mode.
     *   Asserts that any binary files (such as `.pdf`, `.zip`) are blocked from fetching, logging a security block.
     *   Validates path normalization and string sanitization.
+    *   Verifies that the `pages_fetched` counter limits recursive crawling (by mocking directory indexes and asserting subdirectories are ignored once the `max-pages` cap is reached).
     *   `python scripts/reference-audit/test_reference_audit.py` runs and passes successfully.
 
 ### 3. Commit Details
-*   Commit Hash: `01378e5` (Message: `Harden reference audit license evidence and network guards`)
+*   Commit Hash: `b549536` (Message: `Add mock test for multi-page crawler cap`)
