@@ -111,11 +111,13 @@ import ImportApprovalLedgerPanel from './components/toolkit/ImportApprovalLedger
 import AcquisitionQueuePanel from './components/toolkit/AcquisitionQueuePanel.jsx';
 import SourceAllowlistPanel from './components/toolkit/SourceAllowlistPanel.jsx';
 import LibraryLifecyclePanel from './components/toolkit/LibraryLifecyclePanel.jsx';
+import OfflineToolkitBackupPanel from './components/toolkit/OfflineToolkitBackupPanel.jsx';
 import { loadSetupProgress, DEFAULT_STEPS } from './modules/toolkit/setupProgressStore.js';
 import { loadLedger } from './modules/toolkit/importApprovalLedgerStore.js';
 import { loadQueue } from './modules/toolkit/acquisitionQueueStore.js';
 import { loadAllowlist } from './modules/toolkit/sourceAllowlistStore.js';
 import { computeLifecycleRecords } from './modules/toolkit/libraryLifecycleAnalyzer.js';
+import { createOfflineToolkitBackup, runOfflineToolkitIntegrityAudit } from './modules/toolkit/offlineToolkitBackupStore.js';
 
 const API_BASE = `http://${window.location.hostname}:3001`;
 
@@ -1576,6 +1578,74 @@ function App() {
       return;
     }
 
+    if (
+      lowercaseMsg === 'backup my offline toolkit' ||
+      lowercaseMsg === 'show backup status' ||
+      lowercaseMsg === 'run toolkit integrity audit' ||
+      lowercaseMsg === 'is my toolkit data safe?' ||
+      lowercaseMsg === 'what would be included in a backup?' ||
+      lowercaseMsg === 'how do i restore a toolkit backup?'
+    ) {
+      let text = '';
+      if (lowercaseMsg === 'backup my offline toolkit') {
+        text = `### **Offline Toolkit Backup Guide**\n`;
+        text += `To safeguard your configurations, reviews, and mission state, you can generate a local JSON backup.\n\n`;
+        text += `*Action:* Open the **Backup** tab to create a local JSON backup.`;
+      } else if (lowercaseMsg === 'show backup status') {
+        const backup = createOfflineToolkitBackup();
+        text = `### **Local Backup Status**\n`;
+        text += `Your local backup would include:\n`;
+        text += `- **${backup.counts.ledgerRecords}** approval ledger records\n`;
+        text += `- **${backup.counts.queueRecords}** acquisition queue items\n`;
+        text += `- **${backup.counts.allowlistRecords}** allowed sources\n`;
+        text += `- **${backup.counts.missions}** missions records\n\n`;
+        text += `Open the **Backup** tab to create a local JSON backup.`;
+      } else if (lowercaseMsg === 'run toolkit integrity audit' || lowercaseMsg === 'is my toolkit data safe?') {
+        const audit = runOfflineToolkitIntegrityAudit();
+        text = `### **Offline Toolkit Integrity Audit**\n`;
+        text += `Current Audit Status: **${audit.status.toUpperCase()}**\n`;
+        text += `Checked At: *${audit.checkedAt}*\n\n`;
+        if (audit.findings.length > 0) {
+          text += `**Findings:**\n`;
+          audit.findings.forEach(f => {
+            text += `- [${f.severity.toUpperCase()}] ${f.message}\n`;
+          });
+        } else {
+          text += `All localStorage records are healthy.\n`;
+        }
+        text += `\n**Recommended Action:** ${audit.recommendedActions.join(' ')}\n`;
+        text += `Open the **Backup** tab to run a full integrity audit or restore data.`;
+      } else if (lowercaseMsg === 'what would be included in a backup?') {
+        text = `### **Scope of Local Backups**\n`;
+        text += `A local backup includes:\n`;
+        text += `- Setup Wizard progress checkmarks\n`;
+        text += `- Offline Toolkit checklists\n`;
+        text += `- Manual Import dismissed queues\n`;
+        text += `- Approval Ledger audit records\n`;
+        text += `- Acquisition Queue planning items\n`;
+        text += `- Source Allowlist trusted notes\n`;
+        text += `- Mission Mode records, active mission status, field notes, and reports\n\n`;
+        text += `*Boundary Check:* Backups never include actual material files (PDF/ZIM/EPUB), S3 cloud tokens, or filesystem directory structures.`;
+      } else if (lowercaseMsg === 'how do i restore a toolkit backup?') {
+        text = `### **Restoring a Toolkit Backup**\n`;
+        text += `To restore local configuration data:\n\n`;
+        text += `1. Open the **Backup** tab.\n`;
+        text += `2. Paste your JSON backup payload into the text area.\n`;
+        text += `3. Click **Preview Backup Import** to check for recognized records, missing keys, or blocked values.\n`;
+        text += `4. Select **Merge records** or **Replace known keys (Overwrite)**.\n`;
+        text += `5. Note that *Replace* requires typing the confirmation phrase: \`RESTORE TOOLKIT BACKUP\`.\n\n`;
+        text += `*Restriction:* Restore requires operator confirmation.`;
+      }
+
+      setMessages(prev => [...prev, {
+        role: 'ai',
+        text: text,
+        answerStatus: 'offline_readiness_checklist'
+      }]);
+      setChatLoading(false);
+      return;
+    }
+
     // 3. Intercept Briefing request
     if (lowercaseMsg === 'mission brief' || lowercaseMsg === 'brief this mission' || lowercaseMsg === 'give me a mission brief' || lowercaseMsg === 'what is the mission status' || lowercaseMsg === 'what still needs review') {
       if (!activeMission) {
@@ -2765,6 +2835,13 @@ function App() {
                   >
                     Lifecycle
                   </button>
+                  <button 
+                    onClick={() => setToolkitSubTab('backup')}
+                    className={`btn-tactical${toolkitSubTab === 'backup' ? '' : '-outline'}`}
+                    style={{ padding: '8px 16px', borderRadius: '4px 4px 0 0', borderBottom: 'none', marginBottom: '4px' }}
+                  >
+                    Backup
+                  </button>
                 </div>
                 {toolkitSubTab === 'wizard' && (
                   <PanelErrorBoundary name="Setup Wizard">
@@ -2814,6 +2891,11 @@ function App() {
                 {toolkitSubTab === 'lifecycle' && (
                   <PanelErrorBoundary name="Library Lifecycle">
                     <LibraryLifecyclePanel setToolkitSubTab={setToolkitSubTab} setViewMode={setViewMode} />
+                  </PanelErrorBoundary>
+                )}
+                {toolkitSubTab === 'backup' && (
+                  <PanelErrorBoundary name="Offline Toolkit Backup">
+                    <OfflineToolkitBackupPanel setToolkitSubTab={setToolkitSubTab} setViewMode={setViewMode} />
                   </PanelErrorBoundary>
                 )}
               </div>

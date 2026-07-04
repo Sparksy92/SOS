@@ -64,3 +64,9 @@ Vite production compilation succeeds cleanly:
 dist/assets/index-3-9lIAHP.js   647.94 kB
 ✓ built in 903ms
 ```
+
+---
+
+## Safety Boundary Integration
+Phase 16 adds a local-only backup, restore, and integrity audit layer for Offline Toolkit and mission governance data. It does not back up material files, scan drives, upload data, sync cloud storage, index files, OCR files, or parse document contents.
+

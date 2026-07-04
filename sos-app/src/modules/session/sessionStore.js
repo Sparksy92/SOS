@@ -1,4 +1,5 @@
 import { localStore } from '../../services/localStore.js';
+import { validateOfflineToolkitBackup, restoreOfflineToolkitBackup } from '../toolkit/offlineToolkitBackupStore.js';
 
 const SAVED_ANSWERS_KEY = 'saved_answers';
 const SAVED_SOURCES_KEY = 'saved_sources';
@@ -79,6 +80,9 @@ export const saveActiveSession = (session) => localStore.set(ACTIVE_SESSION_KEY,
 export const validateBackup = (backupObject) => {
   if (!backupObject || typeof backupObject !== 'object') {
     return { valid: false, error: 'Backup is not a valid JSON object.' };
+  }
+  if (backupObject.backupType === 'survivalos_offline_toolkit_backup') {
+    return validateOfflineToolkitBackup(backupObject);
   }
   if (backupObject.backupType !== 'sos_session_backup') {
     return { valid: false, error: 'Invalid backup identifier (backupType mismatch).' };
@@ -179,6 +183,11 @@ export const importSavedData = (backupObject) => {
   const validation = validateBackup(backupObject);
   if (!validation.valid) {
     throw new Error(validation.error);
+  }
+
+  if (backupObject.backupType === 'survivalos_offline_toolkit_backup') {
+    restoreOfflineToolkitBackup(backupObject, { mode: 'merge' });
+    return;
   }
 
   const data = backupObject.data;
