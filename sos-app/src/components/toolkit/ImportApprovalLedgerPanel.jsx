@@ -8,11 +8,13 @@ import {
   DECISIONS, 
   isValidUrl 
 } from '../../modules/toolkit/importApprovalLedgerStore.js';
-import { saveQueueItem } from '../../modules/toolkit/acquisitionQueueStore.js';
-import { saveAllowlistEntry } from '../../modules/toolkit/sourceAllowlistStore.js';
+import { saveQueueItem, loadQueue } from '../../modules/toolkit/acquisitionQueueStore.js';
+import { saveAllowlistEntry, loadAllowlist } from '../../modules/toolkit/sourceAllowlistStore.js';
+import { computeLifecycleRecords } from '../../modules/toolkit/libraryLifecycleAnalyzer.js';
+import { GAP_ANALYSIS_DATA } from '../../modules/toolkit/gapAnalysisData.js';
 import { ShieldAlert, Download, Upload, Trash2, Edit3, Save, CheckCircle, XCircle, Clock, FileText, AlertTriangle, Plus } from 'lucide-react';
 
-export default function ImportApprovalLedgerPanel() {
+export default function ImportApprovalLedgerPanel({ setToolkitSubTab }) {
   const [ledger, setLedger] = useState([]);
   const [selectedRecord, setSelectedRecord] = useState(null);
   
@@ -91,6 +93,15 @@ export default function ImportApprovalLedgerPanel() {
     setEditEvidence(record.licenseEvidence);
     setEditNotes(record.reviewNotes);
     setEditReviewer(record.reviewedBy || '');
+  };
+
+  const getLifecycleSummary = (record) => {
+    if (!record) return null;
+    const normalize = (str) => (str || '').toLowerCase().trim().replace(/[^a-z0-9]/g, '');
+    const currentQueue = loadQueue();
+    const currentAllowlist = loadAllowlist();
+    const life = computeLifecycleRecords(GAP_ANALYSIS_DATA, ledger, currentQueue, currentAllowlist, [], {});
+    return life.find(r => r.id === record.id || (record.filename && normalize(r.filenameHint) === normalize(record.filename)));
   };
 
   const handleAddNewRecord = () => {
@@ -565,6 +576,33 @@ export default function ImportApprovalLedgerPanel() {
                   }}
                 />
               </div>
+
+              {/* Lifecycle Integration Block */}
+              {!selectedRecord.isNew && (() => {
+                const summary = getLifecycleSummary(selectedRecord);
+                if (!summary) return null;
+                return (
+                  <div style={{ marginBottom: '16px', padding: '12px', backgroundColor: 'rgba(0, 242, 254, 0.02)', border: '1px solid rgba(0, 242, 254, 0.1)', borderRadius: '4px' }}>
+                    <h5 style={{ margin: '0 0 6px 0', fontSize: '0.8rem', color: 'var(--brand-primary)', textTransform: 'uppercase' }}>
+                      Lifecycle Status Summary
+                    </h5>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', fontSize: '0.75rem', marginBottom: '8px' }}>
+                      <div>Stage: <strong style={{ color: '#00f2fe' }}>{summary.lifecycleStage.replace(/_/g, ' ').toUpperCase()}</strong></div>
+                      <div>|</div>
+                      <div>Evidence: <strong>{summary.evidenceStatus.toUpperCase()}</strong></div>
+                      <div>|</div>
+                      <div>Index: <strong>{summary.indexStatus.toUpperCase()}</strong></div>
+                    </div>
+                    <button
+                      className="btn-tactical-outline"
+                      onClick={() => setToolkitSubTab('lifecycle')}
+                      style={{ padding: '3px 8px', fontSize: '0.7rem' }}
+                    >
+                      Open Lifecycle
+                    </button>
+                  </div>
+                );
+              })()}
 
               {/* Queue/Allowlist Integration Block */}
               {!selectedRecord.isNew && (

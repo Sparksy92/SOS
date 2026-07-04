@@ -68,3 +68,9 @@ Vite production build succeeds cleanly:
 dist/assets/index-CPIsuCyX.js   621.65 kB
 ✓ built in 384ms
 ```
+
+---
+
+## Safety Boundary Integration
+Phase 15 builds on the acquisition queue and source allowlist by adding a read-only lifecycle reconciliation dashboard. It does not add downloads, automatic import, file movement, file deletion, indexing, OCR, hashing, or parsing.
+

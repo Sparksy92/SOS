@@ -228,6 +228,15 @@ export default function ManualImportQueuePanel({ setViewMode, setToolkitSubTab }
                           Create Review Record
                         </button>
                       )}
+                      {(existingRecord || getQueueItemForFile(file)) && (
+                        <button 
+                          className="btn-tactical-outline" 
+                          onClick={() => setToolkitSubTab('lifecycle')}
+                          style={{ padding: '6px 12px', fontSize: '0.8rem', color: 'var(--brand-primary)', borderColor: 'rgba(0, 242, 254, 0.4)' }}
+                        >
+                          Open Lifecycle
+                        </button>
+                      )}
                       <button 
                         className="btn-tactical-outline" 
                         onClick={() => handleDismiss(file.filename)}

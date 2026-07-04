@@ -7,10 +7,15 @@ import {
   generateQueueMarkdownChecklist, 
   ACQ_STATUSES 
 } from '../../modules/toolkit/acquisitionQueueStore.js';
+import { loadLedger } from '../../modules/toolkit/importApprovalLedgerStore.js';
+import { loadAllowlist } from '../../modules/toolkit/sourceAllowlistStore.js';
+import { computeLifecycleRecords } from '../../modules/toolkit/libraryLifecycleAnalyzer.js';
+import { GAP_ANALYSIS_DATA } from '../../modules/toolkit/gapAnalysisData.js';
 import { ShieldAlert, Download, Upload, Clipboard, Trash2, Edit2, CheckCircle, Plus } from 'lucide-react';
 
-export default function AcquisitionQueuePanel() {
+export default function AcquisitionQueuePanel({ setToolkitSubTab }) {
   const [queue, setQueue] = useState([]);
+  const [lifeRecords, setLifeRecords] = useState([]);
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterCategory, setFilterCategory] = useState('all');
   const [editingItem, setEditingItem] = useState(null);
@@ -28,14 +33,23 @@ export default function AcquisitionQueuePanel() {
   });
   const [showAddForm, setShowAddForm] = useState(false);
 
+  const reloadAll = () => {
+    const q = loadQueue();
+    setQueue(q);
+    const ledger = loadLedger();
+    const allowlist = loadAllowlist();
+    const life = computeLifecycleRecords(GAP_ANALYSIS_DATA, ledger, q, allowlist, [], {});
+    setLifeRecords(life);
+  };
+
   useEffect(() => {
-    setQueue(loadQueue());
+    reloadAll();
   }, []);
 
   const handleSaveItem = (item) => {
     try {
       const updated = saveQueueItem(item);
-      setQueue(updated);
+      reloadAll();
       setEditingItem(null);
       if (showAddForm) {
         setShowAddForm(false);
@@ -57,15 +71,15 @@ export default function AcquisitionQueuePanel() {
 
   const handleDeleteItem = (id) => {
     if (confirm("Are you sure you want to remove this item from the acquisition queue?")) {
-      const updated = deleteQueueItem(id);
-      setQueue(updated);
+      deleteQueueItem(id);
+      reloadAll();
     }
   };
 
   const handleClearAll = () => {
     if (confirm("CRITICAL: Clear your entire local acquisition queue? This action is local and cannot be undone.")) {
       localStorage.removeItem('sos_acquisition_queue');
-      setQueue([]);
+      reloadAll();
     }
   };
 
@@ -365,6 +379,28 @@ export default function AcquisitionQueuePanel() {
                       Category: <span style={{ color: '#ccc' }}>{item.category.replace(/_/g, ' ')}</span>
                       {item.filenameHint && <span> | File Hint: <code style={{ color: '#00f2fe' }}>{item.filenameHint}</code></span>}
                     </div>
+                    {(() => {
+                      const matched = lifeRecords.find(r => r.id === item.id || (item.filenameHint && r.filenameHint.toLowerCase() === item.filenameHint.toLowerCase()));
+                      const stage = matched ? matched.lifecycleStage : 'unknown';
+                      const evidence = matched ? matched.evidenceStatus : 'unknown';
+                      const idxStatus = matched ? matched.indexStatus : 'unknown';
+                      return (
+                        <div style={{ fontSize: '0.75rem', color: '#00f2fe', marginTop: '6px', display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                          <span>Lifecycle: <strong>{stage.replace(/_/g, ' ').toUpperCase()}</strong></span>
+                          <span>|</span>
+                          <span>Evidence: <strong>{evidence.toUpperCase()}</strong></span>
+                          <span>|</span>
+                          <span>Index: <strong>{idxStatus.toUpperCase()}</strong></span>
+                          <button 
+                            className="btn-tactical-outline" 
+                            onClick={() => setToolkitSubTab('lifecycle')} 
+                            style={{ padding: '1px 5px', fontSize: '0.65rem', marginLeft: '6px', display: 'inline-flex', alignItems: 'center' }}
+                          >
+                            Open Lifecycle
+                          </button>
+                        </div>
+                      );
+                    })()}
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span 

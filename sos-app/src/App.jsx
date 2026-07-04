@@ -110,10 +110,12 @@ import ManualImportQueuePanel from './components/toolkit/ManualImportQueuePanel.
 import ImportApprovalLedgerPanel from './components/toolkit/ImportApprovalLedgerPanel.jsx';
 import AcquisitionQueuePanel from './components/toolkit/AcquisitionQueuePanel.jsx';
 import SourceAllowlistPanel from './components/toolkit/SourceAllowlistPanel.jsx';
+import LibraryLifecyclePanel from './components/toolkit/LibraryLifecyclePanel.jsx';
 import { loadSetupProgress, DEFAULT_STEPS } from './modules/toolkit/setupProgressStore.js';
 import { loadLedger } from './modules/toolkit/importApprovalLedgerStore.js';
 import { loadQueue } from './modules/toolkit/acquisitionQueueStore.js';
 import { loadAllowlist } from './modules/toolkit/sourceAllowlistStore.js';
+import { computeLifecycleRecords } from './modules/toolkit/libraryLifecycleAnalyzer.js';
 
 const API_BASE = `http://${window.location.hostname}:3001`;
 
@@ -1461,6 +1463,119 @@ function App() {
       return;
     }
 
+    if (
+      lowercaseMsg === 'show my library lifecycle' ||
+      lowercaseMsg === 'what references are stuck?' ||
+      lowercaseMsg === 'what references need evidence?' ||
+      lowercaseMsg === 'what references are ready to index?' ||
+      lowercaseMsg === 'what references are staged but not indexed?' ||
+      lowercaseMsg === 'what references are blocked or rejected?' ||
+      lowercaseMsg === 'what should i do next for my library?'
+    ) {
+      const ledger = loadLedger();
+      const queue = loadQueue();
+      const allowlist = loadAllowlist();
+      const lifeRecords = computeLifecycleRecords(GAP_ANALYSIS_DATA, ledger, queue, allowlist, [], {});
+      
+      let text = '';
+      if (lowercaseMsg === 'show my library lifecycle') {
+        text = `### **Library Lifecycle Reconciliation Summary**\n`;
+        text += `Total dynamic lifecycle records tracked: **${lifeRecords.length}**\n\n`;
+        text += `- **Pending approval review**: ${lifeRecords.filter(r => r.ledgerStatus === 'pending').length}\n`;
+        text += `- **Planned acquisition**: ${lifeRecords.filter(r => r.queueStatus === 'planned').length}\n`;
+        text += `- **Manually acquired/staged**: ${lifeRecords.filter(r => r.queueStatus === 'manually_acquired' || r.queueStatus === 'manually_staged' || r.stagingStatus === 'staged_metadata_only').length}\n`;
+        text += `- **Blocked or Rejected**: ${lifeRecords.filter(r => r.lifecycleStage === 'blocked' || r.lifecycleStage === 'rejected').length}\n\n`;
+        text += `Open the **Lifecycle** tab to review details and export reports.`;
+      } else if (lowercaseMsg === 'what references are stuck?') {
+        const stuck = lifeRecords.filter(r => r.lifecycleStage === 'blocked' || r.lifecycleStage === 'rejected' || r.evidenceStatus === 'missing');
+        text = `### **Stuck or Blocked References**\n`;
+        if (stuck.length > 0) {
+          text += `The following references are blocked, rejected, or missing critical evidence:\n\n`;
+          stuck.forEach((r, i) => {
+            text += `${i + 1}. **${r.title}** (Stage: *${r.lifecycleStage.toUpperCase()}*, Evidence: *${r.evidenceStatus.toUpperCase()}*)\n`;
+          });
+        } else {
+          text += `No references are currently blocked, rejected, or missing evidence.`;
+        }
+        text += `\nOpen the **Lifecycle** tab to review next steps.`;
+      } else if (lowercaseMsg === 'what references need evidence?') {
+        const needs = lifeRecords.filter(r => r.evidenceStatus === 'missing');
+        text = `### **References Requiring Source/License Evidence**\n`;
+        if (needs.length > 0) {
+          text += `The following references need official source URLs or license authority evidence:\n\n`;
+          needs.forEach((r, i) => {
+            text += `${i + 1}. **${r.title}** (Status: *${r.ledgerStatus.toUpperCase()}*)\n`;
+          });
+        } else {
+          text += `All analyzed library entries have some source or license evidence logged.`;
+        }
+        text += `\nOpen the **Lifecycle** tab to review next steps.`;
+      } else if (lowercaseMsg === 'what references are ready to index?') {
+        const ready = lifeRecords.filter(r => r.lifecycleStage === 'in_materials' && r.indexStatus !== 'indexed');
+        text = `### **References Ready for Manual Indexing**\n`;
+        if (ready.length > 0) {
+          text += `The following references are present in materials but not yet indexed:\n\n`;
+          ready.forEach((r, i) => {
+            text += `${i + 1}. **${r.title}** (Filename: \`${r.filenameHint}\`)\n`;
+          });
+          text += `\n*Action:* Open the **Index Integrity** dashboard to run manual document indexing.`;
+        } else {
+          text += `No references are currently waiting for indexing.`;
+        }
+      } else if (lowercaseMsg === 'what references are staged but not indexed?') {
+        const stagedNotIndexed = lifeRecords.filter(r => r.lifecycleStage === 'staged' && r.indexStatus !== 'indexed');
+        text = `### **Staged but Not Indexed References**\n`;
+        if (stagedNotIndexed.length > 0) {
+          text += `The following references are manually staged but not yet indexed/in materials:\n\n`;
+          stagedNotIndexed.forEach((r, i) => {
+            text += `${i + 1}. **${r.title}** (File: \`${r.filenameHint}\`)\n`;
+          });
+        } else {
+          text += `No references are currently staged but not indexed.`;
+        }
+        text += `\nOpen the **Lifecycle** tab to review next steps.`;
+      } else if (lowercaseMsg === 'what references are blocked or rejected?') {
+        const blockedRecs = lifeRecords.filter(r => r.lifecycleStage === 'blocked' || r.lifecycleStage === 'rejected');
+        text = `### **Blocked or Rejected Library Entries**\n`;
+        if (blockedRecs.length > 0) {
+          text += `The following entries have been blocked or rejected by operator decision:\n\n`;
+          blockedRecs.forEach((r, i) => {
+            text += `${i + 1}. **${r.title}** (Status: *${r.lifecycleStage.toUpperCase()}*)\n`;
+          });
+        } else {
+          text += `No entries are currently blocked or rejected.`;
+        }
+        text += `\nOpen the **Lifecycle** tab to review next steps.`;
+      } else if (lowercaseMsg === 'what should i do next for my library?') {
+        text = `### **Recommended Next Steps for Library Growth**\n`;
+        const pending = lifeRecords.filter(r => r.ledgerStatus === 'pending');
+        const plannedRecs = lifeRecords.filter(r => r.queueStatus === 'planned');
+        const stagedRecs = lifeRecords.filter(r => r.lifecycleStage === 'staged');
+        
+        if (pending.length > 0) {
+          text += `- You have **${pending.length}** records pending approval review. Complete operator reviews in the **Approval Ledger**.\n`;
+        }
+        if (plannedRecs.length > 0) {
+          text += `- You have **${plannedRecs.length}** planned acquisition records. Manually acquire them from official sources outside SOS.\n`;
+        }
+        if (stagedRecs.length > 0) {
+          text += `- You have **${stagedRecs.length}** manually staged candidates. Verify metadata and manually copy them to materials if appropriate.\n`;
+        }
+        if (pending.length === 0 && plannedRecs.length === 0 && stagedRecs.length === 0) {
+          text += `Your library lifecycle states are reconciled and up to date!`;
+        }
+        text += `\nOpen the **Lifecycle** tab to review all recommended actions.`;
+      }
+
+      setMessages(prev => [...prev, {
+        role: 'ai',
+        text: text,
+        answerStatus: 'offline_readiness_checklist'
+      }]);
+      setChatLoading(false);
+      return;
+    }
+
     // 3. Intercept Briefing request
     if (lowercaseMsg === 'mission brief' || lowercaseMsg === 'brief this mission' || lowercaseMsg === 'give me a mission brief' || lowercaseMsg === 'what is the mission status' || lowercaseMsg === 'what still needs review') {
       if (!activeMission) {
@@ -2643,6 +2758,13 @@ function App() {
                   >
                     Source Allowlist
                   </button>
+                  <button 
+                    onClick={() => setToolkitSubTab('lifecycle')}
+                    className={`btn-tactical${toolkitSubTab === 'lifecycle' ? '' : '-outline'}`}
+                    style={{ padding: '8px 16px', borderRadius: '4px 4px 0 0', borderBottom: 'none', marginBottom: '4px' }}
+                  >
+                    Lifecycle
+                  </button>
                 </div>
                 {toolkitSubTab === 'wizard' && (
                   <PanelErrorBoundary name="Setup Wizard">
@@ -2676,17 +2798,22 @@ function App() {
                 )}
                 {toolkitSubTab === 'ledger' && (
                   <PanelErrorBoundary name="Approval Ledger">
-                    <ImportApprovalLedgerPanel />
+                    <ImportApprovalLedgerPanel setToolkitSubTab={setToolkitSubTab} />
                   </PanelErrorBoundary>
                 )}
                 {toolkitSubTab === 'acq' && (
                   <PanelErrorBoundary name="Acquisition Queue">
-                    <AcquisitionQueuePanel />
+                    <AcquisitionQueuePanel setToolkitSubTab={setToolkitSubTab} />
                   </PanelErrorBoundary>
                 )}
                 {toolkitSubTab === 'allowlist' && (
                   <PanelErrorBoundary name="Source Allowlist">
                     <SourceAllowlistPanel />
+                  </PanelErrorBoundary>
+                )}
+                {toolkitSubTab === 'lifecycle' && (
+                  <PanelErrorBoundary name="Library Lifecycle">
+                    <LibraryLifecyclePanel setToolkitSubTab={setToolkitSubTab} setViewMode={setViewMode} />
                   </PanelErrorBoundary>
                 )}
               </div>

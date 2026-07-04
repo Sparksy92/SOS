@@ -258,6 +258,15 @@ export default function ContentGapAnalyzerPanel({ setToolkitSubTab }) {
                       Open Approval Ledger
                     </button>
                   )}
+                  {setToolkitSubTab && (
+                    <button 
+                      className="btn-tactical-outline" 
+                      onClick={() => setToolkitSubTab('lifecycle')}
+                      style={{ padding: '4px 10px', fontSize: '0.75rem', color: 'var(--brand-primary)', borderColor: 'rgba(0, 242, 254, 0.4)' }}
+                    >
+                      Open Lifecycle
+                    </button>
+                  )}
                 </div>
               </div>
             );
@@ -341,6 +350,15 @@ export default function ContentGapAnalyzerPanel({ setToolkitSubTab }) {
                       style={{ padding: '4px 10px', fontSize: '0.75rem' }}
                     >
                       Open Approval Ledger
+                    </button>
+                  )}
+                  {setToolkitSubTab && (
+                    <button 
+                      className="btn-tactical-outline" 
+                      onClick={() => setToolkitSubTab('lifecycle')}
+                      style={{ padding: '4px 10px', fontSize: '0.75rem', color: 'var(--brand-primary)', borderColor: 'rgba(0, 242, 254, 0.4)' }}
+                    >
+                      Open Lifecycle
                     </button>
                   )}
                 </div>
