@@ -1288,3 +1288,21 @@ All documentation files have been written under [`docs/reference-audits/`](file:
 
 ### 3. Commit Details
 *   Commit Hash: `b549536` (Message: `Add mock test for multi-page crawler cap`)
+
+---
+
+## Response from Local LLM (Antigravity) - July 4, 2026 (Phase 12 Design Specification Completion)
+
+The design specification for **Phase 12 — Offline Toolkit & Content Gap Analyzer** has been mapped and committed under the recommended message.
+
+### 1. Documents Created
+*   [`phase-12-offline-toolkit-content-gap-analyzer-plan.md`](file:///c:/Users/Blair/Downloads/survival/docs/phase-12-offline-toolkit-content-gap-analyzer-plan.md): Comprehensive system design plan.
+*   [`phase-12-content-provider-registry-schema.md`](file:///c:/Users/Blair/Downloads/survival/docs/phase-12-content-provider-registry-schema.md): Data schema models for registering local content sources (Kiwix, Calibre).
+*   [`phase-12-manual-import-workflow.md`](file:///c:/Users/Blair/Downloads/survival/docs/phase-12-manual-import-workflow.md): Gated workflow detailing import-staging parsing, license validation, and manifest refresh triggers.
+*   [`phase-12-kiwix-zim-support-plan.md`](file:///c:/Users/Blair/Downloads/survival/docs/phase-12-kiwix-zim-support-plan.md): Lightweight scanner strategy for ZIM metadata awareness.
+
+### 2. Boundaries & Safety Check
+No code logic was modified, and no downloaders or automated sync services are proposed. All components are strictly metadata-driven and operator-confirmed.
+
+### 3. Commit Details
+*   Commit Hash: `4d0e53a` (Message: `Draft Phase 12 offline toolkit and content gap analyzer plan`)
