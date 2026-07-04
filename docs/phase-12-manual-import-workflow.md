@@ -19,7 +19,7 @@ graph TD
     E --> F[SOS UI Staging Panel detects file metadata]
     F --> G[Operator reviews license & risk check disclaimers in SOS UI]
     G --> H{Operator manual approval?}
-    H -- NO --> I[Dismiss/Delete staged file]
+    H -- NO --> I[Dismiss from SOS view / operator manually deletes outside SOS]
     H -- YES --> J[Operator manually moves file into materials library]
     J --> K[Operator triggers manifest rebuild in SOS UI]
     K --> L[Operator manually indexes document if needed]
@@ -27,7 +27,7 @@ graph TD
 
 ## Staging API (`/api/toolkit/staging`)
 The server exposes a read-only endpoint that lists files inside `import-staging/offline-library/`:
-*   **Security Restrictions**: The endpoint refuses to index, open, or read contents of files containing blocked extensions (e.g. `.exe`, `.msi`, `.dmg`).
+*   **Security Restrictions**: The endpoint must never read file contents for any staged file. It may only return filename, extension, file size, modified time, and sanitized relative path. It must not open PDFs, EPUBs, ZIMs, ZIPs, executables, media files, or archives. Risk/category/license labels must come from filename heuristics and existing audit metadata, not file content parsing.
 *   **Response Payload**:
     ```json
     {

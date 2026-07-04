@@ -16,7 +16,7 @@ An operator preparing their hardware for off-grid deployment needs to verify tha
 ## Current Inputs from Reference Audit
 The gap analyzer leverages:
 *   `offline-library-gap-analysis.json` (Structured JSON of category coverage and candidate lists).
-*   `content-acquisition-candidates.md` (List of safe acquisition links).
+*   `content-acquisition-candidates.md` (List of evidence-backed candidate sources and manual review items. The audit does not prove copyright clearance by itself. Only operator-approved items from an allowlist with official source evidence may be considered for any future download tool.).
 *   `restricted-or-unknown-content-review.md` (List of restricted items requiring review).
 *   `approved-public-domain-downloads.example.json` (Allowlist model schema).
 
@@ -121,7 +121,7 @@ interface StagedFile {
 ## Proposed Backend Touch Points
 *   `GET /api/toolkit/staging`: Lists files inside `import-staging/offline-library/` with sizes, metadata, and license classification.
 *   `GET /api/toolkit/zim`: Scans a configured directory for `.zim` files and returns metadata.
-*   `POST /api/toolkit/scan-manifest`: Triggers `manifestService.js` to rebuild the local material catalog safely.
+*   `POST /api/toolkit/scan-manifest`: Triggers `manifestService.js` to rebuild the local material catalog safely. This endpoint must not perform deep indexing, OCR, ZIP extraction, document parsing, or crawler indexing. It may only call the existing safe manifest inventory rebuild path after explicit operator action and confirmation. It must use the existing Phase 10 material boundary helpers and must not bypass crawler confirmation rules.
 
 ---
 

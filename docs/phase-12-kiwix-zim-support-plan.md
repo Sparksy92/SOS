@@ -11,6 +11,7 @@ The server-side scanner:
 *   Extracts filename, file path, and file size.
 *   Does **not** read inside the `.zim` binary.
 *   Does **not** index the contents of ZIM articles.
+*   ZIM paths returned to the frontend must be sanitized. Do not expose full user home paths. Use placeholders such as `[ZIM_FOLDER]`. Scans must be shallow/capped and must ignore system directories.
 
 ### 2. Catalog Registry Schema
 The scanned list is exposed to the frontend via `GET /api/toolkit/zim` in this format:
