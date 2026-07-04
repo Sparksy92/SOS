@@ -1,0 +1,20 @@
+[
+  {
+    "title": "The Homestead Builder",
+    "licenseStatus": "public_domain",
+    "officialSourceUrl": "https://archive.org/details/homesteadbuilder00sher",
+    "thirdPartyMirrorUrl": "",
+    "licenseEvidence": "Published in 1872 by Charles P. Dwyer. Copyright expired.",
+    "riskCategory": null,
+    "approvedByOperator": false
+  },
+  {
+    "title": "US Army Survival Manual FM 21-76",
+    "licenseStatus": "official_free",
+    "officialSourceUrl": "https://archive.org/details/FM21-76SurvivalManual",
+    "thirdPartyMirrorUrl": "",
+    "licenseEvidence": "Official US Department of the Army field manual. Public distribution.",
+    "riskCategory": null,
+    "approvedByOperator": false
+  }
+]

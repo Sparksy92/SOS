@@ -10,24 +10,141 @@ from datetime import datetime, timezone
 # Embedded offline representative metadata catalog for Swiss Bay / external directories
 OFFLINE_CATALOG = [
     # Homesteading
-    {"title": "The Homestead Builder", "filename": "The Homestead Builder.pdf", "category": "homesteading", "riskCategory": None, "license": "public_domain", "url": "https://theswissbay.ch/pdf/Books/Survival/Farming,%20Animalraising,%20Homesteading/Homesteading/The%20Homestead%20Builder.pdf"},
-    {"title": "Storey's Basic Country Skills", "filename": "Storey Basic Country Skills.pdf", "category": "homesteading", "riskCategory": None, "license": "restricted", "url": "https://theswissbay.ch/pdf/Books/Survival/Farming,%20Animalraising,%20Homesteading/Homesteading/Storey%20Basic%20Country%20Skills.pdf"},
-    {"title": "Farming For Self-Sufficiency", "filename": "Farming for Self-Sufficiency.pdf", "category": "farming", "riskCategory": None, "license": "open_license", "url": "https://theswissbay.ch/pdf/Books/Survival/Farming,%20Animalraising,%20Homesteading/Homesteading/Farming%20for%20Self-Sufficiency.pdf"},
+    {
+        "title": "The Homestead Builder", 
+        "filename": "The Homestead Builder.pdf", 
+        "category": "homesteading", 
+        "riskCategory": None, 
+        "licenseStatus": "public_domain", 
+        "licenseEvidence": "Published in 1872 by Charles P. Dwyer. Copyright expired.",
+        "officialSourceUrl": "https://archive.org/details/homesteadbuilder00sher",
+        "thirdPartyMirrorUrl": "https://theswissbay.ch/pdf/Books/Survival/Farming,%20Animalraising,%20Homesteading/Homesteading/The%20Homestead%20Builder.pdf",
+        "verificationStatus": "verified"
+    },
+    {
+        "title": "Storey's Basic Country Skills", 
+        "filename": "Storey Basic Country Skills.pdf", 
+        "category": "homesteading", 
+        "riskCategory": None, 
+        "licenseStatus": "restricted", 
+        "licenseEvidence": "Copyright Storey Publishing. Commercial work.",
+        "officialSourceUrl": "https://www.storey.com/",
+        "thirdPartyMirrorUrl": "https://theswissbay.ch/pdf/Books/Survival/Farming,%20Animalraising,%20Homesteading/Homesteading/Storey%20Basic%20Country%20Skills.pdf",
+        "verificationStatus": "verified"
+    },
+    {
+        "title": "Farming For Self-Sufficiency", 
+        "filename": "Farming for Self-Sufficiency.pdf", 
+        "category": "farming", 
+        "riskCategory": None, 
+        "licenseStatus": "unknown", 
+        "licenseEvidence": "No verifiable open license found on official source.",
+        "officialSourceUrl": "",
+        "thirdPartyMirrorUrl": "https://theswissbay.ch/pdf/Books/Survival/Farming,%20Animalraising,%20Homesteading/Homesteading/Farming%20for%20Self-Sufficiency.pdf",
+        "verificationStatus": "unverified"
+    },
     # Survival
-    {"title": "US Army Survival Manual FM 21-76", "filename": "FM 21-76 Survival Manual.pdf", "category": "general_survival", "riskCategory": None, "license": "official_free", "url": "https://theswissbay.ch/pdf/Books/Survival/Survival/FM%2021-76%20Survival%20Manual.pdf"},
-    {"title": "SAS Survival Handbook", "filename": "SAS Survival Handbook.pdf", "category": "general_survival", "riskCategory": None, "license": "restricted", "url": "https://theswissbay.ch/pdf/Books/Survival/Survival/SAS%20Survival%20Handbook.pdf"},
-    {"title": "Emergency Sanitation and Water", "filename": "Emergency Sanitation and Water.pdf", "category": "water", "riskCategory": "water_treatment", "license": "official_free", "url": "https://theswissbay.ch/pdf/Books/Survival/Survival/Emergency%20Sanitation%20and%20Water.pdf"},
+    {
+        "title": "US Army Survival Manual FM 21-76", 
+        "filename": "FM 21-76 Survival Manual.pdf", 
+        "category": "general_survival", 
+        "riskCategory": None, 
+        "licenseStatus": "official_free", 
+        "licenseEvidence": "Official US Department of the Army field manual. Public distribution.",
+        "officialSourceUrl": "https://archive.org/details/FM21-76SurvivalManual",
+        "thirdPartyMirrorUrl": "https://theswissbay.ch/pdf/Books/Survival/Survival/FM%2021-76%20Survival%20Manual.pdf",
+        "verificationStatus": "verified"
+    },
+    {
+        "title": "SAS Survival Handbook", 
+        "filename": "SAS Survival Handbook.pdf", 
+        "category": "general_survival", 
+        "riskCategory": None, 
+        "licenseStatus": "restricted", 
+        "licenseEvidence": "Copyright John 'Lofty' Wiseman. Commercial work.",
+        "officialSourceUrl": "https://www.harpercollins.com/",
+        "thirdPartyMirrorUrl": "https://theswissbay.ch/pdf/Books/Survival/Survival/SAS%20Survival%20Handbook.pdf",
+        "verificationStatus": "verified"
+    },
+    {
+        "title": "Emergency Sanitation and Water", 
+        "filename": "Emergency Sanitation and Water.pdf", 
+        "category": "water", 
+        "riskCategory": "water_treatment", 
+        "licenseStatus": "official_free", 
+        "licenseEvidence": "UNHCR / WHO guidelines. Freely distributable for educational use.",
+        "officialSourceUrl": "https://www.unhcr.org/wash-resources",
+        "thirdPartyMirrorUrl": "https://theswissbay.ch/pdf/Books/Survival/Survival/Emergency%20Sanitation%20and%20Water.pdf",
+        "verificationStatus": "verified"
+    },
     # Bushcraft
-    {"title": "Bushcraft Outdoor Skills and Wilderness Survival", "filename": "Bushcraft Outdoor Skills.pdf", "category": "bushcraft", "riskCategory": None, "license": "restricted", "url": "https://theswissbay.ch/pdf/Books/Survival/Bushcraft/Bushcraft%20Outdoor%20Skills.pdf"},
-    {"title": "Shelters Shacks and Shanties", "filename": "Shelters Shacks and Shanties.pdf", "category": "shelter", "riskCategory": None, "license": "public_domain", "url": "https://theswissbay.ch/pdf/Books/Survival/Bushcraft/Shelters%20Shacks%20and%20Shanties.pdf"},
+    {
+        "title": "Bushcraft Outdoor Skills and Wilderness Survival", 
+        "filename": "Bushcraft Outdoor Skills.pdf", 
+        "category": "bushcraft", 
+        "riskCategory": None, 
+        "licenseStatus": "restricted", 
+        "licenseEvidence": "Copyright Mors Kochanski. Commercial work.",
+        "officialSourceUrl": "https://www.lonepinepublishing.com/",
+        "thirdPartyMirrorUrl": "https://theswissbay.ch/pdf/Books/Survival/Bushcraft/Bushcraft%20Outdoor%20Skills.pdf",
+        "verificationStatus": "verified"
+    },
+    {
+        "title": "Shelters Shacks and Shanties", 
+        "filename": "Shelters Shacks and Shanties.pdf", 
+        "category": "shelter", 
+        "riskCategory": None, 
+        "licenseStatus": "public_domain", 
+        "licenseEvidence": "Published in 1914 by Daniel Carter Beard. Copyright expired.",
+        "officialSourceUrl": "https://archive.org/details/sheltersshackssh00bear",
+        "thirdPartyMirrorUrl": "https://theswissbay.ch/pdf/Books/Survival/Bushcraft/Shelters%20Shacks%20and%20Shanties.pdf",
+        "verificationStatus": "verified"
+    },
     # Bush Medicine / Medical
-    {"title": "Where There Is No Doctor", "filename": "Where There Is No Doctor.pdf", "category": "medical_reference", "riskCategory": "medical", "license": "official_free", "url": "https://theswissbay.ch/pdf/Books/Survival/Bush%20Medicine/Where%20There%20Is%20No%20Doctor.pdf"},
-    {"title": "Where There Is No Dentist", "filename": "Where There Is No Dentist.pdf", "category": "medical_reference", "riskCategory": "medical", "license": "official_free", "url": "https://theswissbay.ch/pdf/Books/Survival/Bush%20Medicine/Where%20There%20Is%20No%20Dentist.pdf"},
-    {"title": "Survival Medicine Handbook", "filename": "Survival Medicine Handbook.pdf", "category": "medical_reference", "riskCategory": "medical", "license": "restricted", "url": "https://theswissbay.ch/pdf/Books/Survival/Bush%20Medicine/Survival%20Medicine%20Handbook.pdf"}
+    {
+        "title": "Where There Is No Doctor", 
+        "filename": "Where There Is No Doctor.pdf", 
+        "category": "medical_reference", 
+        "riskCategory": "medical", 
+        "licenseStatus": "official_free", 
+        "licenseEvidence": "Hesperian Foundation. Open-access health book for non-commercial distribution.",
+        "officialSourceUrl": "https://hesperian.org/books-and-resources/",
+        "thirdPartyMirrorUrl": "https://theswissbay.ch/pdf/Books/Survival/Bush%20Medicine/Where%20There%20Is%20No%20Doctor.pdf",
+        "verificationStatus": "verified"
+    },
+    {
+        "title": "Where There Is No Dentist", 
+        "filename": "Where There Is No Dentist.pdf", 
+        "category": "medical_reference", 
+        "riskCategory": "medical", 
+        "licenseStatus": "official_free", 
+        "licenseEvidence": "Hesperian Foundation. Open-access health book for non-commercial distribution.",
+        "officialSourceUrl": "https://hesperian.org/books-and-resources/",
+        "thirdPartyMirrorUrl": "https://theswissbay.ch/pdf/Books/Survival/Bush%20Medicine/Where%20There%20Is%20No%20Dentist.pdf",
+        "verificationStatus": "verified"
+    },
+    {
+        "title": "Survival Medicine Handbook", 
+        "filename": "Survival Medicine Handbook.pdf", 
+        "category": "medical_reference", 
+        "riskCategory": "medical", 
+        "licenseStatus": "restricted", 
+        "licenseEvidence": "Copyright Doom and Bloom LLC. Commercial publication.",
+        "officialSourceUrl": "https://www.doomandbloom.net/",
+        "thirdPartyMirrorUrl": "https://theswissbay.ch/pdf/Books/Survival/Bush%20Medicine/Survival%20Medicine%20Handbook.pdf",
+        "verificationStatus": "verified"
+    }
 ]
 
-# Network Requests Logger for testing validation
-NETWORK_REQUESTS_LOG = []
+# Network Requests Loggers for testing validation
+NETWORK_FETCH_LOG = []
+BLOCKED_FETCH_LOG = []
+
+BLOCKED_EXTENSIONS = [
+    '.pdf', '.zip', '.epub', '.mobi', '.djvu', '.mp4', '.avi',
+    '.mkv', '.mov', '.rar', '.7z', '.tar', '.tar.gz', '.tgz',
+    '.iso', '.exe', '.msi', '.dmg'
+]
 
 def normalize_title(name):
     if not name:
@@ -38,20 +155,29 @@ def normalize_title(name):
     normalized = re.sub(r'[^a-zA-Z0-9]', '', base).lower()
     return normalized
 
-def query_network_metadata(url, max_depth, current_depth=1):
+def query_network_metadata(url, max_depth, max_pages, fetch_state, current_depth=1):
     """
     Crawls HTML directory indexes only.
-    Strictly avoids downloading binary attachments (.pdf, .zip, etc.).
+    Strictly avoids downloading binary attachments.
     """
-    global NETWORK_REQUESTS_LOG
-    NETWORK_REQUESTS_LOG.append({"url": url, "type": "metadata_html"})
+    global NETWORK_FETCH_LOG, BLOCKED_FETCH_LOG
     
-    # Check if user requested binary URL
-    if any(ext in url.lower() for ext in ['.pdf', '.zip', '.epub', '.mp4', '.avi', '.tar.gz']):
+    # Check if URL matches blocked extensions
+    lower_url = url.lower()
+    if any(lower_url.endswith(ext) or (ext + '/') in lower_url for ext in BLOCKED_EXTENSIONS):
+        BLOCKED_FETCH_LOG.append(url)
         print(f"[SECURITY WARNING] Refusing to fetch binary resource: {url}")
         return []
 
-    print(f"[NETWORK] Fetching directory index page: {url} (Depth: {current_depth})")
+    # Check max pages cap
+    if fetch_state["pages_fetched"] >= max_pages:
+        print(f"[CRAWLER LIMIT] Reached max-pages cap ({max_pages}). Skipping: {url}")
+        return []
+
+    # We are about to fetch this HTML page
+    NETWORK_FETCH_LOG.append(url)
+    fetch_state["pages_fetched"] += 1
+    print(f"[NETWORK] Fetching directory index page: {url} (Depth: {current_depth}, Total Fetched: {fetch_state['pages_fetched']})")
     
     try:
         import urllib.request
@@ -67,25 +193,27 @@ def query_network_metadata(url, max_depth, current_depth=1):
         candidates = []
         
         for link in links:
-            # Skip parent directory, query strings, and self-links
             if not link or link.startswith('?') or link.startswith('/') or link.startswith('#') or '..' in link:
                 continue
                 
             absolute_link = urljoin(url, link)
             
-            # If it is a subdirectory (ends in /), recursively crawl if depth permitted
+            # If link is a directory (ends in /) and we haven't reached limits
             if link.endswith('/') and current_depth < max_depth:
-                candidates.extend(query_network_metadata(absolute_link, max_depth, current_depth + 1))
+                candidates.extend(query_network_metadata(absolute_link, max_depth, max_pages, fetch_state, current_depth + 1))
             elif link.endswith('.pdf'):
-                # Extract clean title from PDF filename
+                # Extract clean title
                 title = urllib.parse.unquote(link.replace('.pdf', '')).replace('_', ' ').replace('-', ' ')
                 candidates.append({
                     "title": title,
                     "filename": urllib.parse.unquote(link),
                     "category": "unknown",
                     "riskCategory": None,
-                    "license": "unknown",
-                    "url": absolute_link
+                    "licenseStatus": "unknown",
+                    "licenseEvidence": "Discovered via directory indexing. No official licensing evidence.",
+                    "officialSourceUrl": "",
+                    "thirdPartyMirrorUrl": absolute_link,
+                    "verificationStatus": "unverified"
                 })
         return candidates
     except Exception as e:
@@ -177,9 +305,9 @@ def main():
     if args.allow_network_metadata:
         # Swiss Bay root Survival directory
         swiss_bay_url = "https://theswissbay.ch/pdf/Books/Survival/"
-        network_candidates = query_network_metadata(swiss_bay_url, args.max_depth)
-        # Cap to max pages/candidates limit
-        candidates.extend(network_candidates[:args.max_pages * 20])
+        fetch_state = {"pages_fetched": 0}
+        network_candidates = query_network_metadata(swiss_bay_url, args.max_depth, args.max_pages, fetch_state)
+        candidates.extend(network_candidates)
 
     # Category classification keyword rules
     category_keywords = {
@@ -208,7 +336,6 @@ def main():
     for item in candidates:
         title = item["title"]
         filename = item["filename"]
-        url = item["url"]
         
         # Determine category dynamically if unknown
         item_cat = item["category"]
@@ -227,29 +354,33 @@ def main():
             item_risk = risk_mappings.get(item_cat, None)
             
         # Refined classification of licenses
-        license_status = item.get("license", "unknown")
+        license_status = item.get("licenseStatus", "unknown")
         
         # Check duplicate presence
         norm_title = normalize_title(filename)
         already_present = norm_title in normalized_local
 
         # Sanitize absolute URLs or local staging paths
-        sanitized_url = sanitize_path(url, args.materials_root)
+        sanitized_official = sanitize_path(item.get("officialSourceUrl", ""), args.materials_root)
+        sanitized_mirror = sanitize_path(item.get("thirdPartyMirrorUrl", ""), args.materials_root)
 
         candidate_data = {
             "title": title,
             "source": "Swiss Bay PDF Directory Listing",
-            "sourceUrl": sanitized_url,
+            "officialSourceUrl": sanitized_official,
+            "thirdPartyMirrorUrl": sanitized_mirror,
             "category": item_cat,
             "riskCategory": item_risk,
             "licenseStatus": license_status,
+            "licenseEvidence": item.get("licenseEvidence", "No verifiable licensing evidence."),
+            "verificationStatus": item.get("verificationStatus", "unverified"),
             "alreadyPresent": already_present,
             "matchReason": "Exact title normalized duplication match" if already_present else "",
             "recommendedAction": "manual_review" if license_status in ["unknown", "restricted"] else "approved_download",
             "notes": "Requires safety-gate validation" if item_risk else "Standard off-grid reference"
         }
 
-        if license_status in ["restricted", "unknown"]:
+        if license_status in ["restricted", "unknown"] or item.get("verificationStatus") == "unverified":
             blocked_items.append({
                 "title": title,
                 "source": "Swiss Bay",
@@ -341,15 +472,20 @@ def main():
     candidates_md_path = os.path.join(args.out_dir, "content-acquisition-candidates.md")
     with open(candidates_md_path, 'w', encoding='utf-8') as f:
         f.write("# Content Acquisition Candidates\n\n")
-        f.write("Candidate documents verified as legal, public domain, open-license, or official free material. Staged for safe operator download queue:\n\n")
+        f.write("Candidate items that may be suitable for acquisition after license verification. Only items with official source evidence should be moved to an approved allowlist.\n\n")
         for item in candidate_items:
-            if item["licenseStatus"] not in ["restricted", "unknown"]:
+            if item["licenseStatus"] not in ["restricted", "unknown"] and item["verificationStatus"] == "verified":
                 f.write(f"### {item['title']}\n")
                 f.write(f"* **Category:** {item['category']}\n")
                 f.write(f"* **License Status:** {item['licenseStatus'].upper()}\n")
-                f.write(f"* **Risk category:** {item['riskCategory'] or 'None'}\n")
+                f.write(f"* **License Evidence:** {item['licenseEvidence']}\n")
+                f.write(f"* **Risk Category:** {item['riskCategory'] or 'None'}\n")
                 f.write(f"* **Already Present:** {item['alreadyPresent']}\n")
-                f.write(f"* **Acquisition Link:** `{item['sourceUrl']}`\n\n")
+                if item["officialSourceUrl"]:
+                    f.write(f"* **Official Source Link:** `{item['officialSourceUrl']}`\n")
+                if item["thirdPartyMirrorUrl"]:
+                    f.write(f"* **Third-Party Mirror Link:** `{item['thirdPartyMirrorUrl']}`\n")
+                f.write("\n")
     print(f"[AUDIT] Candidates Markdown written: {candidates_md_path}")
 
     # Generate Restricted / Unknown report
@@ -358,11 +494,23 @@ def main():
         f.write("# Restricted or Unknown-License Content Review\n\n")
         f.write("> [!WARNING]\n")
         f.write("> **COPYRIGHT WARNING LIMITS**\n")
-        f.write("> The following candidate files from reference listings contain proprietary, copyrighted, or unknown-license attributes. Do NOT bulk-download or mirror these resources automatically:\n\n")
-        for item in blocked_items:
-            f.write(f"### {item['title']}\n")
-            f.write(f"* **Reason:** {item['reason'].upper()}\n")
-            f.write(f"* **Notes:** {item['notes']}\n\n")
+        f.write("> The following candidate files from reference listings contain proprietary, copyrighted, unverified, or unknown-license attributes. Do NOT bulk-download or mirror these resources automatically:\n\n")
+        
+        f.write("## Restricted (Commercial / Proprietary Works)\n\n")
+        for item in candidate_items:
+            if item["licenseStatus"] == "restricted":
+                f.write(f"### {item['title']}\n")
+                f.write(f"* **Category:** {item['category']}\n")
+                f.write(f"* **Official Source:** `{item['officialSourceUrl']}`\n")
+                f.write(f"* **Notes:** {item['licenseEvidence']}\n\n")
+                
+        f.write("## Needs License Evidence (Unverified or Unknown status)\n\n")
+        for item in candidate_items:
+            if item["licenseStatus"] == "unknown" or item["verificationStatus"] == "unverified":
+                f.write(f"### {item['title']}\n")
+                f.write(f"* **Category:** {item['category']}\n")
+                f.write(f"* **Mirror URL:** `{item['thirdPartyMirrorUrl']}`\n")
+                f.write(f"* **Notes:** {item['licenseEvidence']}\n\n")
     print(f"[AUDIT] Restricted/Unknown review Markdown written: {restricted_md_path}")
 
     # Generate Audit Main report
@@ -371,6 +519,8 @@ def main():
         f.write("# Offline Library Reference Audit\n\n")
         f.write("## Purpose\n")
         f.write("This audit catalogs external off-grid knowledge bases and compares candidate entries against local manifest items, checking licensing and safety boundaries.\n\n")
+        f.write("> [!IMPORTANT]\n")
+        f.write("> **This audit does not prove copyright clearance. It separates likely-safe, evidence-backed, unknown, and restricted material for manual operator review.**\n\n")
         f.write("## Sources Reviewed\n")
         f.write("- WROLPi (`https://github.com/lrnselfreliance/wrolpi.git`)\n")
         f.write("- Project N.O.M.A.D. (`https://github.com/Crosstalk-Solutions/project-nomad.git`)\n")

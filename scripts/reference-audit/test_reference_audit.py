@@ -1,19 +1,22 @@
 #!/usr/bin/env python3
 import unittest
 import os
-import shutil
-import tempfile
 import json
 from compare_offline_references import (
     normalize_title,
     sanitize_path,
     query_network_metadata,
-    NETWORK_REQUESTS_LOG,
+    NETWORK_FETCH_LOG,
+    BLOCKED_FETCH_LOG,
     OFFLINE_CATALOG
 )
 
 class TestReferenceAudit(unittest.TestCase):
     
+    def setUp(self):
+        NETWORK_FETCH_LOG.clear()
+        BLOCKED_FETCH_LOG.clear()
+
     def test_normalize_title(self):
         self.assertEqual(normalize_title("SAS Survival Handbook.pdf"), "sassurvivalhandbook")
         self.assertEqual(normalize_title("FM-21_76.TXT"), "fm2176")
@@ -21,47 +24,68 @@ class TestReferenceAudit(unittest.TestCase):
 
     def test_sanitize_path(self):
         materials_root = "C:\\Users\\Blair\\Downloads\\survival\\sos-materials"
-        
-        # Test sanitizing absolute materials root path
         raw_path = "C:\\Users\\Blair\\Downloads\\survival\\sos-materials\\farming\\soil.pdf"
         sanitized = sanitize_path(raw_path, materials_root)
         self.assertTrue("[MATERIALS_ROOT]" in sanitized)
         self.assertFalse("Blair" in sanitized)
 
-        # Test sanitizing other absolute user directory patterns
         user_home_path = "C:\\Users\\john_doe\\secret_file.pdf"
         sanitized_home = sanitize_path(user_home_path, materials_root)
         self.assertTrue("[USER_HOME]" in sanitized_home)
         self.assertFalse("john_doe" in sanitized_home)
 
     def test_offline_mode_no_network_requests(self):
-        # Clear log
-        NETWORK_REQUESTS_LOG.clear()
-        
-        # In default offline mode, the catalog uses embedded metadata.
-        # Run some simple tests over the embedded catalog list
         self.assertTrue(len(OFFLINE_CATALOG) > 0)
+        # Check that we separated officialSourceUrl and thirdPartyMirrorUrl
         for item in OFFLINE_CATALOG:
-            self.assertTrue(item["url"].startswith("https://"))
+            self.assertTrue("officialSourceUrl" in item)
+            self.assertTrue("thirdPartyMirrorUrl" in item)
             
-        # Assert that zero network crawls were logged
-        self.assertEqual(len(NETWORK_REQUESTS_LOG), 0)
+        self.assertEqual(len(NETWORK_FETCH_LOG), 0)
+        self.assertEqual(len(BLOCKED_FETCH_LOG), 0)
 
-    def test_binary_urls_blocked_from_network(self):
-        # Assert that attempting to fetch a PDF URL directly raises warnings / returns empty
-        binary_url = "https://theswissbay.ch/pdf/Books/Survival/Survival/SAS%20Survival%20Handbook.pdf"
+    def test_binary_urls_blocked_and_logged(self):
+        blocked_test_urls = [
+            "https://example.com/file.rar",
+            "https://example.com/archive.7z",
+            "https://example.com/book.mobi",
+            "https://example.com/doc.djvu",
+            "https://example.com/disk.iso",
+            "https://example.com/payload.exe",
+            "https://example.com/installer.msi",
+            "https://example.com/app.dmg"
+        ]
         
-        # Clear log
-        NETWORK_REQUESTS_LOG.clear()
+        for url in blocked_test_urls:
+            results = query_network_metadata(url, max_depth=1, max_pages=5, fetch_state={"pages_fetched": 0})
+            self.assertEqual(len(results), 0)
+            
+        self.assertEqual(len(NETWORK_FETCH_LOG), 0)
+        self.assertEqual(len(BLOCKED_FETCH_LOG), len(blocked_test_urls))
+        for url in blocked_test_urls:
+            self.assertIn(url, BLOCKED_FETCH_LOG)
+
+    def test_unknown_license_default(self):
+        # Farming For Self-Sufficiency should be unknown licenseStatus, unverified verificationStatus
+        target = None
+        for item in OFFLINE_CATALOG:
+            if item["title"] == "Farming For Self-Sufficiency":
+                target = item
+                break
+        self.assertIsNotNone(target)
+        self.assertEqual(target["licenseStatus"], "unknown")
+        self.assertEqual(target["verificationStatus"], "unverified")
+
+    def test_max_pages_caps_fetched_pages(self):
+        # Run network crawling simulation (we expect it stops after reaching max_pages)
+        fetch_state = {"pages_fetched": 0}
         
-        results = query_network_metadata(binary_url, max_depth=1)
-        
-        # Assert that it refused to crawl and returned empty candidates list
+        # Call query_network_metadata with max_pages=1 over a mock crawl
+        # Since we block network in unit tests usually, let's call it with 0 max_pages
+        # to prove it immediately skips fetching
+        results = query_network_metadata("https://example.com/survival-index/", max_depth=2, max_pages=0, fetch_state=fetch_state)
         self.assertEqual(len(results), 0)
-        
-        # Verify it logged the attempt in the security check log but didn't execute urllib GET
-        self.assertEqual(len(NETWORK_REQUESTS_LOG), 1)
-        self.assertEqual(NETWORK_REQUESTS_LOG[0]["url"], binary_url)
+        self.assertEqual(len(NETWORK_FETCH_LOG), 0)
 
 if __name__ == "__main__":
     unittest.main()

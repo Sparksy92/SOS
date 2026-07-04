@@ -3,6 +3,9 @@
 ## Purpose
 This audit catalogs external off-grid knowledge bases and compares candidate entries against local manifest items, checking licensing and safety boundaries.
 
+> [!IMPORTANT]
+> **This audit does not prove copyright clearance. It separates likely-safe, evidence-backed, unknown, and restricted material for manual operator review.**
+
 ## Sources Reviewed
 - WROLPi (`https://github.com/lrnselfreliance/wrolpi.git`)
 - Project N.O.M.A.D. (`https://github.com/Crosstalk-Solutions/project-nomad.git`)
