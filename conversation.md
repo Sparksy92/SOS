@@ -762,4 +762,61 @@ In `sos-server/tests/indexIntegrity.test.mjs` or a new test suite, we will add t
 
 I explicitly confirm that **no cloud sync, logins, or remote persistence integrations** will be added. All features will remain strictly local-first.
 
-I am awaiting your approval of the implementation plan before proceeding to the coding phase.
+---
+
+## Response from Local LLM (Antigravity) - July 3, 2026 (Phase 10 Hardening Completion)
+
+The implementation of Phase 10 is complete, fully tested, and committed.
+
+### 1. Files Changed
+*   [materialRootService.js](file:///c:/Users/Blair/Downloads/survival/sos-server/services/materialRootService.js) [NEW]
+*   [materialBoundary.test.mjs](file:///c:/Users/Blair/Downloads/survival/sos-server/tests/materialBoundary.test.mjs) [NEW]
+*   [material-boundary-and-crawler-safety.md](file:///c:/Users/Blair/Downloads/survival/docs/material-boundary-and-crawler-safety.md) [NEW]
+*   [index.js](file:///c:/Users/Blair/Downloads/survival/sos-server/index.js)
+*   [crawler.js](file:///c:/Users/Blair/Downloads/survival/sos-server/crawler.js)
+*   [manifestService.js](file:///c:/Users/Blair/Downloads/survival/sos-server/services/manifestService.js)
+*   [documentIndexingService.js](file:///c:/Users/Blair/Downloads/survival/sos-server/services/documentIndexingService.js)
+*   [media.routes.js](file:///c:/Users/Blair/Downloads/survival/sos-server/routes/media.routes.js)
+*   [crawler.routes.js](file:///c:/Users/Blair/Downloads/survival/sos-server/routes/crawler.routes.js)
+*   [indexIntegrity.test.mjs](file:///c:/Users/Blair/Downloads/survival/sos-server/tests/indexIntegrity.test.mjs)
+*   [CrawlerControls.jsx](file:///c:/Users/Blair/Downloads/survival/sos-app/src/components/crawler/CrawlerControls.jsx)
+
+### 2. How `/materials` is Guarded
+The `/materials/*` static route is replaced in `sos-server/index.js` with an Express 5 splat route:
+```javascript
+app.get('/materials/*splat', (req, res) => { ... })
+```
+This route decodes and resolves the web path using `resolveMaterialPath(req.path)`. It validates boundaries, blocks traversals, denies blocked directories/files, and serves files cleanly without any database write side effects or Ollama interaction.
+
+### 3. How `SOS_MATERIALS_DIR` Works
+`materialRootService.js` resolves this env variable as the primary authority. If not defined, it defaults to the parent folder of `sos-server` (repository root) to preserve Blair's manual files environment, while aggressively blocking code/config segments.
+
+### 4. How Blocked Paths are Enforced
+Segment-based case-insensitive matching is done against path directories and file extensions (e.g. `.db`, `.sqlite`, `.sqlite3`). Access to system configs, code dirs, metadata, and runtime backups are blocked immediately with `403 Access Denied`.
+
+### 5. How Crawler Modes Work
+The crawler split includes:
+*   `inventory`: scans directory structures and builds `material_manifest.json` cache only (no zip extraction or document indexing).
+*   `index`: parses `.pdf` / `.txt` files into the SQLite database.
+*   `extract-zips`: extracts discovered zip files manually, featuring dry-run listing (`dryRun: true`) and requiring explicit confirmation (`confirmation: "EXTRACT ZIP ARCHIVES"`).
+
+### 6. ZIP Extraction Gating
+ZIP extraction is completely decoupled from the default/manual crawler start and startup checks. It is only executed when the operator triggers `extract-zips` mode with the exact confirmation phrase: `"EXTRACT ZIP ARCHIVES"`.
+
+### 7. Verification & Build Output
+*   **Backend Tests**: All 47 tests passed cleanly:
+    ```bash
+    node --test sos-server/tests/*.test.mjs
+    # tests 47
+    # pass 47
+    # fail 0
+    ```
+*   **Vite Production Build**: Compiled and bundled successfully:
+    ```bash
+    npm run build
+    # ✓ built in 548ms
+    ```
+
+### 8. Commit Details
+*   Commit Hash: `f26fc63` (`Harden material boundary and crawler modes`)
+
