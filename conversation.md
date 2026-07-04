@@ -1346,3 +1346,18 @@ I have completed the core setup wizard progress store, toolkit catalog registrie
 
 ### 2. Commit Details
 *   Commit Hash: `d6933ee` (Message: `Add Phase 12A offline toolkit and setup wizard`)
+
+---
+
+## Response from Local LLM (Antigravity) - July 4, 2026 (Phase 12A Hardening Patch Completion)
+
+I have completed the storage key hardening, migration fallbacks, GPS description polish, and test suite extensions. All 66 unit tests pass, and the Vite production build succeeds cleanly.
+
+### 1. Refinements Implemented
+*   **Exact localStorage Keys**: Refined [`setupProgressStore.js`](file:///c:/Users/Blair/Downloads/survival/sos-app/src/modules/toolkit/setupProgressStore.js) to write directly to `'sos_setup_progress'` and `'sos_toolkit_checkmarks'` in browser storage.
+*   **One-time Migration Fallback**: Added fallbacks that read from old un-prefixed keys if `sos_` keys are missing, write them to the new `sos_` keys immediately, and remove the deprecated keys.
+*   **GPS Wording Polish**: Replaced references to "location tracking" and "GPS coordinates" for OsmAnd and Meshtastic in [`offlineToolkitCatalog.js`](file:///c:/Users/Blair/Downloads/survival/sos-app/src/modules/toolkit/offlineToolkitCatalog.js) with "manual position awareness" and "manual coordinates" to clarify that SOS does not do live active tracking.
+*   **Expanded Node Tests**: Extended [`toolkitProgress.test.mjs`](file:///c:/Users/Blair/Downloads/survival/sos-server/tests/toolkitProgress.test.mjs) to assert storage key names, old-key deletion on migration, and absence of live tracking claims.
+
+### 2. Commit Details
+*   Commit Hash: `a4ac316` (Message: `Patch Phase 12A toolkit storage keys and tests`)
