@@ -46,3 +46,7 @@ sos-server/sos_database.db
 sos-server/*.db
 sos-server/*.sqlite
 sos-server/*.bak
+
+# Python cache
+__pycache__/
+*.pyc
