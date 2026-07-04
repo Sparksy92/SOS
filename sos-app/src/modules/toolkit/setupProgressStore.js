@@ -1,7 +1,5 @@
-import { localStore } from '../../services/localStore.js';
-
-const SETUP_PROGRESS_KEY = 'setup_progress';
-const TOOLKIT_CHECKMARKS_KEY = 'toolkit_checkmarks';
+const SETUP_PROGRESS_KEY = 'sos_setup_progress';
+const TOOLKIT_CHECKMARKS_KEY = 'sos_toolkit_checkmarks';
 
 export const DEFAULT_STEPS = {
   "1": { id: 1, label: "Confirm SOS local app boots", description: "Open SurvivalOS in your browser offline and verify that all dashboard elements render." },
@@ -18,8 +16,50 @@ export const DEFAULT_STEPS = {
   "12": { id: 12, label: "Confirm power/charging plan", description: "Verify you have backup battery packs, solar cells, or generator power to support operations." }
 };
 
+const safeGetItem = (key, defaultValue = null) => {
+  try {
+    if (typeof localStorage !== 'undefined') {
+      const val = localStorage.getItem(key);
+      return val ? JSON.parse(val) : defaultValue;
+    }
+  } catch (e) {
+    console.error("localStorage read error:", e);
+  }
+  return defaultValue;
+};
+
+const safeSetItem = (key, value) => {
+  try {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(key, JSON.stringify(value));
+    }
+  } catch (e) {
+    console.error("localStorage write error:", e);
+  }
+};
+
+const safeRemoveItem = (key) => {
+  try {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem(key);
+    }
+  } catch (e) {
+    console.error("localStorage remove error:", e);
+  }
+};
+
 export const loadSetupProgress = () => {
-  const stored = localStore.get(SETUP_PROGRESS_KEY, {});
+  let stored = safeGetItem(SETUP_PROGRESS_KEY);
+  if (!stored) {
+    // Migration fallback check
+    stored = safeGetItem('setup_progress');
+    if (stored) {
+      // Immediately migrate to new key and clean up old key
+      safeSetItem(SETUP_PROGRESS_KEY, stored);
+      safeRemoveItem('setup_progress');
+    }
+  }
+  stored = stored || {};
   const progress = {};
   Object.keys(DEFAULT_STEPS).forEach(id => {
     progress[id] = stored[id] === true;
@@ -28,7 +68,7 @@ export const loadSetupProgress = () => {
 };
 
 export const saveSetupProgress = (progress) => {
-  localStore.set(SETUP_PROGRESS_KEY, progress);
+  safeSetItem(SETUP_PROGRESS_KEY, progress);
 };
 
 export const toggleStep = (stepId) => {
@@ -50,11 +90,21 @@ export const resetSetupProgress = () => {
 };
 
 export const loadToolkitCheckmarks = () => {
-  return localStore.get(TOOLKIT_CHECKMARKS_KEY, []);
+  let marks = safeGetItem(TOOLKIT_CHECKMARKS_KEY);
+  if (!marks) {
+    // Migration fallback check
+    marks = safeGetItem('toolkit_checkmarks');
+    if (marks) {
+      // Immediately migrate to new key and clean up old key
+      safeSetItem(TOOLKIT_CHECKMARKS_KEY, marks);
+      safeRemoveItem('toolkit_checkmarks');
+    }
+  }
+  return marks || [];
 };
 
 export const saveToolkitCheckmarks = (marks) => {
-  localStore.set(TOOLKIT_CHECKMARKS_KEY, marks);
+  safeSetItem(TOOLKIT_CHECKMARKS_KEY, marks);
 };
 
 export const toggleToolkitCheckmark = (toolId) => {

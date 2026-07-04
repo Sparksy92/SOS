@@ -30,11 +30,12 @@ This document summarizes the core UI layout and progress stores created in Phase
 ## Verification Logs
 
 ### Automated Tests
-Node unit tests verify store persistence and link safety limits:
+Node unit tests verify store persistence, direct `sos_setup_progress`/`sos_toolkit_checkmarks` keys writes, and link safety limits:
+*   Test File Path: [`sos-server/tests/toolkitProgress.test.mjs`](file:///c:/Users/Blair/Downloads/survival/sos-server/tests/toolkitProgress.test.mjs)
 ```bash
-node --test sos-server/tests/*.test.mjs
-# tests 65
-# pass 65
+node --test sos-server/tests/toolkitProgress.test.mjs
+# tests 3
+# pass 3
 # fail 0
 ```
 
@@ -42,5 +43,4 @@ node --test sos-server/tests/*.test.mjs
 Vite production build succeeds cleanly:
 ```bash
 dist/assets/index-BLyx6-qF.js   499.87 kB
-✓ built in 497ms
 ```
