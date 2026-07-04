@@ -8,7 +8,9 @@ import {
   DECISIONS, 
   isValidUrl 
 } from '../../modules/toolkit/importApprovalLedgerStore.js';
-import { ShieldAlert, Download, Upload, Trash2, Edit3, Save, CheckCircle, XCircle, Clock, FileText, AlertTriangle } from 'lucide-react';
+import { saveQueueItem } from '../../modules/toolkit/acquisitionQueueStore.js';
+import { saveAllowlistEntry } from '../../modules/toolkit/sourceAllowlistStore.js';
+import { ShieldAlert, Download, Upload, Trash2, Edit3, Save, CheckCircle, XCircle, Clock, FileText, AlertTriangle, Plus } from 'lucide-react';
 
 export default function ImportApprovalLedgerPanel() {
   const [ledger, setLedger] = useState([]);
@@ -38,6 +40,44 @@ export default function ImportApprovalLedgerPanel() {
     setTimeout(() => {
       setStatusMessage({ text: '', type: '' });
     }, 4000);
+  };
+
+  const handleAddToQueue = (record) => {
+    try {
+      saveQueueItem({
+        title: record.filename.replace(/\.[^/.]+$/, "").replace(/_/g, " "),
+        filenameHint: record.filename,
+        category: record.detectedCategory,
+        riskCategory: record.riskCategory,
+        sourceType: 'operator_entered',
+        officialSourceUrl: record.officialSourceUrl || '',
+        sourceEvidence: record.licenseEvidence || '',
+        suggestedLicenseStatus: 'unknown',
+        ledgerRecordId: record.id,
+        ledgerDecision: record.operatorDecision,
+        acquisitionStatus: 'planned'
+      });
+      alert(`"${record.filename}" successfully added to the local acquisition queue.`);
+    } catch (e) {
+      alert(e.message);
+    }
+  };
+
+  const handleAddToAllowlist = (record) => {
+    try {
+      saveAllowlistEntry({
+        label: `${record.filename} Source`,
+        officialSourceUrl: record.officialSourceUrl || '',
+        sourceType: 'operator_entered',
+        sourceEvidence: record.licenseEvidence || '',
+        categories: [record.detectedCategory],
+        riskCategories: record.riskCategory ? [record.riskCategory] : [],
+        operatorTrusted: true
+      });
+      alert("Source URL successfully added to allowed sources.");
+    } catch (e) {
+      alert(e.message);
+    }
   };
 
   const handleSelectRecord = (record) => {
@@ -525,6 +565,45 @@ export default function ImportApprovalLedgerPanel() {
                   }}
                 />
               </div>
+
+              {/* Queue/Allowlist Integration Block */}
+              {!selectedRecord.isNew && (
+                <div style={{ marginBottom: '16px', padding: '12px', backgroundColor: '#0d1017', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '4px' }}>
+                  {selectedRecord.operatorDecision === 'approved' ? (
+                    selectedRecord.officialSourceUrl ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <div style={{ fontSize: '0.8rem', color: '#aaa' }}>
+                          This approved record is ready to be added to the acquisition queue or allowlist.
+                        </div>
+                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                          <button 
+                            className="btn-tactical" 
+                            onClick={() => handleAddToQueue(selectedRecord)}
+                            style={{ padding: '4px 10px', fontSize: '0.75rem' }}
+                          >
+                            Add to Acquisition Queue
+                          </button>
+                          <button 
+                            className="btn-tactical" 
+                            onClick={() => handleAddToAllowlist(selectedRecord)}
+                            style={{ padding: '4px 10px', fontSize: '0.75rem' }}
+                          >
+                            Add Source to Allowlist
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div style={{ fontSize: '0.78rem', color: '#ff7f50' }}>
+                        ⚠️ Complete source evidence before queueing this item.
+                      </div>
+                    )
+                  ) : (
+                    <div style={{ fontSize: '0.78rem', color: '#ff7f50' }}>
+                      ⚠️ Complete source evidence before queueing this item.
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Action Buttons */}
               <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>

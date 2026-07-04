@@ -5,12 +5,14 @@ import {
   resetDismissedImports 
 } from '../../modules/toolkit/manualImportQueueStore.js';
 import { loadLedger, saveRecord } from '../../modules/toolkit/importApprovalLedgerStore.js';
+import { loadQueue, saveQueueItem } from '../../modules/toolkit/acquisitionQueueStore.js';
 import { ShieldAlert, Info, AlertTriangle, ArrowRight, EyeOff, RefreshCw } from 'lucide-react';
 
 export default function ManualImportQueuePanel({ setViewMode, setToolkitSubTab }) {
   const [stagedFiles, setStagedFiles] = useState([]);
   const [dismissedList, setDismissedList] = useState([]);
   const [ledger, setLedger] = useState([]);
+  const [queue, setQueue] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -36,6 +38,7 @@ export default function ManualImportQueuePanel({ setViewMode, setToolkitSubTab }
   useEffect(() => {
     setDismissedList(loadDismissedImports());
     setLedger(loadLedger());
+    setQueue(loadQueue());
     fetchStagedFiles();
   }, []);
 
@@ -64,6 +67,23 @@ export default function ManualImportQueuePanel({ setViewMode, setToolkitSubTab }
         operatorVerifiedSource: false
       });
       setLedger(updatedLedger);
+    } catch (e) {
+      alert(e.message);
+    }
+  };
+
+  const getQueueItemForFile = (file) => {
+    return queue.find(q => q.filenameHint && q.filenameHint.toLowerCase() === file.filename.toLowerCase());
+  };
+
+  const handleMarkQueueStaged = (queueItem) => {
+    try {
+      const updated = saveQueueItem({
+        ...queueItem,
+        acquisitionStatus: 'manually_staged'
+      });
+      setQueue(updated);
+      alert(`"${queueItem.title}" marked as manually staged in acquisition queue.`);
     } catch (e) {
       alert(e.message);
     }
@@ -240,6 +260,28 @@ export default function ManualImportQueuePanel({ setViewMode, setToolkitSubTab }
                     <div><strong>Verification Status:</strong> <span style={{ color: '#ffd700' }}>{file.verificationStatus.replace(/_/g, ' ').toUpperCase()}</span></div>
                     <div><strong>Match Confidence:</strong> {(file.matchConfidence || '').replace(/_/g, ' ')}</div>
                   </div>
+
+                  {/* Queue Integration Block */}
+                  {(() => {
+                    const queueItem = getQueueItemForFile(file);
+                    if (!queueItem) return null;
+                    return (
+                      <div style={{ marginTop: '10px', padding: '8px 12px', backgroundColor: 'rgba(0, 242, 254, 0.03)', border: '1px solid rgba(0, 242, 254, 0.1)', borderRadius: '4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                        <span style={{ fontSize: '0.78rem', color: '#00f2fe' }}>
+                          ℹ️ Queue status: manually staged candidate detected (Current: <strong>{queueItem.acquisitionStatus.toUpperCase()}</strong>)
+                        </span>
+                        {queueItem.acquisitionStatus !== 'manually_staged' && (
+                          <button
+                            className="btn-tactical"
+                            onClick={() => handleMarkQueueStaged(queueItem)}
+                            style={{ padding: '3px 8px', fontSize: '0.72rem' }}
+                          >
+                            Mark Queue Item as Manually Staged
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })()}
 
                   {/* License Safety Wording Banner */}
                   <div style={{ marginTop: '12px', fontSize: '0.8rem', color: '#ff7f50', backgroundColor: 'rgba(255, 69, 0, 0.02)', padding: '10px', borderRadius: '4px', borderLeft: '3px solid #ff7f50', lineHeight: '1.3' }}>

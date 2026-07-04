@@ -25,7 +25,8 @@ export const isValidUrl = (url) => {
 // Absolute path validation helper
 export const isAbsolutePath = (p) => {
   if (!p) return false;
-  const trimmed = p.trim();
+  let trimmed = p.trim();
+  trimmed = trimmed.replace(/^https?:\/\//i, '');
   if (/^[a-zA-Z]:[\\\/]/.test(trimmed)) return true;
   if (trimmed.startsWith('/') && !trimmed.startsWith('/..')) return true;
   if (/[a-zA-Z]:[\\\/]/.test(trimmed)) return true;

@@ -108,8 +108,12 @@ import ContentGapAnalyzerPanel from './components/toolkit/ContentGapAnalyzerPane
 import ZimCatalogPanel from './components/toolkit/ZimCatalogPanel.jsx';
 import ManualImportQueuePanel from './components/toolkit/ManualImportQueuePanel.jsx';
 import ImportApprovalLedgerPanel from './components/toolkit/ImportApprovalLedgerPanel.jsx';
+import AcquisitionQueuePanel from './components/toolkit/AcquisitionQueuePanel.jsx';
+import SourceAllowlistPanel from './components/toolkit/SourceAllowlistPanel.jsx';
 import { loadSetupProgress, DEFAULT_STEPS } from './modules/toolkit/setupProgressStore.js';
 import { loadLedger } from './modules/toolkit/importApprovalLedgerStore.js';
+import { loadQueue } from './modules/toolkit/acquisitionQueueStore.js';
+import { loadAllowlist } from './modules/toolkit/sourceAllowlistStore.js';
 
 const API_BASE = `http://${window.location.hostname}:3001`;
 
@@ -1329,6 +1333,134 @@ function App() {
       return;
     }
 
+    if (lowercaseMsg === 'what is in my acquisition queue?') {
+      const queue = loadQueue();
+      const planned = queue.filter(q => q.acquisitionStatus === 'planned');
+      let text = `### **Acquisition Queue Status**\n`;
+      text += `You have **${planned.length}** planned acquisition records.\n\n`;
+      if (planned.length > 0) {
+        planned.forEach((q, i) => {
+          text += `${i + 1}. **${q.title}** (File Hint: \`${q.filenameHint || 'N/A'}\`)\n`;
+        });
+      }
+      text += `\nOpen the **Acquisition Queue** tab to update status.`;
+
+      setMessages(prev => [...prev, {
+        role: 'ai',
+        text: text,
+        answerStatus: 'offline_readiness_checklist'
+      }]);
+      setChatLoading(false);
+      return;
+    }
+
+    if (lowercaseMsg === 'what sources are allowlisted?' || lowercaseMsg === 'show my source allowlist') {
+      const list = loadAllowlist();
+      let text = `### **Source Allowlist Registry**\n`;
+      text += `You have **${list.length}** sources allowlisted.\n\n`;
+      if (list.length > 0) {
+        list.forEach((l, i) => {
+          const trusted = l.operatorTrusted ? 'Trusted' : 'Not Trusted';
+          text += `${i + 1}. **${l.label}** (${l.sourceType.toUpperCase()} — *${trusted}*)\n`;
+        });
+      }
+      text += `\nOpen the **Source Allowlist** tab to inspect, add, or trust sources manually.`;
+
+      setMessages(prev => [...prev, {
+        role: 'ai',
+        text: text,
+        answerStatus: 'offline_readiness_checklist'
+      }]);
+      setChatLoading(false);
+      return;
+    }
+
+    if (lowercaseMsg === 'what should i acquire next?') {
+      const queue = loadQueue();
+      const planned = queue.filter(q => q.acquisitionStatus === 'planned');
+      let text = `### **Next Planned Acquisition Candidates**\n`;
+      if (planned.length > 0) {
+        text += `The following items are planned next in your queue:\n\n`;
+        planned.forEach((q, i) => {
+          text += `${i + 1}. **${q.title}** (File Hint: \`${q.filenameHint || 'N/A'}\`)\n`;
+        });
+        text += `\nOpen the **Acquisition Queue** tab to copy official source URLs or edit statuses.`;
+      } else {
+        text += `No items are currently marked as planned in your queue. Go to the **Gap Analyzer** tab to find candidates and add them to your queue.`;
+      }
+
+      setMessages(prev => [...prev, {
+        role: 'ai',
+        text: text,
+        answerStatus: 'offline_readiness_checklist'
+      }]);
+      setChatLoading(false);
+      return;
+    }
+
+    if (lowercaseMsg === 'what items are manually acquired?') {
+      const queue = loadQueue();
+      const acquired = queue.filter(q => q.acquisitionStatus === 'manually_acquired');
+      let text = `### **Manually Acquired Reference Items**\n`;
+      text += `You have **${acquired.length}** items marked manually acquired.\n\n`;
+      if (acquired.length > 0) {
+        acquired.forEach((q, i) => {
+          text += `${i + 1}. **${q.title}**\n`;
+        });
+      }
+      text += `\nOpen the **Acquisition Queue** tab to update status.`;
+
+      setMessages(prev => [...prev, {
+        role: 'ai',
+        text: text,
+        answerStatus: 'offline_readiness_checklist'
+      }]);
+      setChatLoading(false);
+      return;
+    }
+
+    if (lowercaseMsg === 'what items are manually staged?') {
+      const queue = loadQueue();
+      const staged = queue.filter(q => q.acquisitionStatus === 'manually_staged');
+      let text = `### **Manually Staged Candidates**\n`;
+      text += `You have **${staged.length}** items marked manually staged.\n\n`;
+      if (staged.length > 0) {
+        staged.forEach((q, i) => {
+          text += `${i + 1}. **${q.title}**\n`;
+        });
+      }
+      text += `\nOpen the **Acquisition Queue** tab to update status.`;
+
+      setMessages(prev => [...prev, {
+        role: 'ai',
+        text: text,
+        answerStatus: 'offline_readiness_checklist'
+      }]);
+      setChatLoading(false);
+      return;
+    }
+
+    if (lowercaseMsg === 'what acquisition items are blocked?') {
+      const queue = loadQueue();
+      const blocked = queue.filter(q => q.acquisitionStatus === 'blocked');
+      let text = `### **Blocked Acquisition Items**\n`;
+      text += `You have **${blocked.length}** items marked blocked.\n\n`;
+      if (blocked.length > 0) {
+        blocked.forEach((q, i) => {
+          text += `${i + 1}. **${q.title}**\n`;
+        });
+      }
+      text += `\nOpen the **Acquisition Queue** tab to update status.`;
+
+      setMessages(prev => [...prev, {
+        role: 'ai',
+        text: text,
+        answerStatus: 'offline_readiness_checklist'
+      }]);
+      setChatLoading(false);
+      return;
+    }
+
     // 3. Intercept Briefing request
     if (lowercaseMsg === 'mission brief' || lowercaseMsg === 'brief this mission' || lowercaseMsg === 'give me a mission brief' || lowercaseMsg === 'what is the mission status' || lowercaseMsg === 'what still needs review') {
       if (!activeMission) {
@@ -2497,6 +2629,20 @@ function App() {
                   >
                     Approval Ledger
                   </button>
+                  <button 
+                    onClick={() => setToolkitSubTab('acq')}
+                    className={`btn-tactical${toolkitSubTab === 'acq' ? '' : '-outline'}`}
+                    style={{ padding: '8px 16px', borderRadius: '4px 4px 0 0', borderBottom: 'none', marginBottom: '4px' }}
+                  >
+                    Acquisition Queue
+                  </button>
+                  <button 
+                    onClick={() => setToolkitSubTab('allowlist')}
+                    className={`btn-tactical${toolkitSubTab === 'allowlist' ? '' : '-outline'}`}
+                    style={{ padding: '8px 16px', borderRadius: '4px 4px 0 0', borderBottom: 'none', marginBottom: '4px' }}
+                  >
+                    Source Allowlist
+                  </button>
                 </div>
                 {toolkitSubTab === 'wizard' && (
                   <PanelErrorBoundary name="Setup Wizard">
@@ -2515,7 +2661,7 @@ function App() {
                 )}
                 {toolkitSubTab === 'gap' && (
                   <PanelErrorBoundary name="Gap Analyzer">
-                    <ContentGapAnalyzerPanel />
+                    <ContentGapAnalyzerPanel setToolkitSubTab={setToolkitSubTab} />
                   </PanelErrorBoundary>
                 )}
                 {toolkitSubTab === 'zim' && (
@@ -2531,6 +2677,16 @@ function App() {
                 {toolkitSubTab === 'ledger' && (
                   <PanelErrorBoundary name="Approval Ledger">
                     <ImportApprovalLedgerPanel />
+                  </PanelErrorBoundary>
+                )}
+                {toolkitSubTab === 'acq' && (
+                  <PanelErrorBoundary name="Acquisition Queue">
+                    <AcquisitionQueuePanel />
+                  </PanelErrorBoundary>
+                )}
+                {toolkitSubTab === 'allowlist' && (
+                  <PanelErrorBoundary name="Source Allowlist">
+                    <SourceAllowlistPanel />
                   </PanelErrorBoundary>
                 )}
               </div>

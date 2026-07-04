@@ -73,3 +73,9 @@ Vite production build succeeds cleanly:
 dist/assets/index-DEDIia-Z.js   571.18 kB
 ✓ built in 529ms
 ```
+
+---
+
+## Safety Boundary Integration
+Phase 14 builds on the approval ledger by creating a local acquisition planning queue and source allowlist. It still does not add downloads, automatic import, file movement, file deletion, indexing, OCR, or parsing.
+

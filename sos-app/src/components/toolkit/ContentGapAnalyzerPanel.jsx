@@ -1,14 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { GAP_ANALYSIS_DATA } from '../../modules/toolkit/gapAnalysisData.js';
 import { loadLedger } from '../../modules/toolkit/importApprovalLedgerStore.js';
-import { ShieldAlert, BookOpen, AlertTriangle, CheckCircle, ExternalLink } from 'lucide-react';
+import { loadQueue, saveQueueItem } from '../../modules/toolkit/acquisitionQueueStore.js';
+import { loadAllowlist, saveAllowlistEntry } from '../../modules/toolkit/sourceAllowlistStore.js';
+import { ShieldAlert, BookOpen, AlertTriangle, CheckCircle, ExternalLink, Plus, Check, Clipboard } from 'lucide-react';
 
-export default function ContentGapAnalyzerPanel() {
+export default function ContentGapAnalyzerPanel({ setToolkitSubTab }) {
   const { categoryCoverage, candidateItems, blockedItems } = GAP_ANALYSIS_DATA;
   const [ledger, setLedger] = useState([]);
+  const [queue, setQueue] = useState([]);
+  const [allowlist, setAllowlist] = useState([]);
 
   useEffect(() => {
     setLedger(loadLedger());
+    setQueue(loadQueue());
+    setAllowlist(loadAllowlist());
   }, []);
 
   const getLedgerStatus = (item) => {
@@ -47,7 +53,66 @@ export default function ContentGapAnalyzerPanel() {
         color = '#a0a0a0';
     }
 
-    return { status: statusText, color, decision: record.operatorDecision, exact: isExact };
+    return { status: statusText, color, decision: record.operatorDecision, exact: isExact, rawRecord: record };
+  };
+
+  const getQueueStatus = (item) => {
+    const record = queue.find(q => q.title.toLowerCase() === item.title.toLowerCase() || (item.filename && q.filenameHint && q.filenameHint.toLowerCase() === item.filename.toLowerCase()));
+    return record ? record.acquisitionStatus : 'not_queued';
+  };
+
+  const getAllowlistStatus = (item) => {
+    if (!item.officialSourceUrl) return 'not_listed';
+    const entry = allowlist.find(l => l.officialSourceUrl && l.officialSourceUrl.toLowerCase() === item.officialSourceUrl.toLowerCase());
+    if (!entry) return 'not_listed';
+    return entry.operatorTrusted ? 'trusted' : 'not_trusted';
+  };
+
+  const handleAddToQueue = (item, ledgerRecord) => {
+    try {
+      const updated = saveQueueItem({
+        title: item.title,
+        filenameHint: item.filename || '',
+        category: item.category,
+        riskCategory: item.riskCategory || null,
+        sourceType: 'official_source',
+        officialSourceUrl: item.officialSourceUrl || '',
+        sourceEvidence: item.licenseEvidence || '',
+        suggestedLicenseStatus: item.licenseStatus || 'unknown',
+        ledgerRecordId: ledgerRecord ? ledgerRecord.id : '',
+        ledgerDecision: ledgerRecord ? ledgerRecord.operatorDecision : 'none',
+        acquisitionStatus: 'planned'
+      });
+      setQueue(updated);
+      alert(`"${item.title}" successfully added to the local acquisition queue.`);
+    } catch (e) {
+      alert(e.message);
+    }
+  };
+
+  const handleAddToAllowlist = (item) => {
+    try {
+      const updated = saveAllowlistEntry({
+        label: `${item.title} Source`,
+        officialSourceUrl: item.officialSourceUrl || '',
+        sourceType: 'official_source',
+        sourceEvidence: item.licenseEvidence || '',
+        categories: [item.category],
+        riskCategories: item.riskCategory ? [item.riskCategory] : [],
+        operatorTrusted: true
+      });
+      setAllowlist(updated);
+      alert("Official source URL allowlisted and marked as Operator Trusted.");
+    } catch (e) {
+      alert(e.message);
+    }
+  };
+
+  const handleCopyUrl = (url) => {
+    if (!url) return;
+    navigator.clipboard.writeText(url)
+      .then(() => alert("URL copied to clipboard!"))
+      .catch(() => alert("Failed to copy URL."));
   };
 
   return (
@@ -122,6 +187,8 @@ export default function ContentGapAnalyzerPanel() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {candidateItems.filter(item => item.recommendedAction === 'approved_download').map((item, idx) => {
             const ledgerStatus = getLedgerStatus(item);
+            const qStatus = getQueueStatus(item);
+            const aStatus = getAllowlistStatus(item);
             return (
               <div key={idx} style={{ backgroundColor: '#12151c', padding: '14px', borderRadius: '6px', borderLeft: '3px solid #00ff7f' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '8px' }}>
@@ -131,21 +198,18 @@ export default function ContentGapAnalyzerPanel() {
                       Category: <span style={{ color: '#ccc' }}>{item.category.replace(/_/g, ' ')}</span> | License: <span style={{ color: '#00ff7f' }}>{item.licenseStatus.toUpperCase()}</span>
                     </div>
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
-                    <span style={{ fontSize: '0.72rem', padding: '2px 6px', borderRadius: '4px', backgroundColor: 'rgba(255,255,255,0.05)', color: ledgerStatus.color, fontWeight: 'bold' }}>
-                      {ledgerStatus.status.toUpperCase()}
-                    </span>
-                    {item.officialSourceUrl && (
-                      <a
-                        href={item.officialSourceUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.78rem', color: 'var(--brand-primary)', textDecoration: 'none' }}
-                      >
-                        <span>Official Source</span>
-                        <ExternalLink size={12} />
-                      </a>
-                    )}
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
+                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                      <span style={{ fontSize: '0.72rem', padding: '2px 6px', borderRadius: '4px', backgroundColor: 'rgba(255,255,255,0.05)', color: ledgerStatus.color, fontWeight: 'bold' }}>
+                        LEDGER: {ledgerStatus.status.toUpperCase()}
+                      </span>
+                      <span style={{ fontSize: '0.72rem', padding: '2px 6px', borderRadius: '4px', backgroundColor: 'rgba(255,255,255,0.05)', color: qStatus === 'not_queued' ? '#888' : '#00f2fe', fontWeight: 'bold' }}>
+                        QUEUE: {qStatus.toUpperCase()}
+                      </span>
+                      <span style={{ fontSize: '0.72rem', padding: '2px 6px', borderRadius: '4px', backgroundColor: 'rgba(255,255,255,0.05)', color: aStatus === 'trusted' ? '#00ff7f' : '#888', fontWeight: 'bold' }}>
+                        ALLOWLIST: {aStatus.toUpperCase()}
+                      </span>
+                    </div>
                   </div>
                 </div>
                 <p style={{ margin: '6px 0 0 0', fontSize: '0.8rem', color: '#a0a0a0' }}>
@@ -156,6 +220,45 @@ export default function ContentGapAnalyzerPanel() {
                     ⚠️ Risk Warning: This document relates to {item.riskCategory.replace(/_/g, ' ')}. Content is strictly for educational guidance; operator review required.
                   </div>
                 )}
+                {/* Safe Actions */}
+                <div style={{ marginTop: '12px', display: 'flex', gap: '8px', flexWrap: 'wrap', borderTop: '1px solid rgba(255,255,255,0.03)', paddingTop: '10px' }}>
+                  {qStatus === 'not_queued' && (
+                    <button 
+                      className="btn-tactical" 
+                      onClick={() => handleAddToQueue(item, ledgerStatus.rawRecord)}
+                      style={{ padding: '4px 10px', fontSize: '0.75rem' }}
+                    >
+                      Add to Acquisition Queue
+                    </button>
+                  )}
+                  {item.officialSourceUrl && aStatus === 'not_listed' && (
+                    <button 
+                      className="btn-tactical" 
+                      onClick={() => handleAddToAllowlist(item)}
+                      style={{ padding: '4px 10px', fontSize: '0.75rem' }}
+                    >
+                      Add Official Source to Allowlist
+                    </button>
+                  )}
+                  {item.officialSourceUrl && (
+                    <button 
+                      className="btn-tactical-outline" 
+                      onClick={() => handleCopyUrl(item.officialSourceUrl)}
+                      style={{ padding: '4px 10px', fontSize: '0.75rem', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                    >
+                      <Clipboard size={12} /> Copy Official Source URL
+                    </button>
+                  )}
+                  {ledgerStatus.rawRecord && setToolkitSubTab && (
+                    <button 
+                      className="btn-tactical-outline" 
+                      onClick={() => setToolkitSubTab('ledger')}
+                      style={{ padding: '4px 10px', fontSize: '0.75rem' }}
+                    >
+                      Open Approval Ledger
+                    </button>
+                  )}
+                </div>
               </div>
             );
           })}
@@ -168,6 +271,8 @@ export default function ContentGapAnalyzerPanel() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {candidateItems.filter(item => item.recommendedAction === 'manual_review').map((item, idx) => {
             const ledgerStatus = getLedgerStatus(item);
+            const qStatus = getQueueStatus(item);
+            const aStatus = getAllowlistStatus(item);
             return (
               <div key={idx} style={{ backgroundColor: '#12151c', padding: '14px', borderRadius: '6px', borderLeft: '3px solid #ff4500' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '8px' }}>
@@ -177,10 +282,18 @@ export default function ContentGapAnalyzerPanel() {
                       Category: <span style={{ color: '#ccc' }}>{item.category.replace(/_/g, ' ')}</span> | License: <span style={{ color: '#ff4500' }}>{item.licenseStatus.toUpperCase()}</span>
                     </div>
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
-                    <span style={{ fontSize: '0.72rem', padding: '2px 6px', borderRadius: '4px', backgroundColor: 'rgba(255,255,255,0.05)', color: ledgerStatus.color, fontWeight: 'bold' }}>
-                      {ledgerStatus.status.toUpperCase()}
-                    </span>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
+                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                      <span style={{ fontSize: '0.72rem', padding: '2px 6px', borderRadius: '4px', backgroundColor: 'rgba(255,255,255,0.05)', color: ledgerStatus.color, fontWeight: 'bold' }}>
+                        LEDGER: {ledgerStatus.status.toUpperCase()}
+                      </span>
+                      <span style={{ fontSize: '0.72rem', padding: '2px 6px', borderRadius: '4px', backgroundColor: 'rgba(255,255,255,0.05)', color: qStatus === 'not_queued' ? '#888' : '#00f2fe', fontWeight: 'bold' }}>
+                        QUEUE: {qStatus.toUpperCase()}
+                      </span>
+                      <span style={{ fontSize: '0.72rem', padding: '2px 6px', borderRadius: '4px', backgroundColor: 'rgba(255,255,255,0.05)', color: aStatus === 'trusted' ? '#00ff7f' : '#888', fontWeight: 'bold' }}>
+                        ALLOWLIST: {aStatus.toUpperCase()}
+                      </span>
+                    </div>
                     <span style={{ fontSize: '0.75rem', padding: '2px 8px', borderRadius: '4px', backgroundColor: 'rgba(255, 69, 0, 0.1)', color: '#ff4500', fontWeight: 'bold' }}>
                       LOCKED
                     </span>
@@ -191,6 +304,45 @@ export default function ContentGapAnalyzerPanel() {
                 </p>
                 <div style={{ marginTop: '8px', fontSize: '0.78rem', color: '#ff7f50', backgroundColor: 'rgba(255, 69, 0, 0.03)', padding: '4px 8px', borderRadius: '4px', display: 'inline-block', border: '1px solid rgba(255,69,0,0.1)' }}>
                   🔒 Excluded from automated lists. Must be manually purchased or verified by the operator outside SurvivalOS.
+                </div>
+                {/* Safe Actions */}
+                <div style={{ marginTop: '12px', display: 'flex', gap: '8px', flexWrap: 'wrap', borderTop: '1px solid rgba(255,255,255,0.03)', paddingTop: '10px' }}>
+                  {qStatus === 'not_queued' && (
+                    <button 
+                      className="btn-tactical" 
+                      onClick={() => handleAddToQueue(item, ledgerStatus.rawRecord)}
+                      style={{ padding: '4px 10px', fontSize: '0.75rem' }}
+                    >
+                      Add to Acquisition Queue
+                    </button>
+                  )}
+                  {item.officialSourceUrl && aStatus === 'not_listed' && (
+                    <button 
+                      className="btn-tactical" 
+                      onClick={() => handleAddToAllowlist(item)}
+                      style={{ padding: '4px 10px', fontSize: '0.75rem' }}
+                    >
+                      Add Official Source to Allowlist
+                    </button>
+                  )}
+                  {item.officialSourceUrl && (
+                    <button 
+                      className="btn-tactical-outline" 
+                      onClick={() => handleCopyUrl(item.officialSourceUrl)}
+                      style={{ padding: '4px 10px', fontSize: '0.75rem', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                    >
+                      <Clipboard size={12} /> Copy Official Source URL
+                    </button>
+                  )}
+                  {ledgerStatus.rawRecord && setToolkitSubTab && (
+                    <button 
+                      className="btn-tactical-outline" 
+                      onClick={() => setToolkitSubTab('ledger')}
+                      style={{ padding: '4px 10px', fontSize: '0.75rem' }}
+                    >
+                      Open Approval Ledger
+                    </button>
+                  )}
                 </div>
               </div>
             );
