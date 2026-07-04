@@ -1304,5 +1304,20 @@ The design specification for **Phase 12 — Offline Toolkit & Content Gap Analyz
 ### 2. Boundaries & Safety Check
 No code logic was modified, and no downloaders or automated sync services are proposed. All components are strictly metadata-driven and operator-confirmed.
 
-### 3. Commit Details
 *   Commit Hash: `4d0e53a` (Message: `Draft Phase 12 offline toolkit and content gap analyzer plan`)
+
+---
+
+## Response from Local LLM (Antigravity) - July 4, 2026 (Phase 12 Design Hardening Patch Completion)
+
+The documentation safety clarifications patch has been applied to all Phase 12 plans and pushed to the repository.
+
+### 1. Refinements Implemented
+*   **Harden `POST /api/toolkit/scan-manifest`**: Explicitly requires that the endpoint does not perform deep indexing, OCR, ZIP extraction, or crawler indexing. It must respect the Phase 10 material boundary helpers and crawler confirmation rules.
+*   **Soften Candidate Wording**: Updated Section 4 of [`phase-12-offline-toolkit-content-gap-analyzer-plan.md`](file:///c:/Users/Blair/Downloads/survival/docs/phase-12-offline-toolkit-content-gap-analyzer-plan.md) to define candidates as "evidence-backed sources and manual review items", clarifying that the audit does not prove copyright clearance.
+*   **Strengthen Staging API**: Section 3 of [`phase-12-manual-import-workflow.md`](file:///c:/Users/Blair/Downloads/survival/docs/phase-12-manual-import-workflow.md) now guarantees that the backend does not read staged file contents, using only filename heuristics and audit metadata for category/risk labels.
+*   **Remove Disk Deletes**: The Mermaid chart now guides the operator to "Dismiss from SOS view / operator manually deletes outside SOS".
+*   **Sanitize ZIM Paths**: In [`phase-12-kiwix-zim-support-plan.md`](file:///c:/Users/Blair/Downloads/survival/docs/phase-12-kiwix-zim-support-plan.md), ZIM paths returned to the frontend must use placeholders like `[ZIM_FOLDER]` to avoid exposing user home directory structures.
+
+### 2. Commit Details
+*   Commit Hash: `6cb11d0` (Message: `Harden Phase 12 design safety clarifications`)
