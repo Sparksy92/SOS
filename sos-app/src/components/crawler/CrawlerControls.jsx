@@ -59,7 +59,7 @@ export default function CrawlerControls({
       setErrorMessage('Confirmation mismatch. Rebuild aborted.');
       return;
     }
-    triggerSync('index', { rebuild: true });
+    triggerSync('index', { rebuild: true, confirmation: 'REBUILD INDEX' });
   };
 
   const handleZipSubmit = (e) => {

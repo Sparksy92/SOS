@@ -4,7 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const crawler = require('../crawler');
 const { db } = require('../db');
-const { getMaterialRoot } = require('../services/materialRootService');
+const ALLOWED_CRAWLER_MODES = new Set(['inventory', 'index', 'extract-zips']);
 
 // API endpoint to get background sync status
 router.get('/status', (req, res) => {
@@ -22,11 +22,25 @@ router.post('/start', (req, res) => {
   const confirmation = req.body && req.body.confirmation;
   const dryRun = req.body && req.body.dryRun === true;
   const rebuild = req.body && req.body.rebuild === true;
+
+  if (!ALLOWED_CRAWLER_MODES.has(mode)) {
+    return res.status(400).json({
+      error: 'Invalid crawler mode. Allowed modes: inventory, index, extract-zips.'
+    });
+  }
   
   if (mode === 'extract-zips') {
     if (!dryRun && confirmation !== 'EXTRACT ZIP ARCHIVES') {
       return res.status(400).json({ error: "Confirmation phrase required to extract ZIP archives. Please type: EXTRACT ZIP ARCHIVES" });
     }
+  }
+
+  if (rebuild && mode !== 'index') {
+    return res.status(400).json({ error: 'Index rebuild is only allowed in index mode.' });
+  }
+
+  if (rebuild && confirmation !== 'REBUILD INDEX') {
+    return res.status(400).json({ error: 'Confirmation phrase required to rebuild index. Please type: REBUILD INDEX' });
   }
   
   if (rebuild) {

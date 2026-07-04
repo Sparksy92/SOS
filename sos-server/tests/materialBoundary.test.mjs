@@ -95,7 +95,7 @@ test('SOS Material Boundary & Crawler Hardening Test Suite', async (t) => {
     app.use(express.json());
 
     // Register our guarded Express 5 route
-    app.get('/materials/*splat', (req, res) => {
+    app.get(/^\/materials\/(.+)$/, (req, res) => {
       try {
         const decodedPath = decodeURIComponent(req.path);
         const absolutePath = resolveMaterialPath(decodedPath);
@@ -184,6 +184,70 @@ test('SOS Material Boundary & Crawler Hardening Test Suite', async (t) => {
     assert.strictEqual(dryRunStatus.dryRunZips.length, 1);
     assert.strictEqual(dryRunStatus.dryRunZips[0], 'archive.zip');
     assert.strictEqual(dryRunStatus.processedZips, 0); // No zip processed!
+  });
+
+  await t.test('7. crawler.routes.js validation checks', () => {
+    const crawlerRouter = require('../routes/crawler.routes');
+    const startHandler = crawlerRouter.stack.find(s => s.route && s.route.path === '/start').route.stack[0].handle;
+
+    const mockReqRes = (bodyVal, callback) => {
+      let code = 200;
+      let bodyText = null;
+      const req = { body: bodyVal };
+      const res = {
+        status(c) { code = c; return this; },
+        json(obj) { bodyText = obj; callback({ code, bodyText }); }
+      };
+      return { req, res };
+    };
+
+    // 7.1. Invalid crawler mode is rejected
+    return new Promise((resolve, reject) => {
+      const { req, res } = mockReqRes({ mode: 'invalid-mode' }, (result) => {
+        try {
+          assert.strictEqual(result.code, 400);
+          assert.ok(result.bodyText.error.includes('Invalid crawler mode'));
+          
+          // 7.2. Rebuild: true without confirmation is rejected
+          const { req: req2, res: res2 } = mockReqRes({ mode: 'index', rebuild: true }, (result2) => {
+            try {
+              assert.strictEqual(result2.code, 400);
+              assert.ok(result2.bodyText.error.includes('Confirmation phrase required to rebuild index'));
+
+              // 7.3. Rebuild: true with invalid confirmation is rejected
+              const { req: req3, res: res3 } = mockReqRes({ mode: 'index', rebuild: true, confirmation: 'WRONG' }, (result3) => {
+                try {
+                  assert.strictEqual(result3.code, 400);
+                  assert.ok(result3.bodyText.error.includes('Confirmation phrase required to rebuild index'));
+
+                  // 7.4. Rebuild: true with mode: 'inventory' is rejected
+                  const { req: req4, res: res4 } = mockReqRes({ mode: 'inventory', rebuild: true, confirmation: 'REBUILD INDEX' }, (result4) => {
+                    try {
+                      assert.strictEqual(result4.code, 400);
+                      assert.ok(result4.bodyText.error.includes('Index rebuild is only allowed in index mode'));
+
+                      // 7.5. Rebuild: true with index mode and correct confirmation is accepted (returns 200)
+                      const { req: req5, res: res5 } = mockReqRes({ mode: 'index', rebuild: true, confirmation: 'REBUILD INDEX' }, (result5) => {
+                        try {
+                          assert.strictEqual(result5.code, 200);
+                          assert.strictEqual(result5.bodyText.mode, 'index');
+                          resolve();
+                        } catch (err5) { reject(err5); }
+                      });
+                      startHandler(req5, res5);
+                    } catch (err4) { reject(err4); }
+                  });
+                  startHandler(req4, res4);
+                } catch (err3) { reject(err3); }
+              });
+              startHandler(req3, res3);
+            } catch (err2) { reject(err2); }
+          });
+          startHandler(req2, res2);
+        } catch (err) { reject(err); }
+      });
+      startHandler(req, res);
+    });
   });
 
 });
