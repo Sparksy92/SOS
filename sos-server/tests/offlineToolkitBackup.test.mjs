@@ -160,6 +160,96 @@ test('Backup Validation Logic (Rejections & Path Rules)', () => {
   const scriptRes = validateOfflineToolkitBackup(badScript);
   assert.strictEqual(scriptRes.valid, false);
   assert.match(scriptRes.error, /Executable scripting strings detected/);
+
+  // 1. Validation rejects object for sos_import_approval_ledger
+  const badLedgerType = {
+    backupType: "survivalos_offline_toolkit_backup",
+    schemaVersion: 3,
+    records: { sos_import_approval_ledger: { badObj: true } }
+  };
+  const ledgerTypeRes = validateOfflineToolkitBackup(badLedgerType);
+  assert.strictEqual(ledgerTypeRes.valid, false);
+  assert.match(ledgerTypeRes.error, /expected array/);
+
+  // 2. Validation rejects object for sos_acquisition_queue
+  const badQueueType = {
+    backupType: "survivalos_offline_toolkit_backup",
+    schemaVersion: 3,
+    records: { sos_acquisition_queue: { badObj: true } }
+  };
+  const queueTypeRes = validateOfflineToolkitBackup(badQueueType);
+  assert.strictEqual(queueTypeRes.valid, false);
+  assert.match(queueTypeRes.error, /expected array/);
+
+  // 3. Validation rejects object for sos_source_allowlist
+  const badAllowlistType = {
+    backupType: "survivalos_offline_toolkit_backup",
+    schemaVersion: 3,
+    records: { sos_source_allowlist: { badObj: true } }
+  };
+  const allowlistTypeRes = validateOfflineToolkitBackup(badAllowlistType);
+  assert.strictEqual(allowlistTypeRes.valid, false);
+  assert.match(allowlistTypeRes.error, /expected array/);
+
+  // 4. Validation rejects array for sos_setup_progress
+  const badSetupType = {
+    backupType: "survivalos_offline_toolkit_backup",
+    schemaVersion: 3,
+    records: { sos_setup_progress: [1, 2, 3] }
+  };
+  const setupTypeRes = validateOfflineToolkitBackup(badSetupType);
+  assert.strictEqual(setupTypeRes.valid, false);
+  assert.match(setupTypeRes.error, /expected object/);
+
+  // 5. Validation rejects ledger record missing filename
+  const missingLedgerFilename = {
+    backupType: "survivalos_offline_toolkit_backup",
+    schemaVersion: 3,
+    records: { sos_import_approval_ledger: [{ operatorDecision: "approved" }] }
+  };
+  const ledgerFilenameRes = validateOfflineToolkitBackup(missingLedgerFilename);
+  assert.strictEqual(ledgerFilenameRes.valid, false);
+  assert.match(ledgerFilenameRes.error, /missing "filename"/);
+
+  // 6. Validation rejects ledger record with invalid operatorDecision
+  const badLedgerDecision = {
+    backupType: "survivalos_offline_toolkit_backup",
+    schemaVersion: 3,
+    records: { sos_import_approval_ledger: [{ filename: "x.pdf", operatorDecision: "something_else" }] }
+  };
+  const ledgerDecisionRes = validateOfflineToolkitBackup(badLedgerDecision);
+  assert.strictEqual(ledgerDecisionRes.valid, false);
+  assert.match(ledgerDecisionRes.error, /invalid "operatorDecision"/);
+
+  // 7. Validation rejects queue record missing title
+  const missingQueueTitle = {
+    backupType: "survivalos_offline_toolkit_backup",
+    schemaVersion: 3,
+    records: { sos_acquisition_queue: [{ acquisitionStatus: "planned" }] }
+  };
+  const queueTitleRes = validateOfflineToolkitBackup(missingQueueTitle);
+  assert.strictEqual(queueTitleRes.valid, false);
+  assert.match(queueTitleRes.error, /missing "title"/);
+
+  // 8. Validation rejects queue record with invalid acquisitionStatus
+  const badQueueStatus = {
+    backupType: "survivalos_offline_toolkit_backup",
+    schemaVersion: 3,
+    records: { sos_acquisition_queue: [{ title: "x", acquisitionStatus: "something_else" }] }
+  };
+  const queueStatusRes = validateOfflineToolkitBackup(badQueueStatus);
+  assert.strictEqual(queueStatusRes.valid, false);
+  assert.match(queueStatusRes.error, /invalid "acquisitionStatus"/);
+
+  // 9. Validation rejects allowlist record missing label
+  const missingAllowlistLabel = {
+    backupType: "survivalos_offline_toolkit_backup",
+    schemaVersion: 3,
+    records: { sos_source_allowlist: [{ officialSourceUrl: "https://x.com" }] }
+  };
+  const allowlistLabelRes = validateOfflineToolkitBackup(missingAllowlistLabel);
+  assert.strictEqual(allowlistLabelRes.valid, false);
+  assert.match(allowlistLabelRes.error, /missing "label"/);
 });
 
 test('Preview Mode Independence', () => {
@@ -214,6 +304,21 @@ test('Restore Options (Merge vs Replace Confirmations)', () => {
   restoreOfflineToolkitBackup(JSON.stringify(backupData), { mode: 'replace_known_keys', typedConfirm: 'RESTORE TOOLKIT BACKUP' });
   const replaced = JSON.parse(mockLocalStorage.getItem('sos_acquisition_queue'));
   assert.strictEqual(replaced.length, 2);
+
+  // 10. restore blocks wrong expected type even if called directly
+  const badTypeDirect = {
+    backupType: "survivalos_offline_toolkit_backup",
+    schemaVersion: 3,
+    records: {
+      sos_setup_progress: [1, 2, 3] // array when expected object
+    }
+  };
+  assert.throws(() => {
+    restoreOfflineToolkitBackup(JSON.stringify(badTypeDirect), { mode: 'merge', ignoreUnknown: true });
+  }, /expected object/);
+  assert.throws(() => {
+    restoreOfflineToolkitBackup(JSON.stringify(badTypeDirect), { mode: 'replace_known_keys', typedConfirm: 'RESTORE TOOLKIT BACKUP', ignoreUnknown: true });
+  }, /expected object/);
 });
 
 test('Integrity Audit Auditing Rules', () => {

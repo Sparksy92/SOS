@@ -226,6 +226,79 @@ export const validateOfflineToolkitBackup = (jsonStr, options = { ignoreUnknown:
   if (pathBlocked) return { valid: false, error: "Validation failed: Absolute paths are not allowed." };
   if (scriptBlocked) return { valid: false, error: "Validation failed: Executable scripting strings detected." };
 
+  const getRegistryEntryForRecordKey = (key) => {
+    return BACKUP_KEYS_REGISTRY.find(
+      (r) => r.key === key || (r.legacyAliases && r.legacyAliases.includes(key))
+    );
+  };
+
+  const isExpectedType = (value, expectedType) => {
+    if (expectedType === 'array') return Array.isArray(value);
+    if (expectedType === 'object') {
+      return value !== null && typeof value === 'object' && !Array.isArray(value);
+    }
+    if (expectedType === 'string') return typeof value === 'string';
+    if (expectedType === 'boolean') return typeof value === 'boolean';
+    return true;
+  };
+
+  for (const [recordKey, recordValue] of Object.entries(payload.records)) {
+    const registryEntry = getRegistryEntryForRecordKey(recordKey);
+
+    if (!registryEntry) {
+      continue; // unknown-key handling already ran above
+    }
+
+    if (!isExpectedType(recordValue, registryEntry.expectedType)) {
+      return {
+        valid: false,
+        error: `Validation failed: Key "${recordKey}" expected ${registryEntry.expectedType}.`
+      };
+    }
+
+    // record shape validation for high-risk collections:
+    if (recordKey === 'sos_import_approval_ledger' && Array.isArray(recordValue)) {
+      for (const rec of recordValue) {
+        if (!rec || typeof rec !== 'object' || Array.isArray(rec)) {
+          return { valid: false, error: `Validation failed: Each record in "sos_import_approval_ledger" must be an object.` };
+        }
+        if (!rec.filename) {
+          return { valid: false, error: `Validation failed: Record in "sos_import_approval_ledger" is missing "filename".` };
+        }
+        const validDecisions = ['pending', 'approved', 'rejected', 'needs_more_evidence'];
+        if (!rec.operatorDecision || !validDecisions.includes(rec.operatorDecision)) {
+          return { valid: false, error: `Validation failed: Record in "sos_import_approval_ledger" has invalid "operatorDecision".` };
+        }
+      }
+    }
+
+    if (recordKey === 'sos_acquisition_queue' && Array.isArray(recordValue)) {
+      for (const rec of recordValue) {
+        if (!rec || typeof rec !== 'object' || Array.isArray(rec)) {
+          return { valid: false, error: `Validation failed: Each record in "sos_acquisition_queue" must be an object.` };
+        }
+        if (!rec.title) {
+          return { valid: false, error: `Validation failed: Record in "sos_acquisition_queue" is missing "title".` };
+        }
+        const validStatuses = ['planned', 'manually_acquired', 'manually_staged', 'blocked', 'skipped'];
+        if (!rec.acquisitionStatus || !validStatuses.includes(rec.acquisitionStatus)) {
+          return { valid: false, error: `Validation failed: Record in "sos_acquisition_queue" has invalid "acquisitionStatus".` };
+        }
+      }
+    }
+
+    if (recordKey === 'sos_source_allowlist' && Array.isArray(recordValue)) {
+      for (const rec of recordValue) {
+        if (!rec || typeof rec !== 'object' || Array.isArray(rec)) {
+          return { valid: false, error: `Validation failed: Each record in "sos_source_allowlist" must be an object.` };
+        }
+        if (!rec.label) {
+          return { valid: false, error: `Validation failed: Record in "sos_source_allowlist" is missing "label".` };
+        }
+      }
+    }
+  }
+
   return { valid: true, backupObj: payload, warnings };
 };
 
@@ -274,6 +347,16 @@ export const restoreOfflineToolkitBackup = (jsonStr, options = { mode: 'merge', 
 
   const backupObj = validation.backupObj;
 
+  const isExpectedType = (value, expectedType) => {
+    if (expectedType === 'array') return Array.isArray(value);
+    if (expectedType === 'object') {
+      return value !== null && typeof value === 'object' && !Array.isArray(value);
+    }
+    if (expectedType === 'string') return typeof value === 'string';
+    if (expectedType === 'boolean') return typeof value === 'boolean';
+    return true;
+  };
+
   if (options.mode === 'replace_known_keys') {
     if (options.typedConfirm !== 'RESTORE TOOLKIT BACKUP') {
       throw new Error("Typed confirmation phrase mismatch.");
@@ -293,6 +376,9 @@ export const restoreOfflineToolkitBackup = (jsonStr, options = { mode: 'merge', 
       }
 
       if (backupVal !== undefined) {
+        if (!isExpectedType(backupVal, reg.expectedType)) {
+          throw new Error(`Restore blocked: Key "${reg.key}" expected ${reg.expectedType}.`);
+        }
         setLocalItem(reg.key, JSON.stringify(backupVal));
         // Remove legacy key in localStorage if we updated canonical
         if (reg.legacyAliases) {
@@ -319,6 +405,10 @@ export const restoreOfflineToolkitBackup = (jsonStr, options = { mode: 'merge', 
       }
 
       if (backupVal === undefined) return;
+
+      if (!isExpectedType(backupVal, reg.expectedType)) {
+        throw new Error(`Restore blocked: Key "${reg.key}" expected ${reg.expectedType}.`);
+      }
 
       const localVal = getLocalItem(reg.key);
       if (!localVal) {
