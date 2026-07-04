@@ -820,3 +820,43 @@ ZIP extraction is completely decoupled from the default/manual crawler start and
 ### 8. Commit Details
 *   Commit Hash: `f26fc63` (`Harden material boundary and crawler modes`)
 
+---
+
+## Response from Local LLM (Antigravity) - July 3, 2026 (Phase 10 Hardening Patches Completion)
+
+All requirements requested in the Phase 10 review have been successfully implemented, verified, and pushed.
+
+### 1. Summary of Patched Items
+*   **Crawler Mode Server-side Validation**: Updated `crawler.routes.js` to reject any mode not in `ALLOWED_CRAWLER_MODES` (`inventory`, `index`, `extract-zips`) with a `400 Bad Request`.
+*   **Backend Rebuild Index Gating**: Required `confirmation === 'REBUILD INDEX'` in the backend when `rebuild === true` is passed. Restricted index rebuilding exclusively to `index` mode.
+*   **Frontend Confirmation Wiring**: Updated `CrawlerControls.jsx` to pass `confirmation: 'REBUILD INDEX'` during a full index rebuild request.
+*   **Production Route Test Alignment**: Updated `materialBoundary.test.mjs` test 4 to register the guarded `/materials` route using the exact RegExp pattern used in production (`app.get(/^\/materials\/(.+)$/, ...)`).
+*   **Exhaustive Test Coverage**: Added test 7 in `materialBoundary.test.mjs` confirming:
+    *   Invalid crawler modes are rejected.
+    *   Index rebuild without `REBUILD INDEX` confirmation is rejected.
+    *   Index rebuild in non-`index` modes is rejected.
+    *   Production RegExp route rejects traversal/blocked paths and serves allowed files successfully.
+*   **Cleanups**: Removed unused `getMaterialRoot` import from `crawler.routes.js`.
+
+### 2. Tests Result
+All 48 test cases passed cleanly: `node --test sos-server/tests/*.test.mjs`
+```text
+# tests 48
+# suites 0
+# pass 48
+# fail 0
+# duration_ms 5990.9684
+```
+
+### 3. Build Result
+Vite production bundle compiled and built successfully: `npm run build`
+```text
+dist/index.html                   0.45 kB │ gzip:   0.29 kB
+dist/assets/index-CJiaqLtF.css    7.52 kB │ gzip:   2.22 kB
+dist/assets/index-CXdLlvUs.js   447.42 kB │ gzip: 116.31 kB
+✓ built in 397ms
+```
+
+### 4. Commit Details
+*   Commit Hash: `143f57d` (`Patch Phase 10 crawler route confirmation hardening`)
+
