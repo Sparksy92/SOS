@@ -1066,3 +1066,99 @@ After the planning response is reviewed and approved, the expected implementatio
 ```text
 Add local mission briefing and handoff support
 ```
+
+---
+
+## Response from Local LLM (Antigravity) - July 3, 2026 (Phase 11 Planning Response)
+
+### 1. Understanding of the Phase 11 Goal
+The goal of Phase 11 is to build a local-first **Mission Briefing & Field Decision Support** feature. It will display a compact, real-time mission status HUD, compute a deterministic readiness/organization score, show safety disclaimers for high-risk categories, support local Markdown/JSON exports, and allow operators to query Jarvis for a deterministic status brief directly in chat. Under no circumstances will Jarvis act autonomously, make commands, or generate emergency/medical/firearms instructions.
+
+### 2. Files to Inspect & Modify
+*   `sos-app/src/App.jsx`
+*   `sos-app/src/components/missions/ActiveMissionView.jsx`
+*   `sos-app/src/components/missions/MissionJarvisContextPanel.jsx`
+*   `sos-app/src/modules/missions/missionBriefing.js` (to be created)
+*   `sos-app/src/modules/missions/__tests__/missionBriefing.test.js` (to be created)
+*   `sos-app/src/modules/reports/reportExport.js`
+*   `docs/mission-briefing-and-field-decision-support.md` (to be created)
+
+### 3. Proposed Mission Briefing Data Model
+We will create `buildMissionBrief(mission, relatedAnswers, relatedSources, relatedNotes, reviewQueue)` which returns:
+```javascript
+{
+  missionId: string,
+  title: string,
+  missionType: string,
+  status: string,
+  priority: string,
+  locationLabel: string,
+  callsign: string,
+  overview: string,
+  readiness: { score: number, label: string, reasons: string[] },
+  risks: string[],
+  safetyChecklist: Array<{ category: string, warning: string, directives: string[] }>,
+  openObjectives: Array<{ id: string, label: string }>,
+  openTasks: Array<{ id: string, label: string, priority: string }>,
+  queuedSources: Array<{ id: string, title: string, sourcePath: string }>,
+  attachedAnswersCount: number,
+  attachedSourcesCount: number,
+  fieldNotesCount: number
+}
+```
+
+### 4. Proposed Readiness Scoring Approach
+Baseline score is `50` points:
+*   **Knowledge Attachments**: `+10` points per attached Answer (max 20), `+10` points per attached Source (max 20), `+5` points per field Note (max 10).
+*   **Objectives**: `+10` points per completed objective (max 20).
+*   **Tasks**: `+5` points per completed task (max 20).
+*   **Review Queue Deductions**: `-5` points per unreviewed queued source (max -20).
+*   **High-Priority Open Tasks**: `-5` points per open task marked High priority (max -10).
+*   *Score Limits*: Bound between `0` and `100`.
+*   *Status Labels*: `>= 80` is "Operational Ready", `>= 60` is "Marginally Ready", `< 60` is "Low Readiness".
+
+### 5. Proposed High-Risk Review Checklist Approach
+A deterministic scanner matches risks (medical, water treatment, food preservation, electrical, mechanical, firearms) and generates:
+*   Clear bolded disclaimers (e.g. "Do not attempt invasive procedures without certified local training", "Disconnect main grid breaker before connecting backup power").
+*   Practical physical cross-verification tasks (e.g. "Verify generator carbon monoxide levels", "Check filter membrane for microscopic punctures").
+
+### 6. Proposed Jarvis Mission Brief Integration Approach
+In `App.jsx`, when the user inputs messages containing intent keywords (`mission brief`, `what is the mission status`, etc.), the client-side Jarvis chat will intercept the request and format a local text briefing:
+```text
+Based on your saved local mission data, here is the current mission brief:
+- Title: [Title]
+- Status: [Status]
+- Organization Score: [Score]% ([Label])
+- Open Objectives: [Count]
+- Open Tasks: [Count]
+- Safety Warnings: [Warnings]
+...
+```
+This is fully client-side and deterministic, avoiding any network calls or LLM hallucinations.
+
+### 7. Proposed Export/Backup Strategy
+*   Briefings are calculated in-memory on demand to preserve disk space and avoid cluttering database models.
+*   No new storage schema is added, keeping backup compatibility version 2 perfectly intact.
+*   Exports are local-only (using `reportExport.js` download helper). No email, SMS, or cloud APIs will be introduced.
+
+### 8. Tests to Add
+We will create `sos-app/src/modules/missions/__tests__/missionBriefing.test.js` to verify:
+*   Briefing builds correctly from default templates.
+*   Score calculations and deductions.
+*   High-risk disclaimers for medical and firearms are present and contain no diagnosis/offensive tips.
+*   Handoff exports contains required headings and structured JSON.
+
+### 9. Risks & Uncertainties
+*   None identified. The design is lightweight and strictly local.
+
+---
+
+I explicitly confirm that **no cloud sync, logins, or remote persistence integrations** will be added. All features will remain strictly local-first.
+
+I am awaiting your approval of the implementation plan before proceeding to the coding phase.
+
+After the planning response is reviewed and approved, the expected implementation commit message will be:
+
+```text
+Add local mission briefing and handoff support
+```
