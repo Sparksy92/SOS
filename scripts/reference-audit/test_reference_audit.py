@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import unittest
+from unittest import mock
 import os
 import json
 from compare_offline_references import (
@@ -80,12 +81,30 @@ class TestReferenceAudit(unittest.TestCase):
         # Run network crawling simulation (we expect it stops after reaching max_pages)
         fetch_state = {"pages_fetched": 0}
         
-        # Call query_network_metadata with max_pages=1 over a mock crawl
-        # Since we block network in unit tests usually, let's call it with 0 max_pages
+        # Call query_network_metadata with max_pages=0 over a mock crawl
         # to prove it immediately skips fetching
         results = query_network_metadata("https://example.com/survival-index/", max_depth=2, max_pages=0, fetch_state=fetch_state)
         self.assertEqual(len(results), 0)
         self.assertEqual(len(NETWORK_FETCH_LOG), 0)
+
+    @mock.patch("urllib.request.urlopen")
+    def test_multi_page_cap_blocks_subsequent_pages(self, mock_urlopen):
+        import io
+        # Mock response returning links to subdirectories
+        mock_response = mock.MagicMock()
+        mock_response.read.return_value = b'<a href="subdir1/"></a><a href="subdir2/"></a>'
+        mock_urlopen.return_value.__enter__.return_value = mock_response
+        
+        # We allow max_pages=1 page to be crawled
+        fetch_state = {"pages_fetched": 0}
+        query_network_metadata("https://example.com/root/", max_depth=3, max_pages=1, fetch_state=fetch_state)
+        
+        # We expect only the root page was fetched (pages_fetched = 1)
+        self.assertEqual(fetch_state["pages_fetched"], 1)
+        # Even though depth=3 and there are subdirectories, it should not crawl subdir1/ or subdir2/
+        # because the cap of 1 was hit after the first root fetch.
+        self.assertEqual(len(NETWORK_FETCH_LOG), 1)
+        self.assertIn("https://example.com/root/", NETWORK_FETCH_LOG)
 
 if __name__ == "__main__":
     unittest.main()
