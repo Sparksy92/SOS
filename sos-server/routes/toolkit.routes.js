@@ -88,7 +88,7 @@ router.get('/staging', (req, res) => {
     res.json({ stagedFiles });
   } catch (err) {
     console.error("[TOOLKIT ROUTE] Staging read failed:", err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: "Internal server error during staging folder read." });
   }
 });
 
@@ -159,7 +159,7 @@ router.get('/zim', (req, res) => {
     });
   } catch (err) {
     console.error("[TOOLKIT ROUTE] ZIM read failed:", err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: "Internal server error during ZIM catalog scan." });
   }
 });
 

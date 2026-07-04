@@ -107,7 +107,9 @@ import ContentProviderRegistryPanel from './components/toolkit/ContentProviderRe
 import ContentGapAnalyzerPanel from './components/toolkit/ContentGapAnalyzerPanel.jsx';
 import ZimCatalogPanel from './components/toolkit/ZimCatalogPanel.jsx';
 import ManualImportQueuePanel from './components/toolkit/ManualImportQueuePanel.jsx';
+import ImportApprovalLedgerPanel from './components/toolkit/ImportApprovalLedgerPanel.jsx';
 import { loadSetupProgress, DEFAULT_STEPS } from './modules/toolkit/setupProgressStore.js';
+import { loadLedger } from './modules/toolkit/importApprovalLedgerStore.js';
 
 const API_BASE = `http://${window.location.hostname}:3001`;
 
@@ -1184,6 +1186,139 @@ function App() {
       text += `3. Copy the vetted files manually from the staging area into your configured materials directory.\n`;
       text += `4. Rebuild your manifest by visiting the **Index Integrity** view to scan and index the new files.\n\n`;
       text += `*Note:* Dismissing files in the Manual Import UI only clears them from the staging list view; it never deletes files from disk.`;
+
+      setMessages(prev => [...prev, {
+        role: 'ai',
+        text: text,
+        answerStatus: 'offline_readiness_checklist'
+      }]);
+      setChatLoading(false);
+      return;
+    }
+
+    if (lowercaseMsg === 'what imports need review?') {
+      const ledger = loadLedger();
+      const pending = ledger.filter(r => r.operatorDecision === 'pending');
+      let text = `### **Imports Pending Operator Review**\n`;
+      text += `You have **${pending.length}** pending review records in your local ledger.\n\n`;
+      if (pending.length > 0) {
+        pending.forEach((r, i) => {
+          text += `${i + 1}. **${r.filename}** (Staged: ${r.detectedCategory.replace(/_/g, ' ')})\n`;
+        });
+        text += `\n*Action:* Open the **Approval Ledger** tab inside the **OFFLINE TOOLKIT** to review manually.`;
+      } else {
+        text += `All currently registered ledger entries have been reviewed. Use the **Manual Import** tab to log reviews for new files.`;
+      }
+
+      setMessages(prev => [...prev, {
+        role: 'ai',
+        text: text,
+        answerStatus: 'offline_readiness_checklist'
+      }]);
+      setChatLoading(false);
+      return;
+    }
+
+    if (lowercaseMsg === 'show my approval ledger') {
+      const ledger = loadLedger();
+      const count = { pending: 0, approved: 0, rejected: 0, needs_more_evidence: 0 };
+      ledger.forEach(r => {
+        if (count[r.operatorDecision] !== undefined) count[r.operatorDecision]++;
+      });
+      let text = `### **Operator Approval Ledger Summary**\n`;
+      text += `Current local governance status:\n\n`;
+      text += `*   **Approved:** ${count.approved} records\n`;
+      text += `*   **Pending Review:** ${count.pending} records\n`;
+      text += `*   **Rejected:** ${count.rejected} records\n`;
+      text += `*   **Needs Evidence:** ${count.needs_more_evidence} records\n\n`;
+      text += `*Note:* Ledger records represent operator review decisions only; it does not claim legal copyright clearance. Open the **Approval Ledger** tab to inspect, export, or import backups.`;
+
+      setMessages(prev => [...prev, {
+        role: 'ai',
+        text: text,
+        answerStatus: 'offline_readiness_checklist'
+      }]);
+      setChatLoading(false);
+      return;
+    }
+
+    if (lowercaseMsg === 'what references are approved?') {
+      const ledger = loadLedger();
+      const approved = ledger.filter(r => r.operatorDecision === 'approved');
+      let text = `### **Operator-Approved References**\n`;
+      if (approved.length > 0) {
+        text += `The following references have an operator-approved ledger record exists:\n\n`;
+        approved.forEach((r, i) => {
+          text += `${i + 1}. **${r.filename}** (${r.detectedCategory.replace(/_/g, ' ')})\n`;
+        });
+        text += `\n*Note:* This indicates subjective operator evaluation decisions only; it does not claim legal copyright clearance.`;
+      } else {
+        text += `No files are marked as approved in your local ledger.`;
+      }
+
+      setMessages(prev => [...prev, {
+        role: 'ai',
+        text: text,
+        answerStatus: 'offline_readiness_checklist'
+      }]);
+      setChatLoading(false);
+      return;
+    }
+
+    if (lowercaseMsg === 'what references are rejected?') {
+      const ledger = loadLedger();
+      const rejected = ledger.filter(r => r.operatorDecision === 'rejected');
+      let text = `### **Operator-Rejected References**\n`;
+      if (rejected.length > 0) {
+        text += `The following references are rejected by the operator:\n\n`;
+        rejected.forEach((r, i) => {
+          text += `${i + 1}. **${r.filename}** (Reason/Evidence: *${r.licenseEvidence || 'None'}*)\n`;
+        });
+      } else {
+        text += `No files are marked as rejected in your local ledger.`;
+      }
+
+      setMessages(prev => [...prev, {
+        role: 'ai',
+        text: text,
+        answerStatus: 'offline_readiness_checklist'
+      }]);
+      setChatLoading(false);
+      return;
+    }
+
+    if (lowercaseMsg === 'what needs license evidence?') {
+      const ledger = loadLedger();
+      const needs = ledger.filter(r => r.operatorDecision === 'needs_more_evidence' || !r.licenseEvidence);
+      let text = `### **References Requiring License Evidence**\n`;
+      if (needs.length > 0) {
+        text += `The following records still need license evidence or official source verification:\n\n`;
+        needs.forEach((r, i) => {
+          text += `${i + 1}. **${r.filename}** (Decision: *${r.operatorDecision.replace(/_/g, ' ').toUpperCase()}*)\n`;
+        });
+        text += `\n*Action:* Open the **Approval Ledger** tab to specify official source URLs and authority evidence notes.`;
+      } else {
+        text += `All recorded ledger entries have license evidence logged.`;
+      }
+
+      setMessages(prev => [...prev, {
+        role: 'ai',
+        text: text,
+        answerStatus: 'offline_readiness_checklist'
+      }]);
+      setChatLoading(false);
+      return;
+    }
+
+    if (lowercaseMsg === 'can i import this file?') {
+      let text = `### **Evaluating Import Feasibility**\n`;
+      text += `To verify if a new file conforms to SurvivalOS library governance standards, follow these guidelines:\n\n`;
+      text += `1. Place the file manually inside \`import-staging/offline-library/\`.\n`;
+      text += `2. Open the **Manual Import** tab to inspect file properties and metadata classifications.\n`;
+      text += `3. Click **Create Review Record** to copy metadata into your local governance ledger.\n`;
+      text += `4. Audit the file source URL and license status manually, then update the record in the **Approval Ledger** tab.\n`;
+      text += `5. If approved, copy the file to your materials library and rebuild the manifest.\n\n`;
+      text += `*Boundary Check:* SurvivalOS never automates downloads, moves files, indexes content automatically, or clears legal copyrights.`;
 
       setMessages(prev => [...prev, {
         role: 'ai',
@@ -2355,6 +2490,13 @@ function App() {
                   >
                     Manual Import
                   </button>
+                  <button 
+                    onClick={() => setToolkitSubTab('ledger')}
+                    className={`btn-tactical${toolkitSubTab === 'ledger' ? '' : '-outline'}`}
+                    style={{ padding: '8px 16px', borderRadius: '4px 4px 0 0', borderBottom: 'none', marginBottom: '4px' }}
+                  >
+                    Approval Ledger
+                  </button>
                 </div>
                 {toolkitSubTab === 'wizard' && (
                   <PanelErrorBoundary name="Setup Wizard">
@@ -2383,7 +2525,12 @@ function App() {
                 )}
                 {toolkitSubTab === 'import' && (
                   <PanelErrorBoundary name="Manual Import">
-                    <ManualImportQueuePanel setViewMode={setViewMode} />
+                    <ManualImportQueuePanel setViewMode={setViewMode} setToolkitSubTab={setToolkitSubTab} />
+                  </PanelErrorBoundary>
+                )}
+                {toolkitSubTab === 'ledger' && (
+                  <PanelErrorBoundary name="Approval Ledger">
+                    <ImportApprovalLedgerPanel />
                   </PanelErrorBoundary>
                 )}
               </div>

@@ -4,11 +4,13 @@ import {
   dismissImport, 
   resetDismissedImports 
 } from '../../modules/toolkit/manualImportQueueStore.js';
+import { loadLedger, saveRecord } from '../../modules/toolkit/importApprovalLedgerStore.js';
 import { ShieldAlert, Info, AlertTriangle, ArrowRight, EyeOff, RefreshCw } from 'lucide-react';
 
-export default function ManualImportQueuePanel({ setViewMode }) {
+export default function ManualImportQueuePanel({ setViewMode, setToolkitSubTab }) {
   const [stagedFiles, setStagedFiles] = useState([]);
   const [dismissedList, setDismissedList] = useState([]);
+  const [ledger, setLedger] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -33,6 +35,7 @@ export default function ManualImportQueuePanel({ setViewMode }) {
 
   useEffect(() => {
     setDismissedList(loadDismissedImports());
+    setLedger(loadLedger());
     fetchStagedFiles();
   }, []);
 
@@ -45,6 +48,24 @@ export default function ManualImportQueuePanel({ setViewMode }) {
     if (window.confirm("Are you sure you want to show all previously dismissed staged files?")) {
       const updated = resetDismissedImports();
       setDismissedList(updated);
+    }
+  };
+
+  const handleCreateReviewRecord = (file) => {
+    try {
+      const updatedLedger = saveRecord({
+        filename: file.filename,
+        sanitizedPath: file.sanitizedPath || `[IMPORT_STAGING]/${file.filename}`,
+        detectedCategory: file.detectedCategory,
+        riskCategory: file.riskCategory,
+        suggestedLicenseStatus: file.suggestedLicenseStatus || 'unknown',
+        matchConfidence: file.matchConfidence || 'none',
+        operatorDecision: 'pending',
+        operatorVerifiedSource: false
+      });
+      setLedger(updatedLedger);
+    } catch (e) {
+      alert(e.message);
     }
   };
 
@@ -118,6 +139,7 @@ export default function ManualImportQueuePanel({ setViewMode }) {
             {visibleFiles.map((file, idx) => {
               const hasRisk = file.riskCategory !== null;
               const isRestricted = file.suggestedLicenseStatus === 'restricted';
+              const existingRecord = ledger.find(r => r.filename === file.filename);
               return (
                 <div 
                   key={idx} 
@@ -136,7 +158,29 @@ export default function ManualImportQueuePanel({ setViewMode }) {
                       </span>
                     </div>
 
-                    <div style={{ display: 'flex', gap: '8px' }}>
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+                      {existingRecord ? (
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                          <span style={{ fontSize: '0.78rem', color: '#00ff7f', fontWeight: 'bold' }}>
+                            Operator-approved record exists.
+                          </span>
+                          <button 
+                            className="btn-tactical" 
+                            onClick={() => setToolkitSubTab('ledger')}
+                            style={{ padding: '6px 12px', fontSize: '0.8rem' }}
+                          >
+                            Open Approval Ledger
+                          </button>
+                        </div>
+                      ) : (
+                        <button 
+                          className="btn-tactical" 
+                          onClick={() => handleCreateReviewRecord(file)}
+                          style={{ padding: '6px 12px', fontSize: '0.8rem' }}
+                        >
+                          Create Review Record
+                        </button>
+                      )}
                       <button 
                         className="btn-tactical-outline" 
                         onClick={() => handleDismiss(file.filename)}

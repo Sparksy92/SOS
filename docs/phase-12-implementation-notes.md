@@ -68,3 +68,9 @@ Vite production build succeeds cleanly:
 dist/assets/index-uxR-ZIh2.js   500.47 kB
 ✓ built in 351ms
 ```
+
+---
+
+## Safety Boundary Integration
+Phase 13 builds on Phase 12 by adding operator approval records. It does not add downloads, automatic import, or indexing.
+
