@@ -1059,6 +1059,200 @@ Do not start coding Phase 11 until this plan is acknowledged and approved.
 
 ```text
 Acknowledge Phase 11 mission briefing plan
+Export formats:
+
+```text
+Markdown
+JSON
+```
+
+Use existing report/export utilities where practical:
+
+```text
+sos-app/src/modules/reports/reportExport.js
+```
+
+Avoid duplicating export logic if existing helpers can be safely extended.
+
+---
+
+# Backup Compatibility
+
+If Phase 11 adds stored data, update backup versioning safely.
+
+Preferred:
+
+- calculate mission briefing on demand
+- avoid storing generated briefings unless user explicitly saves/exports them
+- if saved briefings are added, include them as optional data in backup v2 or v3 with backward-compatible import
+
+Do not create hidden memory.
+
+Do not store AI-generated content automatically.
+
+---
+
+# Files to Inspect Before Coding
+
+Inspect these before implementing:
+
+```text
+sos-app/src/App.jsx
+sos-app/src/components/missions/ActiveMissionView.jsx
+sos-app/src/components/missions/MissionJarvisContextPanel.jsx
+sos-app/src/components/missions/MissionSourceFinder.jsx
+sos-app/src/modules/missions/missionStore.js
+sos-app/src/modules/missions/missionUtils.js
+sos-app/src/modules/search/sourceReviewQueueStore.js
+sos-app/src/modules/session/sessionStore.js
+sos-app/src/modules/reports/reportExport.js
+sos-app/src/modules/safety/riskUtils.js
+sos-app/src/components/common/RiskSaveConfirmation.jsx
+sos-server/ai.js
+```
+
+Also search for existing utilities related to:
+
+```text
+buildMissionRelatedData
+detectMissionRisks
+exportMission
+saved answers
+saved sources
+field notes
+backup export/import
+Jarvis message handling
+```
+
+---
+
+# Expected Files to Create or Modify
+
+Likely new files:
+
+```text
+sos-app/src/modules/missions/missionBriefing.js
+sos-app/src/components/missions/MissionBriefingPanel.jsx
+sos-app/src/modules/missions/missionBriefing.test.js or sos-app/src/modules/missions/__tests__/missionBriefing.test.js
+sos-server/tests/missionBriefing.test.mjs, only if backend-independent test setup already exists there
+
+docs/mission-briefing-and-field-decision-support.md
+```
+
+Likely modified files:
+
+```text
+sos-app/src/components/missions/ActiveMissionView.jsx
+sos-app/src/components/missions/MissionJarvisContextPanel.jsx
+sos-app/src/modules/reports/reportExport.js
+sos-app/src/modules/session/sessionStore.js, only if backup/export changes are needed
+sos-app/src/App.jsx, only if routing or Jarvis handling needs wiring
+```
+
+Keep the implementation as frontend/local as possible.
+
+Avoid backend changes unless truly needed.
+
+---
+
+# Tests Required
+
+Add tests for pure mission briefing logic.
+
+Test cases should include:
+
+```text
+briefing builds from mission with no attachments
+briefing counts objectives/tasks correctly
+readiness score labels are correct
+queued sources reduce handoff readiness or create review items
+attached sources improve organization score
+high-risk categories create safety warnings
+medical mission does not generate treatment advice
+firearms risk does not generate tactical/offensive guidance
+Markdown handoff includes required mission sections
+JSON handoff is structured and parseable
+backup compatibility is unchanged if briefings are not stored
+```
+
+Tests must not require:
+
+- 500GB library
+- browser DOM if avoidable
+- Ollama
+- cloud/network
+- real PDFs
+- crawler/indexing
+
+Use mock missions, mock saved answers, mock sources, mock notes, and mock review queue items.
+
+---
+
+# Manual Verification Required
+
+After implementation, manually verify:
+
+```text
+Start or open an active mission
+Mission Briefing panel appears
+Score displays with reasons
+Open tasks/objectives display correctly
+Attached answers/sources/notes are summarized correctly
+Queued sources appear as review priorities
+High-risk warnings appear for risky missions
+Export Markdown works locally
+Export JSON works locally
+Jarvis mission brief command returns deterministic local mission brief
+No cloud/network calls are introduced
+No emergency dispatch or messaging actions exist
+Frontend build succeeds
+Backend tests pass
+GitHub Actions passes
+```
+
+---
+
+# Phase 11 Acceptance Criteria
+
+Phase 11 is complete only when:
+
+- frontend builds
+- backend tests pass, if backend tests are touched
+- new mission briefing logic tests pass
+- GitHub Actions passes
+- Mission Briefing panel works inside Active Mission view
+- readiness/organization score is explainable
+- high-risk warnings appear when relevant
+- Jarvis mission brief command is local and deterministic
+- mission handoff export works in Markdown and JSON
+- no cloud sync, accounts, telemetry, remote storage, SMS/email, GPS, or emergency dispatch is added
+- no medical diagnosis/treatment or tactical firearms guidance is generated
+- documentation exists
+
+---
+
+# Recommended Response From Local LLM Before Coding
+
+Before implementing Phase 11, respond with:
+
+1. Your understanding of the Phase 11 goal.
+2. What files you will inspect.
+3. Proposed mission briefing data model.
+4. Proposed readiness scoring approach.
+5. Proposed high-risk review checklist approach.
+6. Proposed Jarvis mission brief integration approach.
+7. Proposed export/backup strategy.
+8. Tests you will add.
+9. Risks or uncertainties.
+
+Do not start coding Phase 11 until this plan is acknowledged and approved.
+
+---
+
+# Recommended Commit Message for Phase 11 Planning Response
+
+```text
+Acknowledge Phase 11 mission briefing plan
 ```
 
 After the planning response is reviewed and approved, the expected implementation commit message will be:
@@ -1069,41 +1263,36 @@ Add local mission briefing and handoff support
 
 ---
 
-## Response from Local LLM (Antigravity) - July 3, 2026 (Phase 11 Planning Response)
+## Response from Local LLM (Antigravity) - July 3, 2026 (Phase 11 & 11A Revised Planning Response)
 
-### 1. Understanding of the Phase 11 Goal
-The goal of Phase 11 is to build a local-first **Mission Briefing & Field Decision Support** feature. It will display a compact, real-time mission status HUD, compute a deterministic readiness/organization score, show safety disclaimers for high-risk categories, support local Markdown/JSON exports, and allow operators to query Jarvis for a deterministic status brief directly in chat. Under no circumstances will Jarvis act autonomously, make commands, or generate emergency/medical/firearms instructions.
+### 1. Understanding of the Phase 11 & 11A Goal
+The updated goal integrates **Guided Mission Intake & Creation (Phase 11A)** alongside **Mission Briefing & Field Decision Support (Phase 11)**.
+*   **Conversational Intake**: When Jarvis detects a mission planning intent (e.g., *"I wanna go fishing"*, *"fix the generator"*), it initiates a client-side guided questionnaire instead of immediately writing to DB. It collects details in temporary React state, builds a preview draft, and requires typed operator approval (`YES`) before creating the active mission locally.
+*   **Safety disclaimers & safe labeling**: All readiness scoring uses the label **Mission Organization Score** with safety-conscious tags: `Field Organized` (>=80), `Needs Review` (>=60), and `Needs Setup` (<60).
+*   **Deterministic Briefings & Local Exports**: Allow operators to copy and export briefs in Markdown/JSON locally. Jarvis chat will intercept brief keywords to output a local, deterministic briefing.
 
 ### 2. Files to Inspect & Modify
 *   `sos-app/src/App.jsx`
 *   `sos-app/src/components/missions/ActiveMissionView.jsx`
 *   `sos-app/src/components/missions/MissionJarvisContextPanel.jsx`
 *   `sos-app/src/modules/missions/missionBriefing.js` (to be created)
+*   `sos-app/src/modules/missions/missionIntake.js` (to be created)
 *   `sos-app/src/modules/missions/__tests__/missionBriefing.test.js` (to be created)
+*   `sos-app/src/modules/missions/__tests__/missionIntake.test.js` (to be created)
 *   `sos-app/src/modules/reports/reportExport.js`
 *   `docs/mission-briefing-and-field-decision-support.md` (to be created)
 
-### 3. Proposed Mission Briefing Data Model
-We will create `buildMissionBrief(mission, relatedAnswers, relatedSources, relatedNotes, reviewQueue)` which returns:
+### 3. Proposed Mission Intake Draft State & Templates
+We will create `missionIntake.js` containing pre-configured templates for common tasks: `fishing`, `camping`, `hiking`, `water_run`, `generator_repair`, `supply_run`, `firewood_run`, and `general_field_mission`.
+Intake React state structure:
 ```javascript
 {
-  missionId: string,
-  title: string,
-  missionType: string,
-  status: string,
-  priority: string,
-  locationLabel: string,
-  callsign: string,
-  overview: string,
-  readiness: { score: number, label: string, reasons: string[] },
-  risks: string[],
-  safetyChecklist: Array<{ category: string, warning: string, directives: string[] }>,
-  openObjectives: Array<{ id: string, label: string }>,
-  openTasks: Array<{ id: string, label: string, priority: string }>,
-  queuedSources: Array<{ id: string, title: string, sourcePath: string }>,
-  attachedAnswersCount: number,
-  attachedSourcesCount: number,
-  fieldNotesCount: number
+  active: true,
+  intentType: 'fishing',
+  startedAt: '...',
+  currentQuestionIndex: 0,
+  answers: {},
+  draftMission: null
 }
 ```
 
@@ -1113,52 +1302,36 @@ Baseline score is `50` points:
 *   **Objectives**: `+10` points per completed objective (max 20).
 *   **Tasks**: `+5` points per completed task (max 20).
 *   **Review Queue Deductions**: `-5` points per unreviewed queued source (max -20).
-*   **High-Priority Open Tasks**: `-5` points per open task marked High priority (max -10).
-*   *Score Limits*: Bound between `0` and `100`.
-*   *Status Labels*: `>= 80` is "Operational Ready", `>= 60` is "Marginally Ready", `< 60` is "Low Readiness".
+*   **High-Priority Open Tasks**: `-5` points per open high-priority task (max -10).
+*   *Labels*: `>= 80` is "Field Organized", `>= 60` is "Needs Review", `< 60` is "Needs Setup".
 
-### 5. Proposed High-Risk Review Checklist Approach
-A deterministic scanner matches risks (medical, water treatment, food preservation, electrical, mechanical, firearms) and generates:
-*   Clear bolded disclaimers (e.g. "Do not attempt invasive procedures without certified local training", "Disconnect main grid breaker before connecting backup power").
-*   Practical physical cross-verification tasks (e.g. "Verify generator carbon monoxide levels", "Check filter membrane for microscopic punctures").
+### 5. Proposed High-Risk Safety Checklist Approach
+Safety warnings are mapped to risk categories (medical, water treatment, food preservation, electrical, mechanical, firearms) to output:
+*   Disclaimers: *"Do not attempt invasive procedures without certified local training"* or *"Run generator outdoors only to prevent carbon monoxide poisoning"*.
+*   Verification tasks: *"Cross-verify guidelines with printed emergency manuals"* or *"Verify grounding pins and grounding rods"*.
 
-### 6. Proposed Jarvis Mission Brief Integration Approach
-In `App.jsx`, when the user inputs messages containing intent keywords (`mission brief`, `what is the mission status`, etc.), the client-side Jarvis chat will intercept the request and format a local text briefing:
-```text
-Based on your saved local mission data, here is the current mission brief:
-- Title: [Title]
-- Status: [Status]
-- Organization Score: [Score]% ([Label])
-- Open Objectives: [Count]
-- Open Tasks: [Count]
-- Safety Warnings: [Warnings]
-...
-```
-This is fully client-side and deterministic, avoiding any network calls or LLM hallucinations.
+### 6. Proposed Jarvis Integration Approach
+*   **Intake**: Keywords like `I wanna go fishing`, `Plan a camping trip`, or `Need to fix generator` trigger `startMissionIntake`. Jarvis guides the user through the questions.
+*   **Approval**: Presenting the draft, Jarvis waits for `YES`/`CREATE` or `CANCEL`/`ABORT`.
+*   **Briefing**: Keywords like `mission brief` or `what is the mission status` trigger a local, deterministic briefing returned as a Jarvis answer message with `answerStatus: local_mission_brief`.
 
 ### 7. Proposed Export/Backup Strategy
-*   Briefings are calculated in-memory on demand to preserve disk space and avoid cluttering database models.
-*   No new storage schema is added, keeping backup compatibility version 2 perfectly intact.
-*   Exports are local-only (using `reportExport.js` download helper). No email, SMS, or cloud APIs will be introduced.
+*   Drafts and briefings are kept in React state and generated on-the-fly, keeping storage fully backward-compatible. No cloud integrations will be introduced.
 
 ### 8. Tests to Add
-We will create `sos-app/src/modules/missions/__tests__/missionBriefing.test.js` to verify:
-*   Briefing builds correctly from default templates.
-*   Score calculations and deductions.
-*   High-risk disclaimers for medical and firearms are present and contain no diagnosis/offensive tips.
-*   Handoff exports contains required headings and structured JSON.
+*   **Briefing Tests**: Verify organization score points, risk disclaimers (medical disclaimers, carbon monoxide), and Markdown/JSON handoff sections.
+*   **Intake Tests**: Verify intent detection, sequence progression, draft building, and approval guards.
 
 ### 9. Risks & Uncertainties
-*   None identified. The design is lightweight and strictly local.
+*   None. Conversational logic is completely offline, deterministic, and safe.
 
 ---
 
 I explicitly confirm that **no cloud sync, logins, or remote persistence integrations** will be added. All features will remain strictly local-first.
 
-I am awaiting your approval of the implementation plan before proceeding to the coding phase.
+I am awaiting your approval of this revised plan before proceeding to implementation.
 
-After the planning response is reviewed and approved, the expected implementation commit message will be:
-
+After approval, the expected implementation commit message will be:
 ```text
 Add local mission briefing and handoff support
 ```
