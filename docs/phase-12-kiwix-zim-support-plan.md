@@ -1,0 +1,35 @@
+# Kiwix / ZIM Support Plan
+
+Kiwix distributes highly-compressed offline encyclopedia copies using the `.zim` format. Because `.zim` files can be extremely large (up to 100+ GB), Phase 12 implements a **metadata-aware only** approach to avoid memory bottlenecks and file-read performance overhead.
+
+## Structural Design
+
+### 1. ZIM Directory Scanner
+SOS will allow configuration of a custom local directory path where the operator stores their ZIM files.
+The server-side scanner:
+*   Lists files matching the `.zim` extension in the configured path.
+*   Extracts filename, file path, and file size.
+*   Does **not** read inside the `.zim` binary.
+*   Does **not** index the contents of ZIM articles.
+
+### 2. Catalog Registry Schema
+The scanned list is exposed to the frontend via `GET /api/toolkit/zim` in this format:
+```json
+{
+  "zimFolder": "C:/Users/Blair/Downloads/Kiwix",
+  "archives": [
+    {
+      "filename": "wikipedia_en_medicine_novid_2026-05.zim",
+      "size": 1564892019,
+      "title": "Wikipedia Medicine Encyclopedia",
+      "language": "en",
+      "path": "[ZIM_FOLDER]/wikipedia_en_medicine_novid_2026-05.zim"
+    }
+  ]
+}
+```
+
+### 3. J.A.R.V.I.S. Guidance Integration
+When an operator is planning a mission or asking a medical question, J.A.R.V.I.S. checks the ZIM catalog metadata. J.A.R.V.I.S. can suggest:
+*   *"I see you have the Wikipedia Medicine ZIM archive (`wikipedia_en_medicine_novid_2026-05.zim`) configured. You can search this archive inside your Kiwix desktop application for detailed clinical procedures."*
+*   This keeps J.A.R.V.I.S.'s scope strictly advisory and avoids parsing heavy binaries inside the NodeJS event loop.
