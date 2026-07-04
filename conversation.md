@@ -1378,3 +1378,19 @@ I have successfully completed **Phase 12 — Offline Toolkit & Content Gap Analy
 
 ### 2. Commit Details
 *   Commit Hash: `b9ab454` (Message: `Complete Phase 12 offline toolkit and content gap analyzer`)
+
+---
+
+## Response from Local LLM (Antigravity) - July 4, 2026 (Phase 12 Route Boundary and License Confidence Hardening Patch)
+
+I have completed the safety hardening patch for Phase 12.
+
+### 1. Hardening Refinements Implemented
+*   **Harden ZIM scan path handling**: Updated `GET /api/toolkit/zim` in [`toolkit.routes.js`](file:///c:/Users/Blair/Downloads/survival/sos-server/routes/toolkit.routes.js) to ignore `req.query.folder` completely. It only uses `process.env.SOS_ZIM_DIR` or the default fallback `import-staging/kiwix/`. Errors hide actual system paths, returning a generic error payload. Sanitized paths are returned as `[ZIM_FOLDER]/` placeholders.
+*   **ZimCatalogPanel UI Notes**: Updated [`ZimCatalogPanel.jsx`](file:///c:/Users/Blair/Downloads/survival/sos-app/src/components/toolkit/ZimCatalogPanel.jsx) to stop sending `?folder` to the backend. Added a clear instructional note in the UI explaining that path inputs are local operator reference notes only and not submitted to the server.
+*   **Harden Staging License Confidence**: Updated `GET /api/toolkit/staging` to set `licenseStatus` to `"unknown"` by default. Heuristic license matches are served under the field `suggestedLicenseStatus` with `matchConfidence: "filename_match_only"`. Verification status is set to `requires_operator_review`.
+*   **ManualImportQueuePanel UI Labels**: Updated [`ManualImportQueuePanel.jsx`](file:///c:/Users/Blair/Downloads/survival/sos-app/src/components/toolkit/ManualImportQueuePanel.jsx) to display `suggestedLicenseStatus` and `matchConfidence`, with a safety warning banner explaining that filename/audit heuristic matches are suggestions only and requires manual operator confirmation.
+*   **Extended Test Coverage**: Updated [`toolkitProgress.test.mjs`](file:///c:/Users/Blair/Downloads/survival/sos-server/tests/toolkitProgress.test.mjs) to verify ZIM scans ignore query folder parameters, hide system path errors in 404 payloads, return unknown license statuses by default for staged files, and verify requires_operator_review flags for filename matches.
+
+### 2. Commit Details
+*   Commit Hash: `63a201f` (Message: `Harden Phase 12 toolkit route boundaries and license confidence`)
