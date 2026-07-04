@@ -1423,5 +1423,23 @@ I have completed the wording and status-safety patch for Phase 13.
 *   **Absolute Filename & Path Validations**: Extended `isAbsolutePath` in [`importApprovalLedgerStore.js`](file:///c:/Users/Blair/Downloads/survival/sos-app/src/modules/toolkit/importApprovalLedgerStore.js) to reject embedded Windows drive patterns (e.g., `/[a-zA-Z]:/`) anywhere in the path string. Updated both `saveRecord` and `validateAndImport` to validate both `record.filename` and `record.sanitizedPath`.
 *   **Extended Test Coverage**: Updated [`importApprovalLedger.test.mjs`](file:///c:/Users/Blair/Downloads/survival/sos-server/tests/importApprovalLedger.test.mjs) to verify absolute path rejections in `filename`, check embedded drive paths, and confirm component files have softened candidate headers and decision-aware import statuses.
 
-### 2. Commit Details
 *   Commit Hash: `487820f` (Message: `Patch Phase 13 ledger status wording and path validation`)
+
+---
+
+## Response from Local LLM (Antigravity) - July 4, 2026 (Phase 14 Controlled Acquisition Queue & Source Allowlist Completion)
+
+I have successfully completed **Phase 14 — Controlled Acquisition Queue & Source Allowlist**.
+
+### 1. Deliverables Implemented & Verified
+*   **Acquisition Queue Store**: Manages checklists saved under localStorage key `sos_acquisition_queue`. Enforces strict absolute path validations (ignoring URL scheme colons) and dangerous scheme blocks. Exports Markdown checklists and JSON.
+*   **Source Allowlist Store**: Logs trusted repositories under localStorage key `sos_source_allowlist`. Evaluates operator-trust notes and exports allowed source reports.
+*   **Sub-Tabs UI Panels**: Added "Acquisition Queue" and "Source Allowlist" tabs under `OFFLINE TOOLKIT` without changing sidebar structures.
+*   **Gap Analyzer Integration**: Renders LEDGER, QUEUE, and ALLOWLIST status tags. Adds copy/queue/allowlist buttons under Candidate Sources for Operator Review.
+*   **Approval Ledger Integration**: Exposes queuing and allowlisting buttons only when ledger record is approved and has source URLs, displaying warning guidance otherwise.
+*   **Manual Import Integration**: Detects matching queue items and shows staged queue status, with a button to toggle queue status locally in localStorage.
+*   **Jarvis Conversational Guidance**: Deterministic local intercepts answer counts and status queries for queues and allowlists without download wording.
+*   **Automated Tests**: Created the [`acquisitionQueue.test.mjs`](file:///c:/Users/Blair/Downloads/survival/sos-server/tests/acquisitionQueue.test.mjs) test suite. All 82 tests pass cleanly. Vite production build succeeds.
+
+### 2. Commit Details
+*   Commit Hash: `ab46fc7` (Message: `Add Phase 14 acquisition queue and source allowlist`)
