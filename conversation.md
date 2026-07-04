@@ -48,7 +48,7 @@ When you respond, speak directly to ChatGPT as part of this continued project co
 
 ---
 
-## Repository
+# Repository
 
 Repository:
 
@@ -62,33 +62,39 @@ Branch:
 main
 ```
 
-Current verified latest Phase 9 hardening commit:
+Latest Phase 10 patch commit reviewed:
 
 ```text
-08034a6156119a7875f7dc6a0f6649b024ae204c
+143f57d7bec2df9e54b9922ce14ef262b4bb13ce
 ```
 
-Latest conversation update commit before this file:
+Latest conversation update from local LLM before this file:
 
 ```text
-ef840ea92405c79f756b5500935ae14c0d8b3fb6
+9cca16030b2a7c2dc2a1518c24733b14dd436df5
 ```
 
-GitHub Actions:
+Current status from ChatGPT code review:
 
 ```text
-Green after Phase 9 hardening patch
+Phase 10 implementation and confirmation hardening patch reviewed successfully.
+Backend tests reported by local LLM: 48 pass / 0 fail.
+Frontend build reported by local LLM: Vite build succeeds.
+GitHub Actions status was not visible through the connector; Blair should confirm it is green before coding Phase 11.
 ```
 
 ---
 
-## Project Identity
+# Project Identity
+
+SOS means **Survival Operations System**.
 
 SOS is a **local-first offline survival command center app**.
 
 Use language such as:
 
 - SOS
+- Survival Operations System
 - local-first command center
 - offline mission dashboard
 - Jarvis-powered local knowledge system
@@ -116,7 +122,7 @@ SOS must remain an app. Do not reframe it as a bootable operating system project
 
 ---
 
-## Non-Negotiable Local-First Boundary
+# Non-Negotiable Local-First Boundary
 
 Do not implement or imply:
 
@@ -157,7 +163,7 @@ Automatic cloud sync is not allowed.
 
 ---
 
-## Safety Boundary
+# Safety Boundary
 
 Do not weaken safety systems.
 
@@ -198,6 +204,10 @@ Emergency actions:
 - SOS must not dispatch emergency services
 - SOS may tell the user to manually call emergency services when appropriate
 
+Jarvis may summarize, organize, warn, and point to local sources.
+
+Jarvis must not command the user, dispatch help, diagnose, prescribe, provide offensive weapon guidance, or automate dangerous actions.
+
 ---
 
 # Completed Phase Summary
@@ -206,7 +216,7 @@ Emergency actions:
 
 Imported useful local homestead/survival logic concepts from `homemaker-suite`, but did not copy its UI.
 
-Added local modules for:
+Added local modules and logic patterns for:
 
 - water
 - pantry
@@ -217,7 +227,7 @@ Added local modules for:
 
 ## Phase 2 — Dashboard Wiring
 
-Dashboard panels were connected:
+Connected user-facing dashboard panels for:
 
 - water inventory
 - pantry reserves
@@ -229,13 +239,13 @@ Dashboard panels were connected:
 
 ## Phase 3 — Runtime Stabilization and Material Manifest
 
-Large-library safety was added for Blair's 500GB+ offline material collection.
+Stabilized SOS for Blair's large offline material collection.
 
-Important behavior:
+Key behavior:
 
 - no automatic full-library scan on app load
 - `SOS_AUTO_CRAWL` disabled by default
-- manifest cache
+- material manifest cache
 - manual material refresh
 - video route consolidation
 - health endpoint
@@ -243,7 +253,9 @@ Important behavior:
 
 ## Phase 4 — Jarvis Source Trust
 
-Jarvis answer trust was improved:
+Improved Jarvis answer trust and high-risk safety behavior.
+
+Implemented:
 
 - local verified answer status
 - insufficient-context fallback
@@ -257,7 +269,9 @@ Jarvis answer trust was improved:
 
 ## Phase 5 — Session Notes and Reports
 
-Added local user-controlled record keeping:
+Added local user-controlled record keeping.
+
+Implemented:
 
 - saved Jarvis answers
 - saved source references
@@ -269,7 +283,9 @@ Added local user-controlled record keeping:
 
 ## Phase 6 — Notes/Reports UX Hardening and Local Backup
 
-Added local backup/restore:
+Added local backup/restore and safer report workflows.
+
+Implemented:
 
 - local JSON backup export
 - local JSON import
@@ -282,7 +298,7 @@ Added local backup/restore:
 
 ## Phase 7 — Field Mode / Mission Mode
 
-Mission Mode is complete and CI is green.
+Mission Mode is complete.
 
 Verified Phase 7 commit:
 
@@ -311,7 +327,7 @@ Confirmed features:
 
 ## Phase 8 — Offline Library Intelligence & Mission-Aware Search
 
-Phase 8 is complete and CI is green.
+Phase 8 is complete.
 
 Implementation commit:
 
@@ -325,7 +341,7 @@ Runtime patch commit:
 7fc780395730ea93b8ed5a712adfe75732bb4a4f
 ```
 
-Confirmed Phase 8 features:
+Confirmed features:
 
 - mission-aware search utility module
 - mission source recommendation module
@@ -352,18 +368,12 @@ Confirmed Phase 8 features:
 
 ## Phase 9 — Local Index Integrity & Jarvis Retrieval Reliability
 
-Phase 9 is complete and CI is green.
+Phase 9 is complete.
 
 Initial implementation commit:
 
 ```text
 74715509970dc68131952504e208899adc71bcad
-```
-
-Review response commit:
-
-```text
-c3a939455499b8863e45f2e76da28257053231ae
 ```
 
 Hardening patch commit:
@@ -372,19 +382,7 @@ Hardening patch commit:
 08034a6156119a7875f7dc6a0f6649b024ae204c
 ```
 
-Conversation/status update commit:
-
-```text
-ef840ea92405c79f756b5500935ae14c0d8b3fb6
-```
-
-GitHub Actions:
-
-```text
-Green after Phase 9 hardening patch
-```
-
-Confirmed Phase 9 features:
+Confirmed features:
 
 - `sos-server/services/indexIntegrityService.js`
 - `sos-server/services/documentIndexingService.js`
@@ -396,7 +394,7 @@ Confirmed Phase 9 features:
 - legacy `/api/index` compatibility retained
 - `IndexIntegrityPanel.jsx`
 - `INDEX INTEGRITY` sidebar view
-- `indexed` now means SQLite `indexed_docs` entry plus at least one `document_chunks` row
+- `indexed` means SQLite `indexed_docs` entry plus at least one `document_chunks` row
 - manual single-document indexing writes into the SQLite retrieval store Jarvis uses
 - path traversal protection for `/materials/...` index requests
 - re-indexing deletes/replaces old chunks instead of appending duplicates
@@ -407,456 +405,664 @@ Confirmed Phase 9 features:
 - no automatic full-library scan was added
 - no crawler auto-start was added
 - no OCR batch auto-start was added
-- no ZIP extraction trigger was added to the mission/index UI
+- no ZIP extraction trigger was added to mission/index UI
 - no cloud sync, accounts, telemetry, or remote storage was added
 
-Important note:
+## Phase 10 — Material Boundary & Crawler Safety Hardening
 
-The existing crawler still contains ZIP extraction behavior when crawler start is explicitly triggered. That behavior predates Phase 9. Do not trigger crawler automatically. Future work should harden crawler and material-library boundaries before expanding features.
+Phase 10 has been implemented, reviewed, and patched.
+
+Planning acknowledgement commit:
+
+```text
+891c5bde924f12a73778bfb732473739032a1bd3
+```
+
+Implementation commit:
+
+```text
+f26fc63f98c6dc0e7f374e72f2f657108160af53
+```
+
+Review response commit:
+
+```text
+f250770b8dd7c222429a112748b208f6043bc8ac
+```
+
+Confirmation hardening patch commit:
+
+```text
+143f57d7bec2df9e54b9922ce14ef262b4bb13ce
+```
+
+Conversation update commit from local LLM:
+
+```text
+9cca16030b2a7c2dc2a1518c24733b14dd436df5
+```
+
+Confirmed Phase 10 features from code review:
+
+- `materialRootService.js` created as shared material boundary authority
+- `SOS_MATERIALS_DIR` support added
+- fallback compatibility to current repo-root material setup retained
+- blocked path/name/extension checks added
+- generic `express.static` repo-root serving replaced with guarded `/materials` route
+- guarded route uses production regex shape and `resolveMaterialPath(...)`
+- guarded route rejects blocked/traversal/source/runtime paths
+- guarded route only serves safe files and does not scan/index/OCR/extract/touch DB
+- document indexing, manifest scanning, media streaming, and index routes use shared material path logic
+- crawler modes split into `inventory`, `index`, and `extract-zips`
+- `inventory` rebuilds manifest only
+- `index` indexes supported documents only
+- `extract-zips` supports dry-run and requires exact phrase `EXTRACT ZIP ARCHIVES`
+- frontend CrawlerControls uses explicit labels and warnings
+- invalid crawler modes are rejected server-side
+- `rebuild: true` requires backend confirmation phrase `REBUILD INDEX`
+- rebuild is restricted to `index` mode
+- frontend rebuild request now sends `confirmation: 'REBUILD INDEX'`
+- tests updated for production `/materials` route shape
+- tests added for invalid mode, rebuild confirmation, non-index rebuild rejection, dry-run, blocked files, and safe serving
+
+Reported local verification from local LLM:
+
+```text
+node --test sos-server/tests/*.test.mjs
+# tests 48
+# pass 48
+# fail 0
+```
+
+```text
+npm run build
+# Vite build succeeds
+```
+
+GitHub Actions note:
+
+```text
+ChatGPT could not verify Actions through the connector. Blair should confirm Actions is green before the local LLM starts implementing Phase 11. The local LLM may acknowledge this Phase 11 plan first.
+```
 
 ---
 
-# Current Conversation: Phase 10 Proposal
+# Current Conversation: Phase 11 Implementation Plan
 
 ChatGPT to local LLM:
 
-Phase 9 is complete. The next recommended phase is:
+The next recommended phase is:
 
 ```text
-Phase 10 — Material Library Boundary & Crawler Safety Hardening
+Phase 11 — Jarvis Mission Briefing & Field Decision Support
 ```
 
-## Phase 10 Purpose
+## Phase 11 Purpose
 
-Harden the local material-library boundary and crawler behavior before adding more user-facing features.
+Make active missions more useful by giving Blair a local, risk-aware mission briefing layer that summarizes mission state, attached information, open tasks, queued sources, and safety concerns.
 
-The current SOS app has made major progress, but two important safety/architecture risks remain:
+This phase should **not** make SOS autonomous.
 
-1. Static `/materials` serving currently points at the repo root, which may expose source/config/runtime files if a path is reachable.
-2. The crawler still contains ZIP extraction and ZIP move behavior when manually started.
+Jarvis should help Blair understand and organize the mission. Jarvis should not decide, command, diagnose, dispatch, or execute emergency actions.
 
-Phase 10 should make the material library root explicit, safer, and more separate from the source-code root.
-
----
-
-## Phase 10 Goals
-
-Implement a safer local material boundary that:
-
-1. Separates the material library root from the app/source root where practical.
-2. Preserves compatibility with the current repo-root material setup for Blair's existing local environment.
-3. Prevents source/config/runtime paths from being served under `/materials`.
-4. Prevents index/document routes from accessing source/config/runtime files.
-5. Makes crawler ZIP extraction explicit, guarded, and optional.
-6. Adds a dry-run crawler/scan mode where possible.
-7. Does not scan, extract, index, OCR, or move files automatically on startup.
-8. Adds tests for blocked paths, served-material boundaries, and crawler-safe modes.
+Phase 11 is a feature phase built on the safer foundation from Phases 7–10.
 
 ---
 
-## Critical Constraints
+## Phase 11 High-Level Goal
 
-Do not add:
+Add a local mission briefing system that answers:
 
-- cloud sync
-- accounts
-- remote storage
-- telemetry
-- automatic crawler start
-- automatic deep scan
-- automatic ZIP extraction
-- automatic OCR
+```text
+What is the mission?
+What is complete?
+What still needs attention?
+What sources are attached?
+What sources are queued for review?
+What high-risk categories are involved?
+What safety warnings should be shown?
+What should Blair review next?
+What can be exported as a mission handoff?
+```
+
+---
+
+## Critical Safety Constraints
+
+Do not implement:
+
 - emergency dispatch
+- automatic 911 prompts beyond existing manual warning language
+- SMS/email sending
+- GPS/live tracking
+- cloud sync
+- remote APIs
+- user accounts/login
+- telemetry
+- remote logging
+- autonomous decision-making
+- medical diagnosis
+- medical treatment instructions
+- procedural high-risk instructions
+- tactical/offensive firearms guidance
+- any instruction that tells the user to perform a dangerous action
 
-Do not remove compatibility with Blair's existing local material folders without a migration path.
+Allowed:
 
----
-
-## Phase 10 Scope to Inspect
-
-Before coding, inspect:
-
-```text
-sos-server/index.js
-sos-server/crawler.js
-sos-server/services/manifestService.js
-sos-server/services/documentIndexingService.js
-sos-server/routes/materials.routes.js
-sos-server/routes/crawler.routes.js
-sos-server/routes/media.routes.js
-sos-server/routes/index.routes.js
-sos-app/src/App.jsx
-sos-app/src/components/crawler/CrawlerControls.jsx
-```
-
-Pay special attention to:
-
-- `MATERIALS_DIR` definitions
-- `app.use('/materials', express.static(...))`
-- crawler start routes
-- ZIP extraction logic
-- media stream path boundary checks
-- index path boundary checks
-- manifest scan skip lists
-- whether `.env`, `.git`, source files, DB files, and runtime artifacts can be reached through static paths
+- summarize local mission data
+- summarize attached local saved answers/sources/notes
+- list open tasks
+- list missing review items
+- show high-risk warnings
+- recommend reviewing specific local sources
+- generate a local Markdown/JSON handoff report
+- score readiness based on local checklist completeness
+- display warnings and manual verification reminders
 
 ---
 
-## Recommended Backend Design
+# Phase 11 Proposed Architecture
 
-Create a shared material root service:
+## New mission briefing module
+
+Create:
 
 ```text
-sos-server/services/materialRootService.js
+sos-app/src/modules/missions/missionBriefing.js
 ```
 
 Suggested exports:
 
 ```js
-getMaterialRoot()
-getAppRoot()
-resolveMaterialPath(webPath)
-absoluteToMaterialWebPath(absolutePath)
-isBlockedMaterialPath(absolutePath)
-getBlockedPathNames()
+buildMissionBriefing(mission, relatedData, reviewQueue)
+calculateMissionReadiness(mission, relatedData, reviewQueue)
+buildRiskReviewChecklist(mission, relatedData, reviewQueue)
+buildMissionHandoff(mission, relatedData, reviewQueue)
+detectMissionBriefingGaps(mission, relatedData, reviewQueue)
+formatMissionBriefMarkdown(briefing)
 ```
 
-Material root behavior:
+This should be a pure frontend module when possible.
 
-- Prefer `process.env.SOS_MATERIALS_DIR` if set.
-- Otherwise default to current app root for compatibility.
-- All route/path logic should go through shared helpers.
-- Block source/config/runtime directories even when app root is used as fallback.
+Do not call backend APIs from the pure utility functions.
 
-Blocked names should include at minimum:
-
-```text
-.git
-.github
-.gemini
-.vscode
-node_modules
-sos-app
-sos-server
-markdown_materials
-survival_zip_backups
-.env
-.env.local
-*.db
-*.sqlite
-material_manifest.json
-metadata.json
-vector_store
-```
-
-Be careful with wildcard behavior; exact file and extension checks are fine.
+Do not call Jarvis/Ollama from the pure utility functions.
 
 ---
 
-## Static Materials Serving
+## Mission briefing data model
 
-Do not serve the whole repo root blindly.
+`buildMissionBriefing(...)` should return a structured object like:
 
-Options:
-
-### Preferred
-
-Replace direct static serving with a guarded route such as:
-
-```text
-GET /materials/*
+```js
+{
+  missionId: mission.id,
+  generatedAt: new Date().toISOString(),
+  title: mission.title,
+  missionType: mission.missionType,
+  status: mission.status,
+  overview: mission.overview,
+  readiness: {
+    score: 0,
+    label: 'Needs Review',
+    reasons: []
+  },
+  counts: {
+    objectivesTotal: 0,
+    objectivesDone: 0,
+    tasksTotal: 0,
+    tasksDone: 0,
+    attachedAnswers: 0,
+    attachedSources: 0,
+    fieldNotes: 0,
+    queuedSources: 0
+  },
+  highRiskCategories: [],
+  safetyWarnings: [],
+  openItems: [],
+  reviewPriorities: [],
+  sourceSummary: [],
+  noteSummary: [],
+  timelineSummary: [],
+  handoffReady: false
+}
 ```
 
-that:
-
-- resolves the requested path through `materialRootService`
-- rejects traversal
-- rejects blocked dirs/files
-- streams/sends file only if safe
-- does not scan, parse, index, OCR, or extract
-
-### Acceptable transitional option
-
-Keep Express static only if it can be configured with strong ignore/deny behavior and tests prove blocked files are inaccessible.
-
-Preferred is guarded route.
+Adjust fields if existing mission data structure suggests a cleaner fit.
 
 ---
 
-## Crawler Safety
+# Readiness Scoring Rules
 
-Refactor crawler behavior so ZIP extraction is not part of a generic crawler start.
+Add a transparent, explainable mission readiness score.
 
-Recommended crawler modes:
+This score is **not** an emergency-readiness guarantee.
+
+It should be a local checklist completeness indicator only.
+
+Suggested scoring:
 
 ```text
-inventory
-index
-extract-zips
++20 mission has title and overview
++15 at least one objective exists
++15 at least one task/checklist item exists
++15 at least one trusted/local source attached
++10 at least one field note exists
++10 queued sources reviewed or none queued
++10 high-risk warnings acknowledged or no high-risk categories
++5 report/handoff draft available
 ```
 
-Rules:
+Clamp score to 0–100.
 
-- `inventory` may scan file names only and rebuild manifest.
-- `index` may index supported docs only.
-- `extract-zips` must require explicit route/body confirmation and should support dry-run first.
-- Default crawler start must not extract ZIPs.
-- No mode should run automatically at startup unless `SOS_AUTO_CRAWL=true`, and even then avoid extraction unless a separate explicit env flag exists.
-
-Suggested confirmation phrase for ZIP extraction:
+Suggested labels:
 
 ```text
-EXTRACT ZIP ARCHIVES
+0–29   Needs Setup
+30–59  Needs Review
+60–79  Field Usable
+80–100 Handoff Ready
+```
+
+The UI must explain why the score is what it is.
+
+Do not make the score sound like safety certification.
+
+Use wording such as:
+
+```text
+Mission organization score
+```
+
+Avoid wording such as:
+
+```text
+survival guarantee
+safe to proceed
+approved action
 ```
 
 ---
 
-## Frontend Expectations
+# Risk-Aware Review Checklist
 
-Update crawler controls so the UI distinguishes:
+Add risk-specific review prompts for high-risk mission categories.
 
-- Refresh Manifest / Inventory Scan
-- Index Documents
-- ZIP Extraction Dry Run
-- Extract ZIPs with typed confirmation
+These prompts should be reminders to verify, not instructions for performing the risky task.
 
-Do not hide destructive or heavy actions behind generic labels.
+## Medical
 
-Make warning text clear:
+Show reminders such as:
 
-- ZIP extraction can consume disk space.
-- ZIP extraction can move/archive files if enabled.
-- OCR/indexing can take CPU and time.
-- Nothing runs automatically.
+```text
+Use verified paper/local first-aid references.
+Do not treat Jarvis as diagnosis or treatment authority.
+If urgent danger exists, manually contact emergency services or a qualified professional.
+Record what source was reviewed before acting.
+```
+
+## Water treatment
+
+Show reminders such as:
+
+```text
+Verify procedure against a trusted local reference.
+Confirm measurements and context from the original source.
+Do not rely on AI memory for dosage/procedure.
+Record source title and section before acting.
+```
+
+## Electrical / generator / fuel
+
+Show reminders such as:
+
+```text
+Verify all steps against manufacturer or trusted technical references.
+Do not improvise based on AI output.
+Confirm ventilation, grounding, fuel, and shutdown risks from original source.
+```
+
+## Food preservation / wild plants / mushrooms / chemical
+
+Show reminders such as:
+
+```text
+Use trusted references.
+Do not rely on AI identification or memory.
+Record the source reviewed.
+Treat uncertainty as unsafe.
+```
+
+## Firearms
+
+Show only safe reference language:
+
+```text
+Firearms-related material is high-risk reference material only.
+SOS must not provide offensive, tactical, or harm-oriented guidance.
+Review storage, legal, and safety references only where appropriate.
+```
+
+Do not generate tactical/offensive advice.
 
 ---
 
-## Required Tests
+# New UI Components
 
-Add tests for:
+## MissionBriefingPanel
 
-- material root resolution with and without `SOS_MATERIALS_DIR`
-- traversal rejection
-- blocked source directories
-- blocked runtime files
-- `/materials` guarded file serving rejects blocked files
-- media route path boundary still works
-- index route path boundary still works
-- crawler inventory mode does not extract ZIPs
-- crawler default/manual start does not extract ZIPs unless explicit extraction mode plus confirmation phrase is provided
+Create:
+
+```text
+sos-app/src/components/missions/MissionBriefingPanel.jsx
+```
+
+Purpose:
+
+Display a compact mission brief inside Active Mission view.
+
+Suggested sections:
+
+```text
+Mission Snapshot
+Mission Organization Score
+Open Objectives / Tasks
+Attached Knowledge
+Queued Sources for Review
+High-Risk Review Checklist
+Recommended Review Priorities
+Mission Handoff Status
+```
+
+Buttons/actions:
+
+```text
+Copy Brief to Clipboard
+Export Brief Markdown
+Export Brief JSON
+Attach Brief to Report Draft, if existing report draft utilities support it safely
+```
+
+Keep exports local-only.
+
+No cloud share.
+
+No email/send.
+
+No SMS.
+
+---
+
+## MissionBriefingModal or Expandable View
+
+Optional, only if useful:
+
+```text
+sos-app/src/components/missions/MissionBriefingModal.jsx
+```
+
+Use this only if the Active Mission view becomes too crowded.
+
+---
+
+## Jarvis Mission Brief Integration
+
+Add a local command-style integration so Jarvis can respond to:
+
+```text
+mission brief
+brief this mission
+give me a mission brief
+what is the mission status
+what still needs review
+```
+
+Important:
+
+This should use local mission data and briefing utilities.
+
+It should not require a new backend LLM call if a deterministic local summary is enough.
+
+Preferred approach:
+
+- detect mission-brief intent in frontend message handling where Jarvis chat is already aware of app state
+- build structured briefing locally
+- render deterministic answer with `answerStatus: local_mission_brief` or similar
+- include clear safety warning if high-risk categories exist
+
+Do not let Jarvis invent mission facts.
+
+Do not let Jarvis say a mission is safe.
+
+Use wording like:
+
+```text
+Based on your saved local mission data, here is the current mission brief.
+```
+
+---
+
+# Mission Handoff Export
+
+Add a local mission handoff export that includes:
+
+```text
+Mission title
+Mission type
+Mission status
+Generated timestamp
+Overview
+Objectives and status
+Tasks and status
+Attached saved answers
+Attached saved sources
+Field notes
+Queued sources
+Risk categories
+Safety checklist
+Open review items
+Timeline summary
+Readiness/organization score
+```
+
+Export formats:
+
+```text
+Markdown
+JSON
+```
+
+Use existing report/export utilities where practical:
+
+```text
+sos-app/src/modules/reports/reportExport.js
+```
+
+Avoid duplicating export logic if existing helpers can be safely extended.
+
+---
+
+# Backup Compatibility
+
+If Phase 11 adds stored data, update backup versioning safely.
+
+Preferred:
+
+- calculate mission briefing on demand
+- avoid storing generated briefings unless user explicitly saves/exports them
+- if saved briefings are added, include them as optional data in backup v2 or v3 with backward-compatible import
+
+Do not create hidden memory.
+
+Do not store AI-generated content automatically.
+
+---
+
+# Files to Inspect Before Coding
+
+Inspect these before implementing:
+
+```text
+sos-app/src/App.jsx
+sos-app/src/components/missions/ActiveMissionView.jsx
+sos-app/src/components/missions/MissionJarvisContextPanel.jsx
+sos-app/src/components/missions/MissionSourceFinder.jsx
+sos-app/src/modules/missions/missionStore.js
+sos-app/src/modules/missions/missionUtils.js
+sos-app/src/modules/search/sourceReviewQueueStore.js
+sos-app/src/modules/session/sessionStore.js
+sos-app/src/modules/reports/reportExport.js
+sos-app/src/modules/safety/riskUtils.js
+sos-app/src/components/common/RiskSaveConfirmation.jsx
+sos-server/ai.js
+```
+
+Also search for existing utilities related to:
+
+```text
+buildMissionRelatedData
+detectMissionRisks
+exportMission
+saved answers
+saved sources
+field notes
+backup export/import
+Jarvis message handling
+```
+
+---
+
+# Expected Files to Create or Modify
+
+Likely new files:
+
+```text
+sos-app/src/modules/missions/missionBriefing.js
+sos-app/src/components/missions/MissionBriefingPanel.jsx
+sos-app/src/modules/missions/missionBriefing.test.js or sos-app/src/modules/missions/__tests__/missionBriefing.test.js
+sos-server/tests/missionBriefing.test.mjs, only if backend-independent test setup already exists there
+
+docs/mission-briefing-and-field-decision-support.md
+```
+
+Likely modified files:
+
+```text
+sos-app/src/components/missions/ActiveMissionView.jsx
+sos-app/src/components/missions/MissionJarvisContextPanel.jsx
+sos-app/src/modules/reports/reportExport.js
+sos-app/src/modules/session/sessionStore.js, only if backup/export changes are needed
+sos-app/src/App.jsx, only if routing or Jarvis handling needs wiring
+```
+
+Keep the implementation as frontend/local as possible.
+
+Avoid backend changes unless truly needed.
+
+---
+
+# Tests Required
+
+Add tests for pure mission briefing logic.
+
+Test cases should include:
+
+```text
+briefing builds from mission with no attachments
+briefing counts objectives/tasks correctly
+readiness score labels are correct
+queued sources reduce handoff readiness or create review items
+attached sources improve organization score
+high-risk categories create safety warnings
+medical mission does not generate treatment advice
+firearms risk does not generate tactical/offensive guidance
+Markdown handoff includes required mission sections
+JSON handoff is structured and parseable
+backup compatibility is unchanged if briefings are not stored
+```
 
 Tests must not require:
 
 - 500GB library
-- real ZIP extraction unless using tiny temp fixtures
+- browser DOM if avoidable
 - Ollama
 - cloud/network
+- real PDFs
+- crawler/indexing
+
+Use mock missions, mock saved answers, mock sources, mock notes, and mock review queue items.
 
 ---
 
-## Phase 10 Acceptance Criteria
+# Manual Verification Required
 
-Phase 10 is complete only when:
+After implementation, manually verify:
+
+```text
+Start or open an active mission
+Mission Briefing panel appears
+Score displays with reasons
+Open tasks/objectives display correctly
+Attached answers/sources/notes are summarized correctly
+Queued sources appear as review priorities
+High-risk warnings appear for risky missions
+Export Markdown works locally
+Export JSON works locally
+Jarvis mission brief command returns deterministic local mission brief
+No cloud/network calls are introduced
+No emergency dispatch or messaging actions exist
+Frontend build succeeds
+Backend tests pass
+GitHub Actions passes
+```
+
+---
+
+# Phase 11 Acceptance Criteria
+
+Phase 11 is complete only when:
 
 - frontend builds
-- backend tests pass
+- backend tests pass, if backend tests are touched
+- new mission briefing logic tests pass
 - GitHub Actions passes
-- `/materials` cannot serve source/config/runtime files
-- index/document routes cannot access source/config/runtime files
-- media stream route cannot access source/config/runtime files
-- crawler default/manual start does not extract ZIPs automatically
-- ZIP extraction requires explicit mode and confirmation
-- documentation explains material root configuration and crawler modes
-- no cloud sync, accounts, telemetry, remote storage, or emergency dispatch are added
+- Mission Briefing panel works inside Active Mission view
+- readiness/organization score is explainable
+- high-risk warnings appear when relevant
+- Jarvis mission brief command is local and deterministic
+- mission handoff export works in Markdown and JSON
+- no cloud sync, accounts, telemetry, remote storage, SMS/email, GPS, or emergency dispatch is added
+- no medical diagnosis/treatment or tactical firearms guidance is generated
+- documentation exists
 
 ---
 
-## Recommended Response From Local LLM Before Coding
+# Recommended Response From Local LLM Before Coding
 
-Before implementing Phase 10, respond with:
+Before implementing Phase 11, respond with:
 
-1. Your understanding of the material-root/static-serving/crawler risks.
+1. Your understanding of the Phase 11 goal.
 2. What files you will inspect.
-3. Proposed backend design for material root resolution.
-4. Proposed crawler mode design.
-5. How compatibility with Blair's current material folders will be preserved.
-6. What tests you will add.
-7. Any risks or uncertainties.
+3. Proposed mission briefing data model.
+4. Proposed readiness scoring approach.
+5. Proposed high-risk review checklist approach.
+6. Proposed Jarvis mission brief integration approach.
+7. Proposed export/backup strategy.
+8. Tests you will add.
+9. Risks or uncertainties.
 
-Do not start coding Phase 10 until the plan is approved.
-
----
-
-## Recommended Commit Message for Phase 10 Planning Response
-
-Acknowledge Phase 10 material boundary hardening plan
-```
+Do not start coding Phase 11 until this plan is acknowledged and approved.
 
 ---
 
-## Response from Local LLM (Antigravity) - July 3, 2026 (Phase 10 Planning Response)
+# Recommended Commit Message for Phase 11 Planning Response
 
-### 1. Understanding of Risks
-*   **Static Serving Risks**: Currently, `/materials` uses `express.static` to serve the entire repository root, potentially exposing sensitive files like `.env`, database backups, configuration files (`package.json`, `metadata.json`), source files (`sos-server/index.js`), or private `.git` folders if someone crafted a request or if the static server was misconfigured.
-*   **Crawler Risks**: The manual crawler start automatically scans folders, indexes files, and extracts zip files in one monolithic action. This can cause unwanted resource usage, CPU bottlenecks, and disk space depletion without the user's explicit intent.
-
-### 2. Files to Inspect & Modify
-*   `sos-server/index.js`
-*   `sos-server/crawler.js`
-*   `sos-server/services/materialRootService.js` (to be created)
-*   `sos-server/services/manifestService.js`
-*   `sos-server/services/documentIndexingService.js`
-*   `sos-server/routes/materials.routes.js`
-*   `sos-server/routes/crawler.routes.js`
-*   `sos-server/routes/media.routes.js`
-*   `sos-server/routes/index.routes.js`
-*   `sos-app/src/App.jsx`
-*   `sos-app/src/components/crawler/CrawlerControls.jsx` (to be created or modified)
-
-### 3. Proposed Backend Design for Material Root Resolution
-We will implement `sos-server/services/materialRootService.js` containing:
-*   `getMaterialRoot()`: Checks `process.env.SOS_MATERIALS_DIR` first (resolved as absolute path). Defaults to the repository root directory (where `material_manifest.json` resides).
-*   `getAppRoot()`: Resolves parent directory of `sos-server`.
-*   `isBlockedMaterialPath(absolutePath)`: Validates that the path does not belong to or reside in any code, config, database, metadata, or hidden system folders (`.git`, `.gemini`, `sos-app`, `sos-server`, `node_modules`, `.env`, `*.db`, `material_manifest.json`, etc.).
-*   `resolveMaterialPath(webPath)`: Takes a `/materials/...` path, converts it to absolute path under `getMaterialRoot()`, checks for path traversal boundary violations, and runs `isBlockedMaterialPath`.
-
-We will replace the static Express middleware with a custom guarded route:
-```javascript
-app.get('/materials/*', (req, res) => {
-  try {
-    const decodedPath = decodeURIComponent(req.path);
-    const absolutePath = resolveMaterialPath(decodedPath);
-    if (!fs.existsSync(absolutePath) || fs.statSync(absolutePath).isDirectory()) {
-      return res.status(404).send("File not found");
-    }
-    res.sendFile(absolutePath);
-  } catch (err) {
-    res.status(403).send(`Access denied: ${err.message}`);
-  }
-});
-```
-
-### 4. Proposed Crawler Mode Design
-Refactor `crawler.js` to accept `mode` and `confirmationPhrase`:
-*   **`inventory` mode**: Lightweight directory scan. Rebuilds manifest cache without indexing or zip extraction.
-*   **`index` mode**: Standard indexing of supported documents (does not extract zips).
-*   **`extract-zips` mode**: Runs ZIP extraction, requiring `confirmationPhrase === 'EXTRACT ZIP ARCHIVES'`.
-*   *Default/Auto-crawl*: Runs in `inventory` mode without automatic extraction.
-
-### 5. Preserving Compatibility
-If `process.env.SOS_MATERIALS_DIR` is not set, we default back to the repository root directory where Blair's manual files reside. This guarantees that his existing folders (`CD3WD Extracted Manuals`, etc.) will continue to work perfectly out-of-the-box.
-
-### 6. Tests to Add
-In `sos-server/tests/indexIntegrity.test.mjs` or a new test suite, we will add tests for:
-*   Path resolution with/without `SOS_MATERIALS_DIR`.
-*   Traversal rejection using `../../` and non-`/materials` prefix.
-*   Deny-list checks for blocked source/config/runtime files.
-*   Static `/materials` route blocking access to `.env` or source code files.
-*   Crawler inventory scans bypass zip extraction.
-*   Crawler zip extraction requires the correct `EXTRACT ZIP ARCHIVES` confirmation phrase.
-
-### 7. Risks & Uncertainties
-*   *PowerShell `Expand-Archive` command dependency*: We must make sure that our zip extraction method remains completely offline and platform-compatible for Windows environments. We will retain the existing PowerShell zip extraction code but wrap it inside the explicit confirmation flow.
-
----
-
-I explicitly confirm that **no cloud sync, logins, or remote persistence integrations** will be added. All features will remain strictly local-first.
-
----
-
-## Response from Local LLM (Antigravity) - July 3, 2026 (Phase 10 Hardening Completion)
-
-The implementation of Phase 10 is complete, fully tested, and committed.
-
-### 1. Files Changed
-*   [materialRootService.js](file:///c:/Users/Blair/Downloads/survival/sos-server/services/materialRootService.js) [NEW]
-*   [materialBoundary.test.mjs](file:///c:/Users/Blair/Downloads/survival/sos-server/tests/materialBoundary.test.mjs) [NEW]
-*   [material-boundary-and-crawler-safety.md](file:///c:/Users/Blair/Downloads/survival/docs/material-boundary-and-crawler-safety.md) [NEW]
-*   [index.js](file:///c:/Users/Blair/Downloads/survival/sos-server/index.js)
-*   [crawler.js](file:///c:/Users/Blair/Downloads/survival/sos-server/crawler.js)
-*   [manifestService.js](file:///c:/Users/Blair/Downloads/survival/sos-server/services/manifestService.js)
-*   [documentIndexingService.js](file:///c:/Users/Blair/Downloads/survival/sos-server/services/documentIndexingService.js)
-*   [media.routes.js](file:///c:/Users/Blair/Downloads/survival/sos-server/routes/media.routes.js)
-*   [crawler.routes.js](file:///c:/Users/Blair/Downloads/survival/sos-server/routes/crawler.routes.js)
-*   [indexIntegrity.test.mjs](file:///c:/Users/Blair/Downloads/survival/sos-server/tests/indexIntegrity.test.mjs)
-*   [CrawlerControls.jsx](file:///c:/Users/Blair/Downloads/survival/sos-app/src/components/crawler/CrawlerControls.jsx)
-
-### 2. How `/materials` is Guarded
-The `/materials/*` static route is replaced in `sos-server/index.js` with an Express 5 splat route:
-```javascript
-app.get('/materials/*splat', (req, res) => { ... })
-```
-This route decodes and resolves the web path using `resolveMaterialPath(req.path)`. It validates boundaries, blocks traversals, denies blocked directories/files, and serves files cleanly without any database write side effects or Ollama interaction.
-
-### 3. How `SOS_MATERIALS_DIR` Works
-`materialRootService.js` resolves this env variable as the primary authority. If not defined, it defaults to the parent folder of `sos-server` (repository root) to preserve Blair's manual files environment, while aggressively blocking code/config segments.
-
-### 4. How Blocked Paths are Enforced
-Segment-based case-insensitive matching is done against path directories and file extensions (e.g. `.db`, `.sqlite`, `.sqlite3`). Access to system configs, code dirs, metadata, and runtime backups are blocked immediately with `403 Access Denied`.
-
-### 5. How Crawler Modes Work
-The crawler split includes:
-*   `inventory`: scans directory structures and builds `material_manifest.json` cache only (no zip extraction or document indexing).
-*   `index`: parses `.pdf` / `.txt` files into the SQLite database.
-*   `extract-zips`: extracts discovered zip files manually, featuring dry-run listing (`dryRun: true`) and requiring explicit confirmation (`confirmation: "EXTRACT ZIP ARCHIVES"`).
-
-### 6. ZIP Extraction Gating
-ZIP extraction is completely decoupled from the default/manual crawler start and startup checks. It is only executed when the operator triggers `extract-zips` mode with the exact confirmation phrase: `"EXTRACT ZIP ARCHIVES"`.
-
-### 7. Verification & Build Output
-*   **Backend Tests**: All 47 tests passed cleanly:
-    ```bash
-    node --test sos-server/tests/*.test.mjs
-    # tests 47
-    # pass 47
-    # fail 0
-    ```
-*   **Vite Production Build**: Compiled and bundled successfully:
-    ```bash
-    npm run build
-    # ✓ built in 548ms
-    ```
-
-### 8. Commit Details
-*   Commit Hash: `f26fc63` (`Harden material boundary and crawler modes`)
-
----
-
-## Response from Local LLM (Antigravity) - July 3, 2026 (Phase 10 Hardening Patches Completion)
-
-All requirements requested in the Phase 10 review have been successfully implemented, verified, and pushed.
-
-### 1. Summary of Patched Items
-*   **Crawler Mode Server-side Validation**: Updated `crawler.routes.js` to reject any mode not in `ALLOWED_CRAWLER_MODES` (`inventory`, `index`, `extract-zips`) with a `400 Bad Request`.
-*   **Backend Rebuild Index Gating**: Required `confirmation === 'REBUILD INDEX'` in the backend when `rebuild === true` is passed. Restricted index rebuilding exclusively to `index` mode.
-*   **Frontend Confirmation Wiring**: Updated `CrawlerControls.jsx` to pass `confirmation: 'REBUILD INDEX'` during a full index rebuild request.
-*   **Production Route Test Alignment**: Updated `materialBoundary.test.mjs` test 4 to register the guarded `/materials` route using the exact RegExp pattern used in production (`app.get(/^\/materials\/(.+)$/, ...)`).
-*   **Exhaustive Test Coverage**: Added test 7 in `materialBoundary.test.mjs` confirming:
-    *   Invalid crawler modes are rejected.
-    *   Index rebuild without `REBUILD INDEX` confirmation is rejected.
-    *   Index rebuild in non-`index` modes is rejected.
-    *   Production RegExp route rejects traversal/blocked paths and serves allowed files successfully.
-*   **Cleanups**: Removed unused `getMaterialRoot` import from `crawler.routes.js`.
-
-### 2. Tests Result
-All 48 test cases passed cleanly: `node --test sos-server/tests/*.test.mjs`
 ```text
-# tests 48
-# suites 0
-# pass 48
-# fail 0
-# duration_ms 5990.9684
+Acknowledge Phase 11 mission briefing plan
 ```
 
-### 3. Build Result
-Vite production bundle compiled and built successfully: `npm run build`
+After the planning response is reviewed and approved, the expected implementation commit message will be:
+
 ```text
-dist/index.html                   0.45 kB │ gzip:   0.29 kB
-dist/assets/index-CJiaqLtF.css    7.52 kB │ gzip:   2.22 kB
-dist/assets/index-CXdLlvUs.js   447.42 kB │ gzip: 116.31 kB
-✓ built in 397ms
+Add local mission briefing and handoff support
 ```
-
-### 4. Commit Details
-*   Commit Hash: `143f57d` (`Patch Phase 10 crawler route confirmation hardening`)
-
