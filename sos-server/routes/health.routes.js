@@ -49,6 +49,29 @@ router.get('/', async (req, res) => {
     processedZips: Number.isFinite(crawlerStatusVal.processedZips) ? crawlerStatusVal.processedZips : 0
   };
 
+  const path = require('path');
+  let release = {
+    appVersion: "unknown",
+    releaseCandidate: "unknown",
+    schemaVersion: 3,
+    backupSchemaVersion: 3
+  };
+  try {
+    const versionPath = path.join(__dirname, '..', 'version.json');
+    if (fs.existsSync(versionPath)) {
+      const verObj = JSON.parse(fs.readFileSync(versionPath, 'utf8'));
+      release = {
+        appVersion: verObj.appVersion || "unknown",
+        buildDate: verObj.buildDate,
+        releaseCandidate: verObj.releaseCandidate || "unknown",
+        schemaVersion: verObj.schemaVersion || 3,
+        backupSchemaVersion: verObj.backupSchemaVersion || 3
+      };
+    }
+  } catch (err) {
+    console.error("[HEALTH] Error reading version.json:", err.message);
+  }
+
   res.json({
     ok: true,
     app: "SurvivalOS",
@@ -60,6 +83,7 @@ router.get('/', async (req, res) => {
       node: process.version,
       platform: process.platform
     },
+    release,
     // Keep backward compatible properties:
     status: "healthy",
     timestamp: Date.now(),

@@ -121,7 +121,7 @@ import { loadAllowlist } from './modules/toolkit/sourceAllowlistStore.js';
 import { computeLifecycleRecords } from './modules/toolkit/libraryLifecycleAnalyzer.js';
 import { createOfflineToolkitBackup, runOfflineToolkitIntegrityAudit } from './modules/toolkit/offlineToolkitBackupStore.js';
 
-const API_BASE = `http://${window.location.hostname}:3001`;
+const API_BASE = window.location.port === '3001' ? '' : `http://${window.location.hostname}:3001`;
 
 function App() {
   const [categories, setCategories] = useState({});
@@ -1984,11 +1984,12 @@ function App() {
           )}
 
           <div className="content-area" style={{ display: 'flex', flexDirection: 'column' }}>
-            {error && (
+            {error && viewMode !== 'release' && (
               <div className="glass-panel" style={{padding: '24px', borderColor: 'var(--brand-danger)', color: 'var(--brand-danger)'}}>
-                <h2>SYSTEM FAILURE</h2>
-                <p>{error}</p>
-                <p>Ensure backend server is running on port 3001.</p>
+                <h2>SYSTEM OFFLINE</h2>
+                <p style={{ fontWeight: 'bold' }}>Backend offline or unreachable.</p>
+                <p>Start SurvivalOS using launcher.bat or start the backend manually.</p>
+                <p>Open README or Operator Runbook for startup commands.</p>
               </div>
             )}
             
@@ -2954,7 +2955,7 @@ function App() {
               </div>
             )}
 
-            {!error && !loading && viewMode === 'release' && (
+            {viewMode === 'release' && (
               <PanelErrorBoundary name="Release Diagnostics">
                 <LocalReleaseCandidatePanel 
                   setViewMode={setViewMode} 

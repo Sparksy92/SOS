@@ -11,7 +11,7 @@ const fs = require('fs');
 const { spawn } = require('child_process');
 
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 
 // Enable CORS for frontend
 app.use(cors());
@@ -187,6 +187,23 @@ app.get('/api/document/text', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+if (process.env.NODE_ENV === 'production') {
+  const frontendDist = path.join(__dirname, '..', 'sos-app', 'dist');
+  
+  // Serve static assets from build output folder
+  app.use(express.static(frontendDist));
+  
+  // Fallback for SPA routing: serve index.html for all non-api, non-materials routes
+  app.get(/^\/(?!api|materials).*/, (req, res) => {
+    const indexPath = path.join(frontendDist, 'index.html');
+    if (fs.existsSync(indexPath)) {
+      res.sendFile(indexPath);
+    } else {
+      res.status(404).send("Production build index.html not found. Please build frontend first.");
+    }
+  });
+}
 
 app.listen(PORT, () => {
   console.log(`SOS Server running on http://localhost:${PORT}`);

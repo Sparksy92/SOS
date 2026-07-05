@@ -153,6 +153,24 @@ export default function LocalReleaseCandidatePanel({ setViewMode, setToolkitSubT
         </div>
       )}
 
+      {/* Backend Offline Warn Banner */}
+      {!backendHealth && (
+        <div style={{ backgroundColor: 'rgba(255, 69, 0, 0.06)', border: '1px solid rgba(255, 69, 0, 0.25)', borderRadius: '6px', padding: '16px', marginBottom: '24px' }}>
+          <h4 style={{ margin: '0 0 8px 0', color: '#ff4500', fontSize: '0.95rem', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <ShieldAlert size={18} /> Backend Offline or Unreachable
+          </h4>
+          <p style={{ margin: '0 0 6px 0', fontSize: '0.85rem', color: '#ff7f50', fontWeight: 'bold' }}>
+            Backend offline or unreachable.
+          </p>
+          <p style={{ margin: '0 0 6px 0', fontSize: '0.82rem', color: '#ccc' }}>
+            Start SurvivalOS using launcher.bat or start the backend manually.
+          </p>
+          <p style={{ margin: 0, fontSize: '0.82rem', color: '#ccc' }}>
+            Open README or Operator Runbook for startup commands.
+          </p>
+        </div>
+      )}
+
       {/* Two Column Layout */}
       <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '24px', alignItems: 'flex-start' }}>
         {/* Left Column: Diagnostics */}
@@ -250,6 +268,67 @@ export default function LocalReleaseCandidatePanel({ setViewMode, setToolkitSubT
 
         {/* Right Column: Guidance & Actions */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          {/* System Info / About Card */}
+          <div style={{ backgroundColor: '#12151c', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '8px', padding: '16px' }}>
+            <h4 style={{ margin: '0 0 12px 0', fontSize: '0.95rem', color: '#fff', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              System Info / About
+            </h4>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.8rem', color: '#ccc' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.02)', paddingBottom: '4px' }}>
+                <span style={{ color: '#888' }}>App Version</span>
+                <span style={{ fontWeight: 'bold', color: '#fff' }}>v{backendHealth?.release?.appVersion || "0.1.0-alpha"}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.02)', paddingBottom: '4px' }}>
+                <span style={{ color: '#888' }}>Release Candidate</span>
+                <span style={{ color: '#00f2fe' }}>{backendHealth?.release?.releaseCandidate || "RC-2"}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.02)', paddingBottom: '4px' }}>
+                <span style={{ color: '#888' }}>Build Date</span>
+                <span>{backendHealth?.release?.buildDate ? new Date(backendHealth.release.buildDate).toLocaleDateString() : "2026-07-05"}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.02)', paddingBottom: '4px' }}>
+                <span style={{ color: '#888' }}>Backup Schema Version</span>
+                <span>{backendHealth?.release?.backupSchemaVersion || 3}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.02)', paddingBottom: '4px' }}>
+                <span style={{ color: '#888' }}>Backend Health Status</span>
+                <span style={{ color: backendHealth ? '#00ff7f' : '#ff4500' }}>{backendHealth ? "ONLINE" : "UNREACHABLE"}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.02)', paddingBottom: '4px' }}>
+                <span style={{ color: '#888' }}>Material Root Configured</span>
+                <span>{backendHealth?.materialRootConfigured ? "Yes" : "No"}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.02)', paddingBottom: '4px' }}>
+                <span style={{ color: '#888' }}>Auto-Crawl Enabled</span>
+                <span>{backendHealth?.autoCrawlEnabled ? "True" : "False"}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.02)', paddingBottom: '4px' }}>
+                <span style={{ color: '#888' }}>Runtime Environment</span>
+                <span>Local-Only</span>
+              </div>
+              <div style={{ marginTop: '8px', fontSize: '0.72rem', color: '#888', fontStyle: 'italic', lineHeight: '1.3' }}>
+                SurvivalOS operates entirely within a secure offline sandbox. No cloud synchronizations, telemetry reporting, or auto-downloads are active.
+              </div>
+            </div>
+          </div>
+
+          {/* Safe Update Checklist Card */}
+          <div style={{ backgroundColor: '#181b24', border: '1px solid rgba(255, 215, 0, 0.15)', borderRadius: '8px', padding: '16px' }}>
+            <h4 style={{ margin: '0 0 12px 0', fontSize: '0.95rem', color: '#ffd700', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <AlertTriangle size={16} style={{ color: '#ffd700' }} />
+              Safe Update Checklist
+            </h4>
+            <ul style={{ margin: 0, paddingLeft: '18px', fontSize: '0.78rem', color: '#ccc', lineHeight: '1.5' }}>
+              <li style={{ marginBottom: '6px' }}>Open <strong>Offline Toolkit &gt; Backup</strong>.</li>
+              <li style={{ marginBottom: '6px' }}>Create and export a Local JSON Backup.</li>
+              <li style={{ marginBottom: '6px' }}>Stop SurvivalOS with the launcher script.</li>
+              <li style={{ marginBottom: '6px' }}>Pull/update the code repository.</li>
+              <li style={{ marginBottom: '6px' }}>Run package installations in both folders.</li>
+              <li style={{ marginBottom: '6px' }}>Build the frontend assets.</li>
+              <li style={{ marginBottom: '6px' }}>Start production and run Backup Integrity Audit.</li>
+            </ul>
+          </div>
+
           {/* Static First-Run guidance */}
           <div style={{ backgroundColor: '#181b24', border: '1px solid rgba(0, 242, 254, 0.2)', borderRadius: '8px', padding: '16px' }}>
             <h4 style={{ margin: '0 0 12px 0', fontSize: '0.98rem', color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>

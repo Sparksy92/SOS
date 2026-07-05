@@ -688,3 +688,101 @@ export const runOfflineToolkitIntegrityAudit = () => {
     recommendedActions
   };
 };
+
+export const resetOfflineToolkitProfile = (typedConfirm) => {
+  if (typedConfirm !== 'RESET PROFILE DATA') {
+    throw new Error("Typed confirmation phrase must match 'RESET PROFILE DATA' exactly.");
+  }
+  
+  BACKUP_KEYS_REGISTRY.forEach(reg => {
+    removeLocalItem(reg.key);
+    if (reg.legacyAliases) {
+      reg.legacyAliases.forEach(alias => {
+        removeLocalItem(alias);
+      });
+    }
+  });
+};
+
+export const loadOfflineToolkitDemoData = (typedConfirm) => {
+  if (typedConfirm !== 'LOAD DEMO DATA') {
+    throw new Error("Typed confirmation phrase must match 'LOAD DEMO DATA' exactly.");
+  }
+
+  // Pre-clean existing keys first
+  BACKUP_KEYS_REGISTRY.forEach(reg => {
+    removeLocalItem(reg.key);
+    if (reg.legacyAliases) {
+      reg.legacyAliases.forEach(alias => {
+        removeLocalItem(alias);
+      });
+    }
+  });
+
+  // Load obviously fake mock data
+  const demoData = {
+    sos_setup_progress: { "step-1": true, "step-2": true },
+    sos_toolkit_checkmarks: { "card-1": true },
+    sos_import_queue_dismissed: [],
+    sos_import_approval_ledger: [
+      {
+        id: "demo-ledger-1",
+        title: "MOCK: Wilderness First Aid Basics Guide",
+        url: "http://localhost-safe/demo/wilderness-first-aid.pdf",
+        license: "CC0 (Public Domain)",
+        evidence: "DEMO ONLY: Verified mock public domain publication.",
+        status: "needs_more_evidence",
+        operatorTrusted: false
+      }
+    ],
+    sos_acquisition_queue: [
+      {
+        id: "demo-acq-1",
+        title: "MOCK: Emergency Water Filtration Standard Operations",
+        url: "http://example.invalid/mock-water-ops.pdf",
+        status: "planned",
+        safetyChecked: true
+      }
+    ],
+    sos_source_allowlist: [
+      {
+        id: "demo-allow-1",
+        url: "http://example.invalid/trusted-repository",
+        note: "DEMO ONLY: Example mock source allowlist entry."
+      }
+    ],
+    missions: [
+      {
+        id: "demo-mission-1",
+        name: "DEMO: Basic Water Harvesting Mission",
+        status: "active",
+        template: "water",
+        createdAt: "2026-07-05T00:00:00Z"
+      }
+    ],
+    active_mission: {
+      id: "demo-mission-1",
+      name: "DEMO: Basic Water Harvesting Mission",
+      status: "active",
+      template: "water",
+      createdAt: "2026-07-05T00:00:00Z"
+    },
+    field_notes: [
+      {
+        id: "demo-note-1",
+        missionId: "demo-mission-1",
+        text: "DEMO ONLY: Logged mock field observation.",
+        timestamp: "2026-07-05T00:05:00Z"
+      }
+    ],
+    saved_answers: [],
+    saved_sources: [],
+    report_drafts: [],
+    reports: [],
+    source_review_queue: []
+  };
+
+  Object.keys(demoData).forEach(key => {
+    setLocalItem(key, JSON.stringify(demoData[key]));
+  });
+};

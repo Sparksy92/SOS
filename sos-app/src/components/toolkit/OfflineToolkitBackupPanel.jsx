@@ -5,7 +5,9 @@ import {
   previewOfflineToolkitBackup, 
   restoreOfflineToolkitBackup, 
   generateOfflineToolkitBackupMarkdown, 
-  runOfflineToolkitIntegrityAudit 
+  runOfflineToolkitIntegrityAudit,
+  resetOfflineToolkitProfile,
+  loadOfflineToolkitDemoData
 } from '../../modules/toolkit/offlineToolkitBackupStore.js';
 import { ShieldAlert, Download, RefreshCw, AlertTriangle, FileText, CheckCircle, XCircle } from 'lucide-react';
 
@@ -15,8 +17,32 @@ export default function OfflineToolkitBackupPanel({ setToolkitSubTab, setViewMod
   const [previewData, setPreviewData] = useState(null);
   const [restoreMode, setRestoreMode] = useState('merge'); // 'merge' or 'replace_known_keys'
   const [typedConfirm, setTypedConfirm] = useState('');
+  const [resetConfirm, setResetConfirm] = useState('');
+  const [demoConfirm, setDemoConfirm] = useState('');
   const [ignoreUnknown, setIgnoreUnknown] = useState(false);
   const [statusMessage, setStatusMessage] = useState({ text: '', type: '' });
+
+  const handleResetProfile = () => {
+    try {
+      resetOfflineToolkitProfile(resetConfirm);
+      showStatus("Local profile storage keys reset successfully.", "success");
+      setResetConfirm('');
+      handleRunAudit();
+    } catch (e) {
+      showStatus(e.message, "error");
+    }
+  };
+
+  const handleLoadDemoData = () => {
+    try {
+      loadOfflineToolkitDemoData(demoConfirm);
+      showStatus("Mock demo data loaded successfully.", "success");
+      setDemoConfirm('');
+      handleRunAudit();
+    } catch (e) {
+      showStatus(e.message, "error");
+    }
+  };
 
   const showStatus = (text, type = 'info') => {
     setStatusMessage({ text, type });
@@ -213,6 +239,64 @@ export default function OfflineToolkitBackupPanel({ setToolkitSubTab, setViewMod
               <button className="btn-tactical-outline" onClick={() => setToolkitSubTab('acq')} style={{ fontSize: '0.78rem', padding: '4px 10px' }}>Open Acquisition Queue</button>
               <button className="btn-tactical-outline" onClick={() => setToolkitSubTab('allowlist')} style={{ fontSize: '0.78rem', padding: '4px 10px' }}>Open Source Allowlist</button>
               <button className="btn-tactical-outline" onClick={() => setViewMode('readiness')} style={{ fontSize: '0.78rem', padding: '4px 10px', color: 'var(--brand-primary)' }}>Open Mission Mode</button>
+            </div>
+          </div>
+
+          {/* Profile Reset & Recovery Card */}
+          <div style={{ backgroundColor: '#12151c', border: '1px solid rgba(255, 69, 0, 0.15)', borderRadius: '6px', padding: '16px' }}>
+            <h4 style={{ margin: '0 0 12px 0', fontSize: '0.98rem', color: '#ff4500', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <AlertTriangle size={16} /> Profile Reset & Recovery
+            </h4>
+            <p style={{ margin: '0 0 12px 0', fontSize: '0.8rem', color: '#aaa', lineHeight: 1.3 }}>
+              Reset local configurations or populate demo data. <strong>Wiping data only affects registered localStorage keys and will not delete material files or disk backups.</strong> Export a backup first.
+            </p>
+
+            {/* Reset Action */}
+            <div style={{ borderBottom: '1px solid #222', paddingBottom: '12px', marginBottom: '12px' }}>
+              <label style={{ display: 'block', fontSize: '0.75rem', color: '#ff7f50', marginBottom: '4px' }}>
+                Type phrase <strong>RESET PROFILE DATA</strong> to wipe storage:
+              </label>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <input
+                  type="text"
+                  value={resetConfirm}
+                  onChange={(e) => setResetConfirm(e.target.value)}
+                  placeholder="Type confirmation..."
+                  style={{ flex: 1, backgroundColor: '#0d1017', border: '1px solid #333', color: '#fff', borderRadius: '4px', padding: '6px', fontSize: '0.78rem' }}
+                />
+                <button
+                  className="btn-tactical-outline"
+                  onClick={handleResetProfile}
+                  disabled={resetConfirm !== 'RESET PROFILE DATA'}
+                  style={{ color: resetConfirm === 'RESET PROFILE DATA' ? '#ff4500' : '#555', borderColor: resetConfirm === 'RESET PROFILE DATA' ? '#ff4500' : '#222', fontSize: '0.78rem' }}
+                >
+                  Reset Profile
+                </button>
+              </div>
+            </div>
+
+            {/* Load Demo Data Action */}
+            <div>
+              <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--brand-primary)', marginBottom: '4px' }}>
+                Type phrase <strong>LOAD DEMO DATA</strong> to populate mock records:
+              </label>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <input
+                  type="text"
+                  value={demoConfirm}
+                  onChange={(e) => setDemoConfirm(e.target.value)}
+                  placeholder="Type confirmation..."
+                  style={{ flex: 1, backgroundColor: '#0d1017', border: '1px solid #333', color: '#fff', borderRadius: '4px', padding: '6px', fontSize: '0.78rem' }}
+                />
+                <button
+                  className="btn-tactical"
+                  onClick={handleLoadDemoData}
+                  disabled={demoConfirm !== 'LOAD DEMO DATA'}
+                  style={{ fontSize: '0.78rem' }}
+                >
+                  Load Demo Data
+                </button>
+              </div>
             </div>
           </div>
 
