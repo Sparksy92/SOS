@@ -117,7 +117,7 @@ function Start-ProductionMode {
     $env:NODE_ENV = "production"
     $env:PORT = "3001"
     
-    Start-Process node -ArgumentList "index.js" -WorkingDirectory $serverPath -NoNewWindow -RedirectStandardOutput $serverLog -RedirectStandardError $serverLog
+    Start-Process cmd.exe -ArgumentList "/c node index.js > `"$serverLog`" 2>&1" -WorkingDirectory $serverPath -NoNewWindow
     
     # Wait for startup
     Start-Sleep -Seconds 3
@@ -159,12 +159,12 @@ function Start-DevelopmentMode {
     Write-Host "Launching backend Node server on port 3001..." -ForegroundColor White
     $env:NODE_ENV = "development"
     $env:PORT = "3001"
-    Start-Process node -ArgumentList "index.js" -WorkingDirectory $serverPath -NoNewWindow -RedirectStandardOutput $serverLog -RedirectStandardError $serverLog
+    Start-Process cmd.exe -ArgumentList "/c node index.js > `"$serverLog`" 2>&1" -WorkingDirectory $serverPath -NoNewWindow
     
     # Start Frontend Dev Server on 3000
     Write-Host "Launching Vite dev server on port 3000..." -ForegroundColor White
     $appLog = Join-Path $logsPath "sos-app-dev.log"
-    Start-Process npm -ArgumentList "run dev" -WorkingDirectory $appPath -NoNewWindow -RedirectStandardOutput $appLog -RedirectStandardError $appLog
+    Start-Process cmd.exe -ArgumentList "/c npm run dev > `"$appLog`" 2>&1" -WorkingDirectory $appPath -NoNewWindow
     
     # Wait for startup
     Start-Sleep -Seconds 4
