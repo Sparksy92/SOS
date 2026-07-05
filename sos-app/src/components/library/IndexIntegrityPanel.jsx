@@ -6,8 +6,34 @@ const IndexIntegrityPanel = ({ onRefreshManifest }) => {
   const [loading, setLoading] = useState(false);
   const [repairing, setRepairing] = useState(false);
   const [repairResult, setRepairResult] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   const API_BASE = `http://${window.location.hostname}:3001`;
+
+  const runRefresh = async () => {
+    setRefreshing(true);
+    setRepairResult(null);
+    try {
+      const res = await fetch(`${API_BASE}/api/materials/refresh`, { method: 'POST' });
+      const data = await res.json();
+      if (res.ok) {
+        // Notify parent to load fresh manifest categories in library browser view
+        if (onRefreshManifest) {
+          await onRefreshManifest();
+        }
+        // Run audit automatically to show fresh stats
+        const auditRes = await fetch(`${API_BASE}/api/index/audit`, { method: 'POST' });
+        const auditData = await auditRes.json();
+        setAuditReport(auditData);
+      } else {
+        alert("Refresh failed: " + (data.error || "Unknown error"));
+      }
+    } catch (err) {
+      alert("Refresh failed: " + err.message);
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   const runAudit = async () => {
     setLoading(true);
@@ -58,6 +84,16 @@ const IndexIntegrityPanel = ({ onRefreshManifest }) => {
         </div>
 
         <div style={{ display: 'flex', gap: '10px' }}>
+          <button 
+            className="btn-tactical" 
+            onClick={runRefresh} 
+            disabled={refreshing || loading}
+            style={{ padding: '8px 16px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '6px', borderColor: 'var(--brand-primary)', color: 'var(--text-main)' }}
+          >
+            <RefreshCw size={14} className={refreshing ? 'spin' : ''} />
+            {refreshing ? 'REBUILDING...' : 'REBUILD MANIFEST'}
+          </button>
+
           <button 
             className="btn-tactical" 
             onClick={runAudit} 
