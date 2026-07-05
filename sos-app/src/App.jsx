@@ -552,6 +552,14 @@ function App() {
       recognitionRef.current = rec;
     }
 
+    // Pre-warm SpeechSynthesis voice cache on boot
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+      window.speechSynthesis.getVoices();
+      window.speechSynthesis.onvoiceschanged = () => {
+        window.speechSynthesis.getVoices();
+      };
+    }
+
     // Background crawler status fetcher
     const fetchCrawlerStatus = () => {
       fetch(`${API_BASE}/api/crawler/status`)
@@ -782,8 +790,18 @@ function App() {
     
     // Attempt to load British English voices for JARVIS accent approximation
     const voices = window.speechSynthesis.getVoices();
-    const gbVoice = voices.find(v => v.lang.startsWith('en-GB') && v.name.toLowerCase().includes('male')) || 
-                    voices.find(v => v.lang.startsWith('en-GB')) || 
+    const gbVoice = voices.find(v => v.lang.replace('_', '-').startsWith('en-GB') && (
+                      v.name.toLowerCase().includes('male') || 
+                      v.name.toLowerCase().includes('george') || 
+                      v.name.toLowerCase().includes('oliver') ||
+                      v.name.toLowerCase().includes('harry')
+                    )) || 
+                    voices.find(v => v.lang.replace('_', '-').startsWith('en-GB') && 
+                      !v.name.toLowerCase().includes('female') && 
+                      !v.name.toLowerCase().includes('hazel') && 
+                      !v.name.toLowerCase().includes('susan')
+                    ) || 
+                    voices.find(v => v.lang.replace('_', '-').startsWith('en-GB')) || 
                     voices.find(v => v.lang.startsWith('en'));
                     
     if (gbVoice) {
