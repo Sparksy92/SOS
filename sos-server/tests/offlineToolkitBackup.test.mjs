@@ -35,7 +35,9 @@ import {
   previewOfflineToolkitBackup, 
   restoreOfflineToolkitBackup, 
   generateOfflineToolkitBackupMarkdown, 
-  runOfflineToolkitIntegrityAudit 
+  runOfflineToolkitIntegrityAudit,
+  resetOfflineToolkitProfile,
+  loadOfflineToolkitDemoData
 } from '../../sos-app/src/modules/toolkit/offlineToolkitBackupStore.js';
 
 test('Backup Registry Checks', () => {
@@ -381,4 +383,91 @@ test('Backup UI & Jarvis safety audits', () => {
   assert.ok(appContent.includes("backup my offline toolkit"));
   assert.ok(appContent.includes("run toolkit integrity audit"));
   assert.ok(!appContent.includes('text += "I synced'), "Jarvis must not say 'I synced'");
+});
+
+test('Demo Data & Reset Profile Hardening Checks', () => {
+  // 1. loadOfflineToolkitDemoData requires LOAD DEMO DATA
+  assert.throws(() => {
+    loadOfflineToolkitDemoData('INVALID PHRASE');
+  }, /must match 'LOAD DEMO DATA' exactly/);
+
+  // 2. load demo data succeeds and sets valid keys
+  mockLocalStorage.clear();
+  loadOfflineToolkitDemoData('LOAD DEMO DATA');
+
+  const ledgerRaw = mockLocalStorage.getItem('sos_import_approval_ledger');
+  const acqRaw = mockLocalStorage.getItem('sos_acquisition_queue');
+  const allowlistRaw = mockLocalStorage.getItem('sos_source_allowlist');
+
+  assert.ok(ledgerRaw, "ledger key should exist");
+  assert.ok(acqRaw, "acq key should exist");
+  assert.ok(allowlistRaw, "allowlist key should exist");
+
+  const ledger = JSON.parse(ledgerRaw);
+  const acq = JSON.parse(acqRaw);
+  const allowlist = JSON.parse(allowlistRaw);
+
+  // demo ledger record has filename
+  assert.ok(ledger[0].filename, "ledger record should have filename");
+  // demo ledger record has operatorDecision
+  assert.ok(ledger[0].operatorDecision, "ledger record should have operatorDecision");
+  // demo ledger operatorDecision is not approved
+  assert.notStrictEqual(ledger[0].operatorDecision, "approved", "ledger decision should not be approved");
+  // demo ledger operatorVerifiedSource is false
+  assert.strictEqual(ledger[0].operatorVerifiedSource, false, "operatorVerifiedSource should be false");
+
+  // demo acquisition queue record has acquisitionStatus
+  assert.ok(acq[0].acquisitionStatus, "acquisition record should have acquisitionStatus");
+  // demo acquisitionStatus is planned
+  assert.strictEqual(acq[0].acquisitionStatus, "planned", "acquisitionStatus should be planned");
+
+  // demo allowlist record has label
+  assert.ok(allowlist[0].label, "allowlist record should have label");
+  // demo allowlist operatorTrusted is false
+  assert.strictEqual(allowlist[0].operatorTrusted, false, "operatorTrusted should be false");
+
+  // demo data does not contain "Verified mock public domain publication"
+  const rawStoreContentStr = JSON.stringify(mockLocalStorage.store);
+  assert.ok(!rawStoreContentStr.includes("Verified mock public domain publication"));
+  // demo data does not contain "CC0 (Public Domain)"
+  assert.ok(!rawStoreContentStr.includes("CC0 (Public Domain)"));
+
+  // demo data uses example.invalid URLs only
+  const urls = [];
+  const regex = /https?:\/\/[^\s"']+/g;
+  let match;
+  while ((match = regex.exec(rawStoreContentStr)) !== null) {
+    urls.push(match[0]);
+  }
+  urls.forEach(url => {
+    assert.ok(url.includes('example.invalid') || url.includes('localhost-safe'), `URLs must be example.invalid or localhost-safe, found: ${url}`);
+  });
+
+  // runOfflineToolkitIntegrityAudit after loading demo data does not produce schema warnings/errors for demo records
+  const audit = runOfflineToolkitIntegrityAudit();
+  const schemaErrors = audit.findings.filter(f => f.severity === 'error');
+  assert.strictEqual(schemaErrors.length, 0, "No schema errors should be present");
+
+  // resetOfflineToolkitProfile requires RESET PROFILE DATA
+  assert.throws(() => {
+    resetOfflineToolkitProfile('INVALID RESET');
+  }, /must match 'RESET PROFILE DATA' exactly/);
+
+  // resetOfflineToolkitProfile removes only registered keys and aliases
+  mockLocalStorage.clear();
+  mockLocalStorage.setItem('sos_setup_progress', '{}');
+  mockLocalStorage.setItem('setup_progress', '{}'); // alias
+  mockLocalStorage.setItem('sos_unregistered_key', 'keep_me'); // unregistered key beginning with sos_
+  mockLocalStorage.setItem('other_key', 'keep_me_too'); // unregistered other key
+
+  resetOfflineToolkitProfile('RESET PROFILE DATA');
+  assert.strictEqual(mockLocalStorage.getItem('sos_setup_progress'), null);
+  assert.strictEqual(mockLocalStorage.getItem('setup_progress'), null);
+  assert.strictEqual(mockLocalStorage.getItem('sos_unregistered_key'), 'keep_me');
+  assert.strictEqual(mockLocalStorage.getItem('other_key'), 'keep_me_too');
+
+  // offlineToolkitBackupStore.js does not call localStorage.clear()
+  const storePath = path.resolve('sos-app', 'src', 'modules', 'toolkit', 'offlineToolkitBackupStore.js');
+  const storeContent = fs.readFileSync(storePath, 'utf8');
+  assert.ok(!storeContent.includes("localStorage.clear("), "offlineToolkitBackupStore.js should not call localStorage.clear()");
 });

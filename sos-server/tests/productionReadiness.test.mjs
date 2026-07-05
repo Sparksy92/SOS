@@ -36,4 +36,12 @@ test('Production Readiness Diagnostics & Launcher Files', () => {
   assert.ok(serverIdxContent.includes("NODE_ENV === 'production'"), "index.js must have production static routing check");
   assert.ok(serverIdxContent.includes("express.static(frontendDist)"), "index.js must use express.static to host frontend dist");
   assert.ok(serverIdxContent.includes("res.sendFile(indexPath)"), "index.js must have default sendFile fallback for SPA routing");
+
+  // 5. Offline Toolkit Backup Store Static checks
+  const storePath = path.resolve('sos-app', 'src', 'modules', 'toolkit', 'offlineToolkitBackupStore.js');
+  const storeContent = fs.readFileSync(storePath, 'utf8');
+  assert.ok(!storeContent.includes("localStorage.clear("), "offlineToolkitBackupStore.js should not call localStorage.clear()");
+  assert.ok(!storeContent.includes("Verified mock public domain publication"), "offlineToolkitBackupStore.js should not contain legacy demo ledger claims");
+  assert.ok(!storeContent.includes("CC0 (Public Domain)"), "offlineToolkitBackupStore.js should not contain legacy CC0 license claims");
+  assert.ok(!storeContent.includes("http://localhost-safe/demo/"), "offlineToolkitBackupStore.js ledger URLs must be example.invalid");
 });

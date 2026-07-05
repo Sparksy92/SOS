@@ -362,7 +362,7 @@ export const restoreOfflineToolkitBackup = (jsonStr, options = { mode: 'merge', 
       throw new Error("Typed confirmation phrase mismatch.");
     }
 
-    // Replace Mode: Only update/remove keys from the registry. NEVER call localStorage.clear()
+    // Replace Mode: Only update/remove keys from the registry. NEVER clear all storage blindly
     BACKUP_KEYS_REGISTRY.forEach(reg => {
       // Find if backup contains the canonical key or any of its legacy aliases
       let backupVal = backupObj.records[reg.key];
@@ -727,28 +727,58 @@ export const loadOfflineToolkitDemoData = (typedConfirm) => {
     sos_import_approval_ledger: [
       {
         id: "demo-ledger-1",
-        title: "MOCK: Wilderness First Aid Basics Guide",
-        url: "http://localhost-safe/demo/wilderness-first-aid.pdf",
-        license: "CC0 (Public Domain)",
-        evidence: "DEMO ONLY: Verified mock public domain publication.",
-        status: "needs_more_evidence",
-        operatorTrusted: false
+        filename: "DEMO_mock_wilderness_first_aid_basics.pdf",
+        sanitizedPath: "DEMO_mock_wilderness_first_aid_basics.pdf",
+        detectedCategory: "medical",
+        riskCategory: "medical",
+        licenseStatus: "unknown",
+        suggestedLicenseStatus: "unknown",
+        matchConfidence: "demo_only",
+        verificationStatus: "requires_operator_review",
+        operatorDecision: "needs_more_evidence",
+        operatorVerifiedSource: false,
+        officialSourceUrl: "https://example.invalid/demo/wilderness-first-aid-basics",
+        thirdPartyMirrorUrl: "",
+        licenseEvidence: "DEMO ONLY: Mock record requiring operator review. No real copyright clearance is implied.",
+        reviewNotes: "DEMO ONLY: This record is fake and exists only to demonstrate ledger workflow.",
+        reviewedBy: "DEMO OPERATOR",
+        reviewedAt: "2026-07-05T00:00:00Z",
+        createdAt: "2026-07-05T00:00:00Z",
+        updatedAt: "2026-07-05T00:00:00Z"
       }
     ],
     sos_acquisition_queue: [
       {
         id: "demo-acq-1",
-        title: "MOCK: Emergency Water Filtration Standard Operations",
-        url: "http://example.invalid/mock-water-ops.pdf",
-        status: "planned",
-        safetyChecked: true
+        title: "DEMO MOCK: Emergency Water Filtration Standard Operations",
+        filenameHint: "DEMO_mock_water_filtration_ops.pdf",
+        category: "water_treatment",
+        riskCategory: "water_treatment",
+        sourceType: "demo",
+        officialSourceUrl: "https://example.invalid/demo/water-filtration-ops",
+        sourceEvidence: "DEMO ONLY: Mock acquisition candidate. Operator must verify real sources manually.",
+        suggestedLicenseStatus: "unknown",
+        ledgerRecordId: "demo-ledger-1",
+        ledgerDecision: "needs_more_evidence",
+        acquisitionStatus: "planned",
+        operatorNotes: "DEMO ONLY: This does not represent an acquired or staged file.",
+        createdAt: "2026-07-05T00:00:00Z",
+        updatedAt: "2026-07-05T00:00:00Z"
       }
     ],
     sos_source_allowlist: [
       {
         id: "demo-allow-1",
-        url: "http://example.invalid/trusted-repository",
-        note: "DEMO ONLY: Example mock source allowlist entry."
+        label: "DEMO ONLY: Example Reference Source",
+        officialSourceUrl: "https://example.invalid/demo/reference-source",
+        sourceType: "demo",
+        sourceEvidence: "DEMO ONLY: Mock allowlist entry. Not a real trusted source.",
+        categories: ["general_survival"],
+        riskCategories: [],
+        operatorTrusted: false,
+        operatorNotes: "DEMO ONLY: This entry demonstrates the allowlist UI without trusting a real source.",
+        createdAt: "2026-07-05T00:00:00Z",
+        updatedAt: "2026-07-05T00:00:00Z"
       }
     ],
     missions: [
