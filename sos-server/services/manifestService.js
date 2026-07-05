@@ -12,8 +12,8 @@ function setMaterialsDir(dir) {
   setMaterialsDirOverride(dir);
 }
 
-const MANIFEST_FILE = path.join(__dirname, '..', 'material_manifest.json');
-const METADATA_FILE = path.join(__dirname, '..', 'metadata.json');
+const getManifestFilePath = () => process.env.SOS_MANIFEST_PATH || path.join(__dirname, '..', 'material_manifest.json');
+const getMetadataFilePath = () => process.env.SOS_METADATA_PATH || path.join(__dirname, '..', 'metadata.json');
 
 const CATEGORY_MAP = {
   'ATL': 'Applied Technology & Agriculture',
@@ -68,9 +68,9 @@ function checkIndexed(relativePath) {
 
 // Load metadata cache keys
 function loadMetadataKeys() {
-  if (fs.existsSync(METADATA_FILE)) {
+  if (fs.existsSync(getMetadataFilePath())) {
     try {
-      const data = JSON.parse(fs.readFileSync(METADATA_FILE, 'utf8'));
+      const data = JSON.parse(fs.readFileSync(getMetadataFilePath(), 'utf8'));
       return new Set(Object.keys(data));
     } catch (e) {
       console.error("[MANIFEST] Error reading metadata cache:", e);
@@ -128,9 +128,9 @@ function scanDirectory(dirPath, metadataKeys, arrayOfFiles = []) {
 
 // Load manifest from cache or return a placeholder fallback (never scan automatically)
 function loadManifest() {
-  if (fs.existsSync(MANIFEST_FILE)) {
+  if (fs.existsSync(getManifestFilePath())) {
     try {
-      const data = JSON.parse(fs.readFileSync(MANIFEST_FILE, 'utf8'));
+      const data = JSON.parse(fs.readFileSync(getManifestFilePath(), 'utf8'));
       return {
         ...data,
         manifestReady: true
@@ -180,7 +180,7 @@ function rebuildManifest() {
   };
 
   try {
-    fs.writeFileSync(MANIFEST_FILE, JSON.stringify(manifestData, null, 2));
+    fs.writeFileSync(getManifestFilePath(), JSON.stringify(manifestData, null, 2));
     console.log(`[MANIFEST] Rebuilt successfully. Saved ${files.length} records.`);
   } catch (err) {
     console.error("[MANIFEST] Error writing manifest file:", err);
@@ -193,6 +193,6 @@ module.exports = {
   loadManifest,
   rebuildManifest,
   setMaterialsDir,
-  MANIFEST_FILE,
-  METADATA_FILE
+  get MANIFEST_FILE() { return getManifestFilePath(); },
+  get METADATA_FILE() { return getMetadataFilePath(); }
 };

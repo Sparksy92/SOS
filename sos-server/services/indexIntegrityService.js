@@ -3,7 +3,7 @@ const path = require('path');
 const { loadManifest } = require('./manifestService');
 const { checkDocumentIndexedStatus } = require('./documentIndexingService');
 
-const MANIFEST_FILE = path.join(__dirname, '..', 'material_manifest.json');
+const { MANIFEST_FILE } = require('./manifestService');
 
 /**
  * Audit the manifest against actual SQLite counts.

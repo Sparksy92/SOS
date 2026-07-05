@@ -3,10 +3,14 @@ import test from 'node:test';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { loadManifest, rebuildManifest, setMaterialsDir, MANIFEST_FILE } from '../services/manifestService.js';
+import pkg from '../services/manifestService.js';
+const { loadManifest, rebuildManifest, setMaterialsDir, MANIFEST_FILE } = pkg;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+process.env.SOS_MANIFEST_PATH = path.join(__dirname, 'manifest_test.json');
+process.env.SOS_METADATA_PATH = path.join(__dirname, 'metadata_test.json');
 
 test('Manifest Service - rebuild and load manifest using isolated mock directory', () => {
   // Create an isolated temp directory for materials
@@ -82,5 +86,10 @@ test('Manifest Service - rebuild and load manifest using isolated mock directory
     fs.rmSync(tempDir, { recursive: true, force: true });
     // Restore default MATERIALS_DIR
     setMaterialsDir(path.join(__dirname, '..', '..'));
+    // Clean up test manifest files
+    try {
+      if (fs.existsSync(process.env.SOS_MANIFEST_PATH)) fs.unlinkSync(process.env.SOS_MANIFEST_PATH);
+      if (fs.existsSync(process.env.SOS_METADATA_PATH)) fs.unlinkSync(process.env.SOS_METADATA_PATH);
+    } catch (e) {}
   }
 });

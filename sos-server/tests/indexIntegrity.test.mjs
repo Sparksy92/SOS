@@ -16,6 +16,7 @@ process.env.SOS_DB_PATH = TEST_DB_PATH;
 
 // Mock manifest file location for services
 const TEST_MANIFEST_FILE = path.join(__dirname, '..', 'material_manifest_test.json');
+process.env.SOS_MANIFEST_PATH = TEST_MANIFEST_FILE;
 
 const { db } = require('../db');
 const { checkDocumentIndexedStatus, auditIndex, repairIndex } = require('../services/indexIntegrityService');
@@ -95,38 +96,19 @@ test('SOS Index Integrity Layer Test Suite', async (t) => {
     const markIndexed = db.prepare("INSERT INTO indexed_docs (path, indexed_at) VALUES (?, ?)");
     markIndexed.run(webPathFiltration, new Date().toISOString());
 
-    // Override service manifest file path for testing
-    const originalManifestFile = path.join(__dirname, '..', 'material_manifest.json');
+    const report = auditIndex();
     
-    // Backup and overwrite
-    try {
-      if (fs.existsSync(originalManifestFile)) {
-        fs.renameSync(originalManifestFile, originalManifestFile + '.bak');
-      }
-      fs.writeFileSync(originalManifestFile, fs.readFileSync(TEST_MANIFEST_FILE));
-
-      const report = auditIndex();
-      
-      assert.strictEqual(report.totalAudited, 3);
-      assert.strictEqual(report.indexedCount, 1); // filtration
-      assert.strictEqual(report.mismatchedCount, 2); // filtration (actual true, manifest false) and sanitization (actual false, manifest true)
-      
-      // Repair index
-      const repairResult = repairIndex();
-      assert.strictEqual(repairResult.repairedCount, 2);
-      
-      // Re-audit to verify sync
-      const freshReport = auditIndex();
-      assert.strictEqual(freshReport.mismatchedCount, 0);
-
-    } finally {
-      // Restore backup
-      if (fs.existsSync(originalManifestFile + '.bak')) {
-        fs.renameSync(originalManifestFile + '.bak', originalManifestFile);
-      } else {
-        try { fs.unlinkSync(originalManifestFile); } catch (e) {}
-      }
-    }
+    assert.strictEqual(report.totalAudited, 3);
+    assert.strictEqual(report.indexedCount, 1); // filtration
+    assert.strictEqual(report.mismatchedCount, 2); // filtration (actual true, manifest false) and sanitization (actual false, manifest true)
+    
+    // Repair index
+    const repairResult = repairIndex();
+    assert.strictEqual(repairResult.repairedCount, 2);
+    
+    // Re-audit to verify sync
+    const freshReport = auditIndex();
+    assert.strictEqual(freshReport.mismatchedCount, 0);
   });
 
   await t.test('3. Auto-crawler flag is checked and stays off by default', () => {

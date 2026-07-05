@@ -6,7 +6,7 @@ const ai = require('../ai');
 const { auditIndex, repairIndex } = require('../services/indexIntegrityService');
 const { webPathToMaterialAbsolutePath, checkDocumentIndexedStatus } = require('../services/documentIndexingService');
 
-const MANIFEST_FILE = path.join(__dirname, '..', 'material_manifest.json');
+const { MANIFEST_FILE } = require('../services/manifestService');
 
 // GET /api/index/status?path=/materials/...
 router.get('/status', (req, res) => {
