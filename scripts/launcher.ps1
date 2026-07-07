@@ -1,6 +1,6 @@
 # SurvivalOS Operator Launcher (Windows PowerShell)
 
-$root = $PSScriptRoot
+$root = Split-Path -Parent $PSScriptRoot
 $serverPath = Join-Path $root "sos-server"
 $appPath = Join-Path $root "sos-app"
 $logsPath = Join-Path $root "logs"
@@ -174,7 +174,7 @@ function Run-Diagnostics {
     Write-Host "`n[4/4] Ollama Model Library:" -ForegroundColor White
     $ollamaPortActive = Get-ProcessByPort 11434
     if ($ollamaPortActive) {
-        Write-Host "  Ollama Service: Online & Listening on port 11434" -ForegroundColor Green
+        Write-Host "  Ollama Service: Online AND Listening on port 11434" -ForegroundColor Green
         Write-Host "  Installed Models:"
         if ($ollamaCheck) {
             ollama list | Select-Object -Skip 1 | ForEach-Object {
@@ -253,7 +253,7 @@ function Start-ProductionMode {
     
     $env:NODE_ENV = "production"
     $env:PORT = "3001"
-    Start-Process cmd.exe -ArgumentList "/c node index.js > `"$serverLog`" 2>&1" -WorkingDirectory $serverPath -NoNewWindow
+    Start-Process node -ArgumentList "index.js" -WorkingDirectory $serverPath -NoNewWindow -RedirectStandardOutput $serverLog -RedirectStandardError $serverLog
     
     Start-Sleep -Seconds 3
     
@@ -291,11 +291,11 @@ function Start-DevelopmentMode {
     Write-Host "Launching backend Node server on port 3001..." -ForegroundColor White
     $env:NODE_ENV = "development"
     $env:PORT = "3001"
-    Start-Process cmd.exe -ArgumentList "/c node index.js > `"$serverLog`" 2>&1" -WorkingDirectory $serverPath -NoNewWindow
+    Start-Process node -ArgumentList "index.js" -WorkingDirectory $serverPath -NoNewWindow -RedirectStandardOutput $serverLog -RedirectStandardError $serverLog
     
     Write-Host "Launching Vite dev server on port 3000..." -ForegroundColor White
     $appLog = Join-Path $logsPath "sos-app-dev.log"
-    Start-Process cmd.exe -ArgumentList "/c npm run dev > `"$appLog`" 2>&1" -WorkingDirectory $appPath -NoNewWindow
+    Start-Process npm -ArgumentList "run dev" -WorkingDirectory $appPath -NoNewWindow -RedirectStandardOutput $appLog -RedirectStandardError $appLog
     
     Start-Sleep -Seconds 4
     
@@ -324,7 +324,7 @@ function Build-Frontend {
 }
 
 function Pull-OllamaModels {
-    Write-Host "`n--- SETUP & PULL OLLAMA MODELS ---" -ForegroundColor Cyan
+    Write-Host "`n--- SETUP AND PULL OLLAMA MODELS ---" -ForegroundColor Cyan
     
     $ollamaActive = Get-ProcessByPort 11434
     if (!$ollamaActive) {
@@ -357,8 +357,8 @@ do {
     Write-Host "  1. Start SurvivalOS (Production Mode)"
     Write-Host "  2. Start SurvivalOS (Development Mode)"
     Write-Host "  3. Install / Verify System Dependencies"
-    Write-Host "  4. Setup & Pull Ollama LLM Models"
-    Write-Host "  5. Run Hardware Diagnostics & Check Health"
+    Write-Host "  4. Setup AND Pull Ollama LLM Models"
+    Write-Host "  5. Run Hardware Diagnostics AND Check Health"
     Write-Host "  6. Build / Recompile Frontend Assets"
     Write-Host "  7. Stop Running Services"
     Write-Host "  8. Exit"
