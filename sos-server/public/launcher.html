@@ -538,8 +538,13 @@
           // Poll logs
           const logRes = await fetch(`${apiBase}/log-tail`);
           const logData = await logRes.json();
+          
+          // Smart Auto-Scroll
+          const isAtBottom = term.scrollHeight - term.clientHeight - term.scrollTop < 40;
           term.innerText = logData.logs || 'Processing...';
-          term.scrollTop = term.scrollHeight;
+          if (isAtBottom) {
+            term.scrollTop = term.scrollHeight;
+          }
         } else {
           if (status.operation !== 'idle') {
             banner.className = 'status-banner success-banner';
@@ -548,8 +553,12 @@
             // Final log tail update
             const logRes = await fetch(`${apiBase}/log-tail`);
             const logData = await logRes.json();
+            
+            const isAtBottom = term.scrollHeight - term.clientHeight - term.scrollTop < 40;
             term.innerText = logData.logs || 'Done.';
-            term.scrollTop = term.scrollHeight;
+            if (isAtBottom) {
+              term.scrollTop = term.scrollHeight;
+            }
             
             // Clear status operation so it doesn't stay green forever
             activeOperationReset();

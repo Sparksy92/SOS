@@ -215,7 +215,8 @@ router.post('/npm-install', (req, res) => {
 
   writeToLog('[LAUNCHER] Installing Server Dependencies...');
   const serverCwd = path.join(rootDir, 'sos-server');
-  const serverInstall = spawn('npm', ['install'], { cwd: serverCwd, shell: true });
+  const env = { ...process.env, NODE_ENV: 'development' };
+  const serverInstall = spawn('npm', ['install'], { cwd: serverCwd, env, shell: true });
 
   serverInstall.stdout.on('data', d => writeToLog(d.toString().trim()));
   serverInstall.stderr.on('data', d => writeToLog(d.toString().trim()));
@@ -230,7 +231,7 @@ router.post('/npm-install', (req, res) => {
 
     writeToLog('[LAUNCHER] Installing Frontend App Dependencies...');
     const appCwd = path.join(rootDir, 'sos-app');
-    const appInstall = spawn('npm', ['install'], { cwd: appCwd, shell: true });
+    const appInstall = spawn('npm', ['install'], { cwd: appCwd, env, shell: true });
 
     appInstall.stdout.on('data', d => writeToLog(d.toString().trim()));
     appInstall.stderr.on('data', d => writeToLog(d.toString().trim()));
