@@ -25,7 +25,6 @@ log_msg() {
 }
 
 check_port() {
-    # Check if a process is listening on the given port
     ss -tlnp 2>/dev/null | grep -q ":$1 "
 }
 
@@ -36,7 +35,6 @@ kill_port_process() {
         echo -e "${YELLOW}Warning: Port $port is currently in use.${NC}"
         read -rp "Stop process listening on port $port? (y/n): " confirm
         if [[ "$confirm" =~ ^[Yy]$ ]]; then
-            # Find PID using fuser or lsof
             local pid
             pid=$(lsof -t -i:"$port" 2>/dev/null)
             if [ -n "$pid" ]; then
@@ -60,129 +58,114 @@ run_diagnostics() {
     echo -e "${CYAN}             SURVIVALOS SYSTEM DIAGNOSTICS                ${NC}"
     echo -e "${CYAN}==========================================================${NC}"
     
-    # 1. Check Dependencies
     echo -e "${WHITE}[1/4] Checking Core Dependencies:${NC}"
     
-    # Node.js
     if command -v node >/dev/null 2>&1; then
         echo -e "  Node.js:   ${GREEN}Installed ($(node -v))${NC}"
     else
         echo -e "  Node.js:   ${RED}Not Found${NC}"
-        echo -e "             Please install Node.js v20+ (e.g. 'sudo apt install nodejs')"
     fi
     
-    # Python3
     if command -v python3 >/dev/null 2>&1; then
         echo -e "  Python:    ${GREEN}Installed ($(python3 --version | cut -d' ' -f2))${NC}"
     else
         echo -e "  Python:    ${RED}Not Found${NC}"
     fi
 
-    # Git
     if command -v git >/dev/null 2>&1; then
         echo -e "  Git:       ${GREEN}Installed ($(git --version | cut -d' ' -f3))${NC}"
     else
         echo -e "  Git:       ${RED}Not Found${NC}"
     fi
 
-    # Ollama
     if command -v ollama >/dev/null 2>&1; then
         echo -e "  Ollama:    ${GREEN}Installed${NC}"
     else
-        echo -e "  Ollama:    ${YELLOW}Not Found (Optional but recommended for offline LLM features)${NC}"
+        echo -e "  Ollama:    ${YELLOW}Not Found (Optional but recommended)${NC}"
     fi
 
-    # Node modules check
     if [ -d "$SERVER_DIR/node_modules" ] && [ -d "$APP_DIR/node_modules" ]; then
         echo -e "  Packages:  ${GREEN}All node_modules are installed.${NC}"
     else
         echo -e "  Packages:  ${YELLOW}Missing dependencies. Run Option 3 to install.${NC}"
     fi
 
-    # 2. Hardware Capability Diagnostics
     echo -e "\n${WHITE}[2/4] Analyzing Hardware Specifications:${NC}"
-    
-    # CPU Cores
-    local cpu_cores
-    cpu_cores=$(nproc 2>/dev/null || echo "Unknown")
-    echo -e "  CPU Cores: $cpu_cores logical processors"
+    local cores
+    cores=$(nproc 2>/dev/null || echo "Unknown")
+    echo -e "  CPU Cores: $cores logical processors"
 
-    # RAM
-    local ram_kb
-    ram_kb=$(grep MemTotal /proc/meminfo | awk '{print $2}')
-    local ram_gb=$((ram_kb / 1024 / 1024))
-    echo -e "  System RAM: ${ram_gb} GB"
-
-    # GPU
-    local gpu_info=""
-    if command -v nvidia-smi >/dev/null 2>&1; then
-        gpu_info=$(nvidia-smi --query-gpu=name,memory.total --format=csv,noheader,nounits 2>/dev/null)
-    fi
-    
-    if [ -n "$gpu_info" ]; then
-        local gpu_name
-        gpu_name=$(echo "$gpu_info" | cut -d',' -f1)
-        local gpu_vram_mb
-        gpu_vram_mb=$(echo "$gpu_info" | cut -d',' -f2 | tr -d ' ')
-        local gpu_vram_gb=$((gpu_vram_mb / 1024))
-        echo -e "  GPU:        ${GREEN}$gpu_name (CUDA-Enabled, ${gpu_vram_gb}GB VRAM)${NC}"
+    if [ -f /proc/meminfo ]; then
+        local total_ram
+        total_ram=$(grep MemTotal /proc/meminfo | awk '{print $2}')
+        local ram_gb
+        ram_gb=$((total_ram / 1024 / 1024))
+        echo -e "  System RAM: ${ram_gb} GB"
     else
-        # Generic PCI check
-        local generic_gpu
-        generic_gpu=$(lspci 2>/dev/null | grep -Ei 'vga|3d' | head -n 1 | cut -d':' -f3 | sed 's/^ //')
-        if [ -n "$generic_gpu" ]; then
-            echo -e "  GPU:        $generic_gpu (No CUDA acceleration detected)"
-        else
-            echo -e "  GPU:        None detected"
+        echo -e "  System RAM: Unknown (Defaulting to mid-spec)"
+        local ram_gb=8
+    fi
+
+    local has_nvidia=false
+    local cuda_vram=0
+    if command -v nvidia-smi >/dev/null 2>&1; then
+        local gpu_name
+        gpu_name=$(nvidia-smi --query-gpu=gpu_name --format=csv,noheader | head -n1)
+        if [ -n "$gpu_name" ]; then
+            has_nvidia=true
+            local vram_total
+            vram_total=$(nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits | head -n1)
+            cuda_vram=$((vram_total / 1024))
+            echo -e "  GPU:        ${GREEN}${gpu_name} (CUDA-Enabled) (${cuda_vram}GB VRAM)${NC}"
         fi
     fi
 
-    # 3. Spec-Based LLM Recommendations
-    echo -e "\n${WHITE}[3/4] Hardware Recommendations:${NC}"
-    if [ -n "$gpu_info" ] && [ "$ram_gb" -ge 16 ]; then
-        echo -e "  ${GREEN}High-end System Detected!${NC}"
-        echo -e "  - Recommended Local LLM:  ${WHITE}llama3.1:8b${NC} or ${WHITE}deepseek-r1:8b${NC}"
-        echo -e "  - Recommended OCR Model:  ${WHITE}llava:7b${NC} (Fully accelerated on your GPU)"
-    elif [ "$ram_gb" -ge 8 ]; then
-        echo -e "  ${YELLOW}Mid-range System Detected.${NC}"
-        echo -e "  - Recommended Local LLM:  ${WHITE}llama3.2:3b${NC} (Good speed and capability balance)"
-        echo -e "  - Recommended Embedding:  ${WHITE}nomic-embed-text${NC} (Essential for library search)"
-    else
-        echo -e "  ${RED}Low-spec/CPU System Detected.${NC}"
-        echo -e "  - Recommended Local LLM:  ${WHITE}llama3.2:1b${NC} or ${WHITE}qwen2.5:1.5b${NC}"
-        echo -e "  - Note: Runs on CPU, queries will have noticeable latency."
+    if [ "$has_nvidia" = false ]; then
+        echo -e "  GPU:        No dedicated CUDA graphics card found."
     fi
 
-    # 4. Ollama Status and Pulled Models
+    echo -e "\n${WHITE}[3/4] Hardware Recommendations:${NC}"
+    if [ "$ram_gb" -ge 16 ] && [ "$has_nvidia" = true ] && [ "$cuda_vram" -ge 6 ]; then
+        echo -e "  High-end System Detected!"
+        echo -e "  - Recommended Local LLM:  ${GREEN}llama3.1:8b or deepseek-r1:8b${NC}"
+        echo -e "  - Recommended OCR Model:  ${GREEN}llava:7b (GPU Accelerated)${NC}"
+    elif [ "$ram_gb" -ge 8 ] && { [ "$cuda_vram" -ge 3 ] || [ "$cores" -ge 8 ]; }; then
+        echo -e "  Mid-range System Detected."
+        echo -e "  - Recommended Local LLM:  ${YELLOW}llama3.2:3b (Good balance)${NC}"
+        echo -e "  - Recommended Embedding:  ${YELLOW}nomic-embed-text (Required)${NC}"
+    else
+        echo -e "  Low-spec/CPU System Detected."
+        echo -e "  - Recommended Local LLM:  ${RED}llama3.2:1b or qwen2.5:1.5b${NC}"
+        echo -e "  - Note: Runs on CPU, queries will have latency."
+    fi
+
     echo -e "\n${WHITE}[4/4] Ollama Model Library:${NC}"
     if check_port "11434"; then
         echo -e "  Ollama Service: ${GREEN}Online & Listening on port 11434${NC}"
         echo -e "  Installed Models:"
-        if command -v ollama >/dev/null 2>&1; then
-            ollama list | tail -n +2 | awk '{print "    - " $1}'
-        fi
+        ollama list | tail -n +2 | awk '{print "    - " $1}'
     else
         echo -e "  Ollama Service: ${RED}Offline${NC}"
-        echo -e "  (Select Option 4 to start it or verify your installation)"
     fi
     echo -e "${CYAN}==========================================================${NC}"
 }
 
 install_dependencies() {
     echo -e "\n${CYAN}--- SETTING UP APPLICATION DEPENDENCIES ---${NC}"
-    log_msg "Running installer check and dependency installs"
+    log_msg "Running dependencies install"
     
-    # Check for Node.js
     if ! command -v node >/dev/null 2>&1; then
-        echo -e "${YELLOW}Node.js is missing. Please install nodejs via your package manager.${NC}"
+        echo -e "${RED}Error: Node.js is required but not installed. Please install it first.${NC}"
         return 1
     fi
-
-    echo -e "Installing backend dependencies (sos-server)..."
-    cd "$SERVER_DIR" && npm install
     
-    echo -e "Installing frontend dependencies (sos-app)..."
-    cd "$APP_DIR" && npm install
+    echo -e "Installing server dependencies..."
+    cd "$SERVER_DIR" || return
+    npm install
+    
+    echo -e "Installing frontend application dependencies..."
+    cd "$APP_DIR" || return
+    npm install
     
     echo -e "${GREEN}✔ Dependencies installed successfully!${NC}"
 }
@@ -192,8 +175,8 @@ start_production() {
     log_msg "Starting production mode"
     
     if [ ! -d "$APP_DIR/dist" ]; then
-        echo -e "${YELLOW}Production build folder 'sos-app/dist' is missing!${NC}"
-        read -rp "Build frontend assets now? (y/n): " build_now
+        echo -e "${YELLOW}Warning: Production build 'sos-app/dist' is missing.${NC}"
+        read -rp "Build frontend now? (y/n): " build_now
         if [[ "$build_now" =~ ^[Yy]$ ]]; then
             build_frontend
         else
@@ -201,25 +184,25 @@ start_production() {
             return 1
         fi
     fi
-
-    kill_port_process 3001 "SurvivalOS Production Server"
-
-    echo -e "Launching Node server on port 3001..."
-    export NODE_ENV=production
-    export PORT=3001
     
-    cd "$SERVER_DIR"
-    node index.js > "$SERVER_LOG" 2>&1 &
+    if check_port "3001"; then
+        kill_port_process 3001 "SurvivalOS Server"
+    fi
     
+    echo -e "Launching server daemon on port 3001..."
+    cd "$SERVER_DIR" || return
+    NODE_ENV=production PORT=3001 node index.js > "$SERVER_LOG" 2>&1 &
     sleep 3
-    if check_port 3001; then
-        echo -e "${GREEN}✔ SurvivalOS started successfully!${NC}"
-        echo -e "${GREEN}Open http://localhost:3001 in your browser.${NC}"
+    
+    if curl -s http://localhost:3001/api/health | grep -q '"ok":true'; then
+        echo -e "${GREEN}✔ Production server started successfully on http://localhost:3001${NC}"
         if command -v xdg-open >/dev/null 2>&1; then
-            xdg-open "http://localhost:3001" >/dev/null 2>&1 &
+            xdg-open http://localhost:3001
+        elif command -v open >/dev/null 2>&1; then
+            open http://localhost:3001
         fi
     else
-        echo -e "${RED}Failed to boot server. Inspect logs/sos-server.log for details.${NC}"
+        echo -e "${RED}Production launch timed out or failed. Check logs.${NC}"
     fi
 }
 
@@ -227,35 +210,34 @@ start_development() {
     echo -e "\n${CYAN}--- STARTING SURVIVALOS (DEVELOPMENT MODE) ---${NC}"
     log_msg "Starting development mode"
     
-    kill_port_process 3001 "SurvivalOS Backend Server"
-    kill_port_process 3000 "Frontend Dev Server"
-
+    if check_port "3001"; then kill_port_process 3001 "SurvivalOS Backend"; fi
+    if check_port "3000"; then kill_port_process 3000 "Frontend Dev Server"; fi
+    
     echo -e "Launching backend Node server on port 3001..."
-    export NODE_ENV=development
-    export PORT=3001
-    cd "$SERVER_DIR"
-    node index.js > "$SERVER_LOG" 2>&1 &
-
-    echo -e "Launching Vite frontend dev server on port 3000..."
-    cd "$APP_DIR"
+    cd "$SERVER_DIR" || return
+    NODE_ENV=development PORT=3001 node index.js > "$SERVER_LOG" 2>&1 &
+    
+    echo -e "Launching Vite dev server on port 3000..."
+    cd "$APP_DIR" || return
     npm run dev > "$LOGS_DIR/sos-app-dev.log" 2>&1 &
-
+    
     sleep 4
-    if check_port 3000; then
-        echo -e "${GREEN}✔ SurvivalOS Dev Environment is online!${NC}"
-        echo -e "${GREEN}Serving UI on http://localhost:3000 (Backend on http://localhost:3001)${NC}"
+    if curl -s http://localhost:3001/api/health | grep -q '"ok":true'; then
+        echo -e "${GREEN}✔ Backend running on port 3001, Frontend dev server running on port 3000${NC}"
         if command -v xdg-open >/dev/null 2>&1; then
-            xdg-open "http://localhost:3000" >/dev/null 2>&1 &
+            xdg-open http://localhost:3000
+        elif command -v open >/dev/null 2>&1; then
+            open http://localhost:3000
         fi
     else
-        echo -e "${RED}Development launch timed out or failed. Check logs directory.${NC}"
+        echo -e "${RED}Development launch timed out or failed. Check logs.${NC}"
     fi
 }
 
 build_frontend() {
     echo -e "\n${CYAN}--- BUILDING FRONTEND PRODUCTION ASSETS ---${NC}"
     log_msg "Building frontend production assets"
-    cd "$APP_DIR"
+    cd "$APP_DIR" || return
     npm run build
 }
 
@@ -282,39 +264,96 @@ pull_ollama_models() {
     echo -e "${GREEN}✔ Models pulled successfully!${NC}"
 }
 
-# Menu Loop
-while true; do
-    echo -e "\n${CYAN}==========================================================${NC}"
-    echo -e "${CYAN}             SURVIVALOS UNIFIED OPERATOR MENU             ${NC}"
-    echo -e "${CYAN}==========================================================${NC}"
-    echo -e "  1. Start SurvivalOS (Production Mode)"
-    echo -e "  2. Start SurvivalOS (Development Mode)"
-    echo -e "  3. Install / Verify System Dependencies"
-    echo -e "  4. Setup & Pull Ollama LLM Models"
-    echo -e "  5. Run Hardware Diagnostics & Check Health"
-    echo -e "  6. Build / Recompile Frontend Assets"
-    echo -e "  7. Stop Running Services"
-    echo -e "  8. Exit"
-    echo -e "${CYAN}==========================================================${NC}"
-    read -rp "Select an option (1-8): " choice
+cleanup_services() {
+    echo -e "\n${YELLOW}Stopping launcher background services...${NC}"
+    log_msg "Shutting down launcher background services"
+    # Find PIDs on 3000/3001 and kill
+    local p3000
+    p3000=$(lsof -t -i:3000 2>/dev/null)
+    if [ -n "$p3000" ]; then kill -9 "$p3000" 2>/dev/null; fi
+    local p3001
+    p3001=$(lsof -t -i:3001 2>/dev/null)
+    if [ -n "$p3001" ]; then kill -9 "$p3001" 2>/dev/null; fi
+}
 
-    case $choice in
-        1) start_production ;;
-        2) start_development ;;
-        3) install_dependencies ;;
-        4) pull_ollama_models ;;
-        5) run_diagnostics ;;
-        6) build_frontend ;;
-        7)
-            kill_port_process 3001 "SurvivalOS Backend Server"
-            kill_port_process 3000 "Frontend Dev Server"
-            ;;
-        8)
-            echo -e "${YELLOW}Exiting launcher. Good luck, Operator.${NC}"
-            exit 0
-            ;;
-        *)
-            echo -e "${RED}Invalid option. Enter a number between 1 and 8.${NC}"
-            ;;
-    esac
-done
+# --- EXECUTION ---
+if [[ "$1" == "--cli" ]]; then
+    # Legacy CLI Loop
+    while true; do
+        echo -e "\n${CYAN}==========================================================${NC}"
+        echo -e "${CYAN}             SURVIVALOS UNIFIED OPERATOR MENU             ${NC}"
+        echo -e "${CYAN}==========================================================${NC}"
+        echo -e "  1. Start SurvivalOS (Production Mode)"
+        echo -e "  2. Start SurvivalOS (Development Mode)"
+        echo -e "  3. Install / Verify System Dependencies"
+        echo -e "  4. Setup & Pull Ollama LLM Models"
+        echo -e "  5. Run Hardware Diagnostics & Check Health"
+        echo -e "  6. Build / Recompile Frontend Assets"
+        echo -e "  7. Stop Running Services"
+        echo -e "  8. Exit"
+        echo -e "${CYAN}==========================================================${NC}"
+        read -rp "Select an option (1-8): " choice
+
+        case $choice in
+            1) start_production ;;
+            2) start_development ;;
+            3) install_dependencies ;;
+            4) pull_ollama_models ;;
+            5) run_diagnostics ;;
+            6) build_frontend ;;
+            7)
+                cleanup_services
+                ;;
+            8)
+                echo -e "${YELLOW}Exiting launcher. Good luck, Operator.${NC}"
+                exit 0
+                ;;
+            *)
+                echo -e "${RED}Invalid option. Enter a number between 1 and 8.${NC}"
+                ;;
+        esac
+    done
+else
+    # Default Web UI Bootstrapper Mode
+    echo -e "${CYAN}==========================================================${NC}"
+    echo -e "         SURVIVALOS WEB LAUNCHER BOOTSTRAPPER             "
+    echo -e "${CYAN}==========================================================${NC}"
+    log_msg "Starting Linux Web Launcher"
+
+    if [ ! -d "$SERVER_DIR/node_modules" ]; then
+        echo -e "${YELLOW}Installing backend server dependencies...${NC}"
+        cd "$SERVER_DIR" || exit 1
+        npm install
+    fi
+
+    if check_port "3001"; then
+        echo -e "${GREEN}Launcher service already running on port 3001.${NC}"
+    else
+        echo -e "Starting server daemon on port 3001..."
+        cd "$SERVER_DIR" || exit 1
+        NODE_ENV=production PORT=3001 node index.js > "$SERVER_LOG" 2>&1 &
+    fi
+
+    sleep 3
+
+    echo -e "${GREEN}Opening launcher control panel in your browser...${NC}"
+    if command -v xdg-open >/dev/null 2>&1; then
+        xdg-open http://localhost:3001/launcher
+    elif command -v open >/dev/null 2>&1; then
+        open http://localhost:3001/launcher
+    fi
+
+    echo -e "${CYAN}==========================================================${NC}"
+    echo -e "${GREEN}       SURVIVALOS WEB LAUNCHER IS ONLINE & STREAMING      ${NC}"
+    echo -e "${CYAN}==========================================================${NC}"
+    echo -e "  Web Dashboard: http://localhost:3001/launcher"
+    echo -e "  Server Log:    $SERVER_LOG"
+    echo -e "${CYAN}==========================================================${NC}"
+    echo -e "${YELLOW}  Press Ctrl+C to terminate services and exit.${NC}\n"
+
+    # Trap exit to cleanup services
+    trap cleanup_services EXIT
+
+    # Tail logs
+    tail -f "$SERVER_LOG"
+fi

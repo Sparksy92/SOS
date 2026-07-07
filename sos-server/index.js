@@ -102,6 +102,7 @@ const materialsRoutes = require('./routes/materials.routes');
 const healthRoutes = require('./routes/health.routes');
 const indexRoutes = require('./routes/index.routes');
 const toolkitRoutes = require('./routes/toolkit.routes');
+const launcherRoutes = require('./routes/launcher.routes');
 
 app.use('/api/crawler', crawlerRoutes);
 app.use('/api/video', mediaRoutes);
@@ -109,6 +110,12 @@ app.use('/api/materials', materialsRoutes);
 app.use('/api/health', healthRoutes);
 app.use('/api/index', indexRoutes);
 app.use('/api/toolkit', toolkitRoutes);
+app.use('/api/launcher', launcherRoutes);
+
+// Launcher UI HTML route
+app.get('/launcher', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'launcher.html'));
+});
 
 // AI Chat Endpoint
 app.use(express.json()); // Add JSON parser for POST requests

@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SurvivalOS Operator Launcher & Installer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+      --card-bg: rgba(30, 41, 59, 0.7);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --primary: #38bdf8;
+      --primary-hover: #0ea5e9;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--bg-gradient);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 40px 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1100px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+    }
+
+    @media (max-width: 900px) {
+      .container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Column 1: Config & Launcher Controls */
+    .controls-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+    }
+
+    /* Column 2: Logs and Diagnostics */
+    .display-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+    }
+
+    header {
+      grid-column: 1 / -1;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    header h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      letter-spacing: -0.05em;
+      background: linear-gradient(to right, #38bdf8, #818cf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 5px;
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 24px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      transition: transform 0.2s, border-color 0.2s;
+    }
+
+    .card:hover {
+      border-color: rgba(56, 189, 248, 0.3);
+    }
+
+    .card-title {
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      padding-bottom: 10px;
+    }
+
+    .card-title svg {
+      width: 20px;
+      height: 20px;
+      color: var(--primary);
+    }
+
+    /* Diagnostics styling */
+    .diagnostic-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .diag-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 8px;
+      border-left: 4px solid #64748b;
+    }
+
+    .diag-item.ok {
+      border-left-color: var(--success);
+    }
+
+    .diag-item.warning {
+      border-left-color: var(--warning);
+    }
+
+    .diag-item.danger {
+      border-left-color: var(--danger);
+    }
+
+    .diag-label {
+      font-weight: 500;
+    }
+
+    .diag-val {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .badge.ok { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+    .badge.warning { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+    .badge.danger { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+
+    /* Button styles */
+    .btn-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 12px;
+    }
+
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 14px 20px;
+      border-radius: 12px;
+      border: none;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
+      color: #fff;
+      flex: 1;
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      box-shadow: 0 4px 14px rgba(56, 189, 248, 0.3);
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-hover);
+    }
+
+    .btn-success {
+      background: var(--success);
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-success:hover {
+      background: #059669;
+    }
+
+    .btn-secondary {
+      background: #475569;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .btn-secondary:hover {
+      background: #334155;
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3);
+    }
+
+    .btn-danger:hover {
+      background: #dc2626;
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    /* Terminal logs */
+    .terminal {
+      background: #090d16;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9rem;
+      color: #38bdf8;
+      height: 250px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);
+    }
+
+    .terminal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      margin-bottom: 12px;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+    }
+
+    .terminal-dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .dot.red { background: var(--danger); }
+    .dot.yellow { background: var(--warning); }
+    .dot.green { background: var(--success); }
+
+    /* Recommendations Panel */
+    .rec-card {
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.1) 0%, rgba(129, 140, 248, 0.1) 100%);
+      border: 1px solid rgba(56, 189, 248, 0.2);
+    }
+
+    .rec-card p {
+      font-size: 0.95rem;
+      line-height: 1.5;
+      margin-bottom: 8px;
+    }
+
+    .rec-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 10px;
+      background: rgba(0, 0, 0, 0.15);
+      padding: 8px 12px;
+      border-radius: 8px;
+    }
+
+    .rec-label {
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    /* Ollama library dropdown */
+    .ollama-select {
+      width: 100%;
+      background: #1e293b;
+      color: #fff;
+      border: 1px solid var(--card-border);
+      padding: 12px;
+      border-radius: 8px;
+      outline: none;
+      font-family: inherit;
+      font-size: 1rem;
+      margin-bottom: 12px;
+      cursor: pointer;
+    }
+
+    /* Status banner */
+    .status-banner {
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-weight: 600;
+      text-align: center;
+      margin-bottom: 15px;
+      display: none;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 0.9; }
+      50% { opacity: 1; }
+      100% { opacity: 0.9; }
+    }
+
+    .status-banner.running {
+      display: block;
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid var(--warning);
+      color: var(--warning);
+    }
+
+    .status-banner.success-banner {
+      display: block;
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid var(--success);
+      color: var(--success);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>SurvivalOS Tactical Launcher</h1>
+      <p>App Health Check, Diagnostics, and Server Provisioning Console</p>
+    </header>
+
+    <!-- COLUMN 1: CONTROLS -->
+    <div class="controls-panel">
+      <!-- Active Job Banner -->
+      <div id="statusBanner" class="status-banner"></div>
+
+      <!-- Core Operations -->
+      <div class="card">
+        <div class="card-title">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          Launcher Dashboard Controls
+        </div>
+        <div class="btn-group">
+          <div class="btn-row">
+            <button id="btnProd" class="btn btn-success" onclick="startApp('production')">
+              <svg style="width:20px;height:20px" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+              Start OS (Production)
+            </button>
+            <button id="btnDev" class="btn btn-primary" onclick="startApp('development')">
+              <svg style="width:20px;height:20px" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+              Start OS (Development)
+            </button>
+          </div>
+          <button id="btnDeps" class="btn btn-secondary" onclick="installDeps()">
+            Install / Verify System Dependencies
+          </button>
+          <div class="btn-row">
+            <button id="btnBuild" class="btn btn-secondary" onclick="buildFrontend()">
+              Build Frontend Assets
+            </button>
+            <button id="btnStop" class="btn btn-danger" onclick="stopServices()">
+              Stop Running Services
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ollama Setup Card -->
+      <div class="card">
+        <div class="card-title">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
+          Setup Ollama LLM Models
+        </div>
+        <select id="modelSelect" class="ollama-select">
+          <option value="llama3.2:3b">llama3.2:3b (Recommended Mid-range Chat)</option>
+          <option value="llava:7b">llava:7b (Recommended Vision/OCR)</option>
+          <option value="nomic-embed-text">nomic-embed-text (Required for Search)</option>
+          <option value="deepseek-r1:8b">deepseek-r1:8b (High-end Chat)</option>
+          <option value="llama3.1:8b">llama3.1:8b (High-end Chat)</option>
+        </select>
+        <button id="btnPull" class="btn btn-primary" onclick="pullModel()">Pull Selected Model</button>
+      </div>
+    </div>
+
+    <!-- COLUMN 2: DISPLAY / DIAGNOSTICS -->
+    <div class="display-panel">
+      <!-- Diagnostics -->
+      <div class="card">
+        <div class="card-title">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          System Diagnostics & Hardware
+        </div>
+        <div class="diagnostic-grid">
+          <div id="diagNode" class="diag-item"><span class="diag-label">Node.js</span><span class="diag-val">Checking...</span></div>
+          <div id="diagPython" class="diag-item"><span class="diag-label">Python</span><span class="diag-val">Checking...</span></div>
+          <div id="diagGit" class="diag-item"><span class="diag-label">Git</span><span class="diag-val">Checking...</span></div>
+          <div id="diagOllama" class="diag-item"><span class="diag-label">Ollama Service</span><span class="diag-val">Checking...</span></div>
+          <div id="diagMemory" class="diag-item"><span class="diag-label">System Memory</span><span class="diag-val">Checking...</span></div>
+          <div id="diagGpu" class="diag-item"><span class="diag-label">GPU Info</span><span class="diag-val">Checking...</span></div>
+        </div>
+      </div>
+
+      <!-- Spec Recommendations -->
+      <div id="recCard" class="card rec-card" style="display:none">
+        <div class="card-title">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 .364l-.707 .707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 01-2 2h0a2 2 0 01-2-2v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+          Spec-Based Model Recommendations
+        </div>
+        <p id="recSystemTier"></p>
+        <div class="rec-item">
+          <span class="rec-label">Recommended Chat LLM:</span>
+          <span id="recChatModel"></span>
+        </div>
+        <div class="rec-item">
+          <span class="rec-label">Recommended OCR Vision:</span>
+          <span id="recOcrModel"></span>
+        </div>
+      </div>
+
+      <!-- Live Terminal Console Logs -->
+      <div class="card">
+        <div class="terminal-header">
+          <div class="terminal-dots">
+            <div class="dot red"></div>
+            <div class="dot yellow"></div>
+            <div class="dot green"></div>
+          </div>
+          <span>Launcher Terminal Console (Live)</span>
+        </div>
+        <div id="terminal" class="terminal">Standing by for operator command...</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const apiBase = '/api/launcher';
+    let statusInterval = null;
+
+    // Load diagnostics on boot
+    async function loadDiagnostics() {
+      try {
+        const res = await fetch(`${apiBase}/diagnostics`);
+        const data = await res.json();
+        
+        updateDiagItem('diagNode', data.software.node.installed, data.software.node.version);
+        updateDiagItem('diagPython', data.software.python.installed, data.software.python.version || 'Not Installed');
+        updateDiagItem('diagGit', data.software.git.installed, data.software.git.version || 'Not Installed');
+        updateDiagItem('diagOllama', data.software.ollama.installed, data.software.ollama.version || 'Not Installed');
+        
+        // RAM & CPU
+        document.getElementById('diagMemory').className = 'diag-item ok';
+        document.getElementById('diagMemory').querySelector('.diag-val').innerText = `${data.hardware.ram} (${data.hardware.cpu})`;
+
+        // GPU
+        const gpuEl = document.getElementById('diagGpu');
+        if (data.hardware.gpus.length > 0) {
+          gpuEl.className = 'diag-item ok';
+          gpuEl.querySelector('.diag-val').innerHTML = data.hardware.gpus.map(g => `${g.name} (${g.vram})`).join(', ');
+        } else {
+          gpuEl.className = 'diag-item warning';
+          gpuEl.querySelector('.diag-val').innerText = 'No CUDA GPU detected (runs on CPU)';
+        }
+
+        // Recommendations
+        const recCard = document.getElementById('recCard');
+        document.getElementById('recSystemTier').innerHTML = `<strong>System Profile:</strong> ${data.hardware.tier.toUpperCase()}-spec hardware profile detected.`;
+        document.getElementById('recChatModel').innerText = data.hardware.recommendedLlm;
+        document.getElementById('recOcrModel').innerText = data.hardware.recommendedOcr;
+        recCard.style.display = 'block';
+
+      } catch (err) {
+        console.error('Failed to load diagnostics', err);
+      }
+    }
+
+    function updateDiagItem(id, success, text) {
+      const el = document.getElementById(id);
+      el.className = `diag-item ${success ? 'ok' : 'danger'}`;
+      el.querySelector('.diag-val').innerHTML = `${text} <span class="badge ${success ? 'ok' : 'danger'}">${success ? 'Ready' : 'Missing'}</span>`;
+    }
+
+    // Refresh active status
+    async function checkStatus() {
+      try {
+        const res = await fetch(`${apiBase}/status`);
+        const status = await res.json();
+
+        const banner = document.getElementById('statusBanner');
+        const term = document.getElementById('terminal');
+
+        // Update action buttons state
+        const buttons = ['btnProd', 'btnDev', 'btnDeps', 'btnBuild', 'btnStop', 'btnPull'];
+        buttons.forEach(btnId => {
+          document.getElementById(btnId).disabled = status.running;
+        });
+
+        if (status.running) {
+          banner.className = 'status-banner running';
+          banner.innerText = `Active Operation: ${status.operation.toUpperCase()}... Please wait.`;
+          
+          // Poll logs
+          const logRes = await fetch(`${apiBase}/log-tail`);
+          const logData = await logRes.json();
+          term.innerText = logData.logs || 'Processing...';
+          term.scrollTop = term.scrollHeight;
+        } else {
+          if (status.operation !== 'idle') {
+            banner.className = 'status-banner success-banner';
+            banner.innerText = `Operation ${status.operation.toUpperCase()} Completed! (Exit code: ${status.exitCode})`;
+            
+            // Final log tail update
+            const logRes = await fetch(`${apiBase}/log-tail`);
+            const logData = await logRes.json();
+            term.innerText = logData.logs || 'Done.';
+            term.scrollTop = term.scrollHeight;
+            
+            // Clear status operation so it doesn't stay green forever
+            activeOperationReset();
+          }
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function activeOperationReset() {
+      setTimeout(async () => {
+        const banner = document.getElementById('statusBanner');
+        banner.style.display = 'none';
+        loadDiagnostics();
+      }, 5000);
+    }
+
+    // Trigger commands
+    async function startApp(mode) {
+      document.getElementById('terminal').innerText = `Launching app in ${mode} mode...`;
+      try {
+        const res = await fetch(`${apiBase}/start-app`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ mode })
+        });
+        const data = await res.json();
+        if (data.redirectUrl) {
+          setTimeout(() => {
+            window.location.href = data.redirectUrl;
+          }, mode === 'production' ? 3000 : 4000);
+        }
+      } catch (e) {
+        document.getElementById('terminal').innerText = `Failed to start app: ${e.message}`;
+      }
+    }
+
+    async function installDeps() {
+      document.getElementById('terminal').innerText = 'Initializing packages installation...';
+      await fetch(`${apiBase}/npm-install`, { method: 'POST' });
+    }
+
+    async function buildFrontend() {
+      document.getElementById('terminal').innerText = 'Starting Vite bundle compiler...';
+      await fetch(`${apiBase}/build`, { method: 'POST' });
+    }
+
+    async function pullModel() {
+      const model = document.getElementById('modelSelect').value;
+      document.getElementById('terminal').innerText = `Requesting Ollama to pull ${model}...`;
+      await fetch(`${apiBase}/pull-model`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model })
+      });
+    }
+
+    async function stopServices() {
+      document.getElementById('terminal').innerText = 'Sending shutdown signals to port 3000 and 3001...';
+      await fetch(`${apiBase}/stop`, { method: 'POST' });
+      document.getElementById('terminal').innerText = 'Services terminated.';
+      loadDiagnostics();
+    }
+
+    // Initialize
+    loadDiagnostics();
+    setInterval(checkStatus, 1000);
+  </script>
+</body>
+</html>

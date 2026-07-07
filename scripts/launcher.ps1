@@ -1,4 +1,7 @@
 # SurvivalOS Operator Launcher (Windows PowerShell)
+param(
+    [switch]$cli
+)
 
 $root = Split-Path -Parent $PSScriptRoot
 $serverPath = Join-Path $root "sos-server"
@@ -80,7 +83,8 @@ function Stop-PortProcess($port, $label) {
 }
 
 function Run-Diagnostics {
-    Write-Host "`n==========================================================" -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host '==========================================================' -ForegroundColor Cyan
     Write-Host "             SURVIVALOS SYSTEM DIAGNOSTICS                " -ForegroundColor Cyan
     Write-Host "==========================================================" -ForegroundColor Cyan
     
@@ -138,29 +142,50 @@ function Run-Diagnostics {
     }
 
     $gpus = Get-CimInstance Win32_VideoController -ErrorAction SilentlyContinue
-    $hasCuda = $false
-    foreach ($gpu in $gpus) {
-        $vram = ""
-        if ($gpu.AdapterRAM) {
-            $vramGb = [Math]::Round($gpu.AdapterRAM / 1GB)
-            $vram = " (${vramGb}GB VRAM)"
+    $gpuCount = 0
+    $cudaGpu = $false
+    $cudaVram = 0
+
+    if ($gpus) {
+        foreach ($gpu in $gpus) {
+            $gpuName = $gpu.Name
+            $gpuVram = ""
+            
+            # Fetch VRAM if queryable
+            if ($gpu.AdapterRAM) {
+                $gpuVram = " (" + [Math]::Round($gpu.AdapterRAM / 1MB) + "MB VRAM)"
+            }
+            
+            # NVIDIA CUDA check
+            if ($gpuName -like "*NVIDIA*" -or $gpuName -like "*GeForce*" -or $gpuName -like "*RTX*" -or $gpuName -like "*Quadro*") {
+                $cudaGpu = $true
+                $nvidiaSmi = Get-Command nvidia-smi -ErrorAction SilentlyContinue
+                if ($nvidiaSmi) {
+                    $smiOut = & nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits 2>&1
+                    if ($smiOut -match '^\d+$') {
+                        $cudaVram = [Math]::Round([int]$smiOut / 1024)
+                        $gpuVram = " (CUDA-Enabled) (${cudaVram}GB VRAM)"
+                    }
+                }
+                Write-Host "  GPU:        $gpuName$gpuVram" -ForegroundColor Green
+            } else {
+                Write-Host "  GPU:        $gpuName$gpuVram"
+            }
+            $gpuCount++
         }
-        
-        if ($gpu.Name -like "*NVIDIA*") {
-            Write-Host "  GPU:        $($gpu.Name) (CUDA-Enabled)$vram" -ForegroundColor Green
-            $hasCuda = $true
-        } else {
-            Write-Host "  GPU:        $($gpu.Name)$vram"
-        }
+    }
+    
+    if ($gpuCount -eq 0) {
+        Write-Host "  GPU:        No dedicated graphics card found." -ForegroundColor Yellow
     }
 
     # 3. Recommendations
     Write-Host "`n[3/4] Hardware Recommendations:" -ForegroundColor White
-    if ($hasCuda -and $ramGb -ge 16) {
+    if ($ramGb -ge 16 -and $cudaGpu -and $cudaVram -ge 6) {
         Write-Host "  High-end System Detected!" -ForegroundColor Green
         Write-Host "  - Recommended Local LLM:  llama3.1:8b or deepseek-r1:8b" -ForegroundColor White
         Write-Host "  - Recommended OCR Model:  llava:7b (Fully accelerated on your GPU)" -ForegroundColor White
-    } elseif ($ramGb -ge 8) {
+    } elseif ($ramGb -ge 8 -and ($cudaVram -ge 3 -or $cpuCores -ge 8)) {
         Write-Host "  Mid-range System Detected." -ForegroundColor Yellow
         Write-Host "  - Recommended Local LLM:  llama3.2:3b (Good speed and capability balance)" -ForegroundColor White
         Write-Host "  - Recommended Embedding:  nomic-embed-text (Essential for library search)" -ForegroundColor White
@@ -355,35 +380,99 @@ function Pull-OllamaModels {
     Write-Host "✔ Ollama model pull operations completed." -ForegroundColor Green
 }
 
-# Menu Loop
-do {
-    Write-Host ""
-    Write-Host '==========================================================' -ForegroundColor Cyan
-    Write-Host "             SURVIVALOS UNIFIED OPERATOR MENU             " -ForegroundColor Cyan
-    Write-Host "==========================================================" -ForegroundColor Cyan
-    Write-Host "  1. Start SurvivalOS (Production Mode)"
-    Write-Host "  2. Start SurvivalOS (Development Mode)"
-    Write-Host "  3. Install / Verify System Dependencies"
-    Write-Host "  4. Setup AND Pull Ollama LLM Models"
-    Write-Host "  5. Run Hardware Diagnostics AND Check Health"
-    Write-Host "  6. Build / Recompile Frontend Assets"
-    Write-Host "  7. Stop Running Services"
-    Write-Host "  8. Exit"
-    Write-Host "==========================================================" -ForegroundColor Cyan
-    
-    $choice = Read-Host "Select an option (1-8)"
-    switch ($choice) {
-        '1' { Start-ProductionMode }
-        '2' { Start-DevelopmentMode }
-        '3' { Install-Dependencies }
-        '4' { Pull-OllamaModels }
-        '5' { Run-Diagnostics }
-        '6' { Build-Frontend }
-        '7' { 
-            Stop-PortProcess 3001 "SurvivalOS Backend Server"
-            Stop-PortProcess 3000 "Frontend Dev Server"
+# --- EXECUTION ROOT ---
+if ($cli) {
+    # Legacy Console Menu Mode
+    do {
+        Write-Host ""
+        Write-Host '==========================================================' -ForegroundColor Cyan
+        Write-Host "             SURVIVALOS UNIFIED OPERATOR MENU             " -ForegroundColor Cyan
+        Write-Host "==========================================================" -ForegroundColor Cyan
+        Write-Host "  1. Start SurvivalOS (Production Mode)"
+        Write-Host "  2. Start SurvivalOS (Development Mode)"
+        Write-Host "  3. Install / Verify System Dependencies"
+        Write-Host "  4. Setup AND Pull Ollama LLM Models"
+        Write-Host "  5. Run Hardware Diagnostics AND Check Health"
+        Write-Host "  6. Build / Recompile Frontend Assets"
+        Write-Host "  7. Stop Running Services"
+        Write-Host "  8. Exit"
+        Write-Host "==========================================================" -ForegroundColor Cyan
+        
+        $choice = Read-Host "Select an option (1-8)"
+        switch ($choice) {
+            '1' { Start-ProductionMode }
+            '2' { Start-DevelopmentMode }
+            '3' { Install-Dependencies }
+            '4' { Pull-OllamaModels }
+            '5' { Run-Diagnostics }
+            '6' { Build-Frontend }
+            '7' { 
+                Stop-PortProcess 3001 "SurvivalOS Backend Server"
+                Stop-PortProcess 3000 "Frontend Dev Server"
+            }
+            '8' { Write-Host "Exiting launcher. Good luck, Operator." -ForegroundColor Yellow }
+            Default { Write-Host "Invalid option. Select 1 to 8." -ForegroundColor Red }
         }
-        '8' { Write-Host "Exiting launcher. Good luck, Operator." -ForegroundColor Yellow }
-        Default { Write-Host "Invalid option. Select 1 to 8." -ForegroundColor Red }
+    } while ($choice -ne '8')
+} else {
+    # Default Web UI Bootstrapper Mode
+    Write-Host "==========================================================" -ForegroundColor Cyan
+    Write-Host "         SURVIVALOS WEB LAUNCHER BOOTSTRAPPER             " -ForegroundColor Cyan
+    Write-Host "==========================================================" -ForegroundColor Cyan
+    Write-Log "Starting Web launcher bootstrapper"
+
+    # 1. Silently verify backend server dependencies exist
+    $serverModulesExist = Test-Path (Join-Path $serverPath "node_modules")
+    if (!$serverModulesExist) {
+        Write-Host "Installing backend server dependencies... (One-time setup)" -ForegroundColor Yellow
+        Write-Log "Bootstrapping server node_modules"
+        $proc = Start-Process npm -ArgumentList "install" -WorkingDirectory $serverPath -NoNewWindow -PassThru -Wait
+        if ($proc.ExitCode -ne 0) {
+            Write-Host "Failed to install server dependencies. Exit code: $($proc.ExitCode)" -ForegroundColor Red
+            Read-Host "Press Enter to exit..."
+            return
+        }
     }
-} while ($choice -ne '8')
+
+    # 2. Check if port 3001 is already in use
+    $existing = Get-ProcessByPort 3001
+    if ($existing) {
+        Write-Host "Launcher server is already active on port 3001." -ForegroundColor Green
+    } else {
+        # Start the backend node server in the background
+        Write-Host "Starting server daemon on port 3001..." -ForegroundColor White
+        $env:NODE_ENV = "production"
+        $env:PORT = "3001"
+        Start-Process node -ArgumentList "index.js" -WorkingDirectory $serverPath -NoNewWindow -RedirectStandardOutput $serverLog -RedirectStandardError $serverLog
+    }
+
+    # 3. Wait for the server to bind
+    Write-Host "Waiting for service to bind..." -ForegroundColor White
+    Start-Sleep -Seconds 3
+
+    # 4. Open the browser to http://localhost:3001/launcher
+    Write-Host "Opening launcher control panel in your default browser..." -ForegroundColor Green
+    Start-Process "http://localhost:3001/launcher"
+
+    Write-Host "==========================================================" -ForegroundColor Cyan
+    Write-Host "       SURVIVALOS WEB LAUNCHER IS ONLINE & STREAMING      " -ForegroundColor Green
+    Write-Host "==========================================================" -ForegroundColor Cyan
+    Write-Host "  Web Dashboard: http://localhost:3001/launcher" -ForegroundColor White
+    Write-Host "  Server Log:    $serverLog" -ForegroundColor White
+    Write-Host "==========================================================" -ForegroundColor Cyan
+    Write-Host "  Press Ctrl+C to terminate launcher services and exit." -ForegroundColor Yellow
+    Write-Host ""
+
+    try {
+        # Stream the server logs to the console window so the user sees progress and errors
+        Get-Content -Path $serverLog -Wait -Tail 20
+    } finally {
+        Write-Host "`nStopping launcher services..." -ForegroundColor Yellow
+        Write-Log "Shutting down launcher background services"
+        # Gracefully close port 3000 & 3001 processes
+        $p3000 = Get-ProcessByPort 3000
+        if ($p3000) { Stop-Process -Id $p3000.PID -Force -ErrorAction SilentlyContinue }
+        $p3001 = Get-ProcessByPort 3001
+        if ($p3001) { Stop-Process -Id $p3001.PID -Force -ErrorAction SilentlyContinue }
+    }
+}
