@@ -17,7 +17,8 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
-const { resolveMaterialPath } = require('./services/materialRootService');
+const { resolveMaterialPath, getMaterialRoot } = require('./services/materialRootService');
+const MATERIALS_DIR = getMaterialRoot();
 
 // Serve the materials folder statically via a custom guarded Express 5 route
 app.get(/^\/materials\/(.+)$/, (req, res) => {

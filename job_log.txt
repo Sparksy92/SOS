@@ -1,0 +1,1085 @@
+﻿2026-07-07T17:42:47.8779015Z Current runner version: '2.335.1'
+2026-07-07T17:42:47.8857071Z ##[group]Runner Image Provisioner
+2026-07-07T17:42:47.8858469Z Hosted Compute Agent
+2026-07-07T17:42:47.8859390Z Version: 20260624.560
+2026-07-07T17:42:47.8860402Z Commit: 925d229a51159bc391ae97e54a2dd1fe20af789d
+2026-07-07T17:42:47.8882036Z Build Date: 2026-06-24T18:26:47Z
+2026-07-07T17:42:47.8883181Z Worker ID: {d5ad6408-2395-4f16-ae2a-b2c391b14ab6}
+2026-07-07T17:42:47.8884422Z Azure Region: eastus
+2026-07-07T17:42:47.8885372Z ##[endgroup]
+2026-07-07T17:42:47.8887722Z ##[group]Operating System
+2026-07-07T17:42:47.8888910Z Ubuntu
+2026-07-07T17:42:47.8889703Z 24.04.4
+2026-07-07T17:42:47.8890770Z LTS
+2026-07-07T17:42:47.8891911Z ##[endgroup]
+2026-07-07T17:42:47.8892774Z ##[group]Runner Image
+2026-07-07T17:42:47.8893793Z Image: ubuntu-24.04
+2026-07-07T17:42:47.8894642Z Version: 20260628.225.1
+2026-07-07T17:42:47.8897338Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260628.225/images/ubuntu/Ubuntu2404-Readme.md
+2026-07-07T17:42:47.8899890Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260628.225
+2026-07-07T17:42:47.8921961Z ##[endgroup]
+2026-07-07T17:42:47.8923897Z ##[group]GITHUB_TOKEN Permissions
+2026-07-07T17:42:47.8926683Z Contents: read
+2026-07-07T17:42:47.8927608Z Metadata: read
+2026-07-07T17:42:47.8928703Z Packages: read
+2026-07-07T17:42:47.8929583Z ##[endgroup]
+2026-07-07T17:42:47.8933301Z Secret source: Actions
+2026-07-07T17:42:47.8934667Z Prepare workflow directory
+2026-07-07T17:42:47.9938487Z Prepare all required actions
+2026-07-07T17:42:48.0059291Z Getting action download info
+2026-07-07T17:42:48.3323749Z Download action repository 'actions/checkout@v4' (SHA:34e114876b0b11c390a56381ad16ebd13914f8d5)
+2026-07-07T17:42:48.4365504Z Download action repository 'actions/setup-node@v4' (SHA:49933ea5288caeca8642d1e84afbd3f7d6820020)
+2026-07-07T17:42:48.6406420Z Complete job name: build_and_test
+2026-07-07T17:42:48.7135435Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-07-07T17:42:48.7144345Z ##[group]Run actions/checkout@v4
+2026-07-07T17:42:48.7145050Z with:
+2026-07-07T17:42:48.7145486Z   repository: Sparksy92/SOS
+2026-07-07T17:42:48.7149656Z   token: ***
+2026-07-07T17:42:48.7150087Z   ssh-strict: true
+2026-07-07T17:42:48.7150678Z   ssh-user: git
+2026-07-07T17:42:48.7151128Z   persist-credentials: true
+2026-07-07T17:42:48.7151614Z   clean: true
+2026-07-07T17:42:48.7152062Z   sparse-checkout-cone-mode: true
+2026-07-07T17:42:48.7152579Z   fetch-depth: 1
+2026-07-07T17:42:48.7153010Z   fetch-tags: false
+2026-07-07T17:42:48.7153446Z   show-progress: true
+2026-07-07T17:42:48.7153874Z   lfs: false
+2026-07-07T17:42:48.7154331Z   submodules: false
+2026-07-07T17:42:48.7154774Z   set-safe-directory: true
+2026-07-07T17:42:48.7155446Z ##[endgroup]
+2026-07-07T17:42:48.8517004Z Syncing repository: Sparksy92/SOS
+2026-07-07T17:42:48.8520458Z ##[group]Getting Git version info
+2026-07-07T17:42:48.8522521Z Working directory is '/home/runner/work/SOS/SOS'
+2026-07-07T17:42:48.8532256Z [command]/usr/bin/git version
+2026-07-07T17:42:48.9732998Z git version 2.54.0
+2026-07-07T17:42:48.9801465Z ##[endgroup]
+2026-07-07T17:42:48.9812852Z Temporarily overriding HOME='/home/runner/work/_temp/cd7df8ce-2fd4-44c1-853d-9c658c2b1b90' before making global git config changes
+2026-07-07T17:42:48.9816200Z Adding repository directory to the temporary git global config as a safe directory
+2026-07-07T17:42:48.9818735Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/SOS/SOS
+2026-07-07T17:42:48.9822983Z Deleting the contents of '/home/runner/work/SOS/SOS'
+2026-07-07T17:42:48.9824889Z ##[group]Initializing the repository
+2026-07-07T17:42:48.9826498Z [command]/usr/bin/git init /home/runner/work/SOS/SOS
+2026-07-07T17:42:48.9828105Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-07-07T17:42:48.9831010Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-07-07T17:42:48.9835547Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-07-07T17:42:48.9837584Z hint: call:
+2026-07-07T17:42:48.9838496Z hint:
+2026-07-07T17:42:48.9839829Z hint: 	git config --global init.defaultBranch <name>
+2026-07-07T17:42:48.9842977Z hint:
+2026-07-07T17:42:49.0084201Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-07-07T17:42:49.0085811Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-07-07T17:42:49.0086987Z hint:
+2026-07-07T17:42:49.0087631Z hint: 	git branch -m <name>
+2026-07-07T17:42:49.0088359Z hint:
+2026-07-07T17:42:49.0089321Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-07-07T17:42:49.0091418Z Initialized empty Git repository in /home/runner/work/SOS/SOS/.git/
+2026-07-07T17:42:49.0093958Z [command]/usr/bin/git remote add origin https://github.com/Sparksy92/SOS
+2026-07-07T17:42:49.0096271Z ##[endgroup]
+2026-07-07T17:42:49.0097374Z ##[group]Disabling automatic garbage collection
+2026-07-07T17:42:49.0098380Z [command]/usr/bin/git config --local gc.auto 0
+2026-07-07T17:42:49.0100437Z ##[endgroup]
+2026-07-07T17:42:49.0101670Z ##[group]Setting up auth
+2026-07-07T17:42:49.0102679Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-07-07T17:42:49.0105858Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-07-07T17:42:49.0122111Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-07-07T17:42:49.0380363Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-07-07T17:42:49.0569639Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-07-07T17:42:49.0615145Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-07-07T17:42:49.0885735Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-07-07T17:42:49.0927924Z ##[endgroup]
+2026-07-07T17:42:49.0929866Z ##[group]Fetching the repository
+2026-07-07T17:42:49.0939440Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +f24b8fbf842a6c90fdccee25d0e67ed7aee2942d:refs/remotes/origin/main
+2026-07-07T17:42:50.6275921Z From https://github.com/Sparksy92/SOS
+2026-07-07T17:42:50.6278781Z  * [new ref]         f24b8fbf842a6c90fdccee25d0e67ed7aee2942d -> origin/main
+2026-07-07T17:42:50.6311814Z ##[endgroup]
+2026-07-07T17:42:50.6314124Z ##[group]Determining the checkout info
+2026-07-07T17:42:50.6316730Z ##[endgroup]
+2026-07-07T17:42:50.6321675Z [command]/usr/bin/git sparse-checkout disable
+2026-07-07T17:42:50.6377235Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-07-07T17:42:50.6416318Z ##[group]Checking out the ref
+2026-07-07T17:42:50.6421166Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+2026-07-07T17:42:50.7175068Z Switched to a new branch 'main'
+2026-07-07T17:42:50.7182623Z branch 'main' set up to track 'origin/main'.
+2026-07-07T17:42:50.7196318Z ##[endgroup]
+2026-07-07T17:42:50.7281181Z [command]/usr/bin/git log -1 --format=%H
+2026-07-07T17:42:50.7312341Z f24b8fbf842a6c90fdccee25d0e67ed7aee2942d
+2026-07-07T17:42:50.7912112Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-07-07T17:42:50.7918295Z ##[group]Run actions/setup-node@v4
+2026-07-07T17:42:50.7919443Z with:
+2026-07-07T17:42:50.7920304Z   node-version: 22
+2026-07-07T17:42:50.7921412Z   always-auth: false
+2026-07-07T17:42:50.7922404Z   check-latest: false
+2026-07-07T17:42:50.7933478Z   token: ***
+2026-07-07T17:42:50.7934378Z ##[endgroup]
+2026-07-07T17:42:50.9632802Z (node:2049) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-07-07T17:42:50.9652478Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-07-07T17:42:50.9654246Z Found in cache @ /opt/hostedtoolcache/node/22.23.1/x64
+2026-07-07T17:42:50.9659372Z ##[group]Environment details
+2026-07-07T17:42:53.4390129Z node: v22.23.1
+2026-07-07T17:42:53.4391643Z npm: 10.9.8
+2026-07-07T17:42:53.4392381Z yarn: 1.22.22
+2026-07-07T17:42:53.4394588Z ##[endgroup]
+2026-07-07T17:42:53.4556937Z ##[group]Run cd sos-app
+2026-07-07T17:42:53.4557447Z [36;1mcd sos-app[0m
+2026-07-07T17:42:53.4557737Z [36;1mnpm install[0m
+2026-07-07T17:42:53.4558007Z [36;1mnpm run build[0m
+2026-07-07T17:42:53.4744990Z shell: /usr/bin/bash -e {0}
+2026-07-07T17:42:53.4745406Z ##[endgroup]
+2026-07-07T17:42:58.2331884Z 
+2026-07-07T17:42:58.2338182Z added 25 packages, and audited 26 packages in 5s
+2026-07-07T17:42:58.2341269Z 
+2026-07-07T17:42:58.2341902Z 9 packages are looking for funding
+2026-07-07T17:42:58.2342658Z   run `npm fund` for details
+2026-07-07T17:42:58.2350061Z 
+2026-07-07T17:42:58.2350736Z found 0 vulnerabilities
+2026-07-07T17:42:58.3830430Z 
+2026-07-07T17:42:58.3832764Z > sos-app@0.0.0 build
+2026-07-07T17:42:58.3833440Z > vite build
+2026-07-07T17:42:58.3833648Z 
+2026-07-07T17:42:58.8294471Z [36mvite v8.1.1 [32mbuilding client environment for production...[36m[39m
+2026-07-07T17:42:58.8394785Z [2K
+2026-07-07T17:42:59.0094855Z transforming...✓ 151 modules transformed.
+2026-07-07T17:42:59.0567502Z rendering chunks...
+2026-07-07T17:42:59.1174400Z computing gzip size...
+2026-07-07T17:42:59.1286356Z [33m[plugin builtin:vite-reporter] 
+2026-07-07T17:42:59.1287277Z dist/index.html                   0.45 kB │ gzip:   0.29 kB
+2026-07-07T17:42:59.1288640Z (!) Some chunks are larger than 500 kB after minification. Consider:
+2026-07-07T17:42:59.1289927Z dist/assets/index-CJiaqLtF.css    7.52 kB │ gzip:   2.22 kB
+2026-07-07T17:42:59.1291232Z - Using dynamic import() to code-split the application
+2026-07-07T17:42:59.1292097Z dist/assets/index-CsGIY30E.js   710.29 kB │ gzip: 172.23 kB
+2026-07-07T17:42:59.1304490Z - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+2026-07-07T17:42:59.1305310Z 
+2026-07-07T17:42:59.1306346Z - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.[39m
+2026-07-07T17:42:59.1307112Z [32m✓ built in 297ms[39m
+2026-07-07T17:42:59.1586081Z ##[group]Run cd sos-server
+2026-07-07T17:42:59.1586413Z [36;1mcd sos-server[0m
+2026-07-07T17:42:59.1586667Z [36;1mnpm install[0m
+2026-07-07T17:42:59.1623415Z shell: /usr/bin/bash -e {0}
+2026-07-07T17:42:59.1623684Z ##[endgroup]
+2026-07-07T17:43:01.5716013Z npm warn deprecated node-domexception@1.0.0: Use your platform's native DOMException instead
+2026-07-07T17:43:06.1063424Z npm warn deprecated @langchain/community@1.1.29: This package has been deprecated. See https://github.com/langchain-ai/langchainjs-community/issues/61 for more info
+2026-07-07T17:43:18.1687363Z 
+2026-07-07T17:43:18.1688588Z added 232 packages, and audited 233 packages in 19s
+2026-07-07T17:43:18.1689451Z 
+2026-07-07T17:43:18.1690026Z 55 packages are looking for funding
+2026-07-07T17:43:18.1690978Z   run `npm fund` for details
+2026-07-07T17:43:18.1698958Z 
+2026-07-07T17:43:18.1699417Z found 0 vulnerabilities
+2026-07-07T17:43:18.1992330Z ##[group]Run node --test sos-server/tests/*.test.mjs
+2026-07-07T17:43:18.1992929Z [36;1mnode --test sos-server/tests/*.test.mjs[0m
+2026-07-07T17:43:18.2028960Z shell: /usr/bin/bash -e {0}
+2026-07-07T17:43:18.2029500Z ##[endgroup]
+2026-07-07T17:43:18.2623327Z TAP version 13
+2026-07-07T17:43:18.3117798Z # Subtest: Acquisition Queue Namespace & CRUD Persistence
+2026-07-07T17:43:18.3141525Z ok 1 - Acquisition Queue Namespace & CRUD Persistence
+2026-07-07T17:43:18.3151103Z   ---
+2026-07-07T17:43:18.3161286Z   duration_ms: 2.449231
+2026-07-07T17:43:18.3177404Z   type: 'test'
+2026-07-07T17:43:18.3177968Z   ...
+2026-07-07T17:43:18.3178786Z # Subtest: Acquisition Queue Validation (Absolute Paths & URL Schemes)
+2026-07-07T17:43:18.3179769Z ok 2 - Acquisition Queue Validation (Absolute Paths & URL Schemes)
+2026-07-07T17:43:18.3180895Z   ---
+2026-07-07T17:43:18.3181387Z   duration_ms: 0.271115
+2026-07-07T17:43:18.3181898Z   type: 'test'
+2026-07-07T17:43:18.3182365Z   ...
+2026-07-07T17:43:18.3183200Z # Subtest: Source Allowlist Namespace & Trust Settings
+2026-07-07T17:43:18.3184114Z ok 3 - Source Allowlist Namespace & Trust Settings
+2026-07-07T17:43:18.3184813Z   ---
+2026-07-07T17:43:18.3185332Z   duration_ms: 0.385136
+2026-07-07T17:43:18.3185932Z   type: 'test'
+2026-07-07T17:43:18.3186434Z   ...
+2026-07-07T17:43:18.3187085Z # Subtest: Backup Import/Export Security Checks
+2026-07-07T17:43:18.3187918Z ok 4 - Backup Import/Export Security Checks
+2026-07-07T17:43:18.3188591Z   ---
+2026-07-07T17:43:18.3189073Z   duration_ms: 0.550943
+2026-07-07T17:43:18.3189637Z   type: 'test'
+2026-07-07T17:43:18.3190117Z   ...
+2026-07-07T17:43:18.3190967Z # Subtest: Gap Analyzer UI Wording & No Downloads
+2026-07-07T17:43:18.3191835Z ok 5 - Gap Analyzer UI Wording & No Downloads
+2026-07-07T17:43:18.3192488Z   ---
+2026-07-07T17:43:18.3192984Z   duration_ms: 0.358706
+2026-07-07T17:43:18.3193531Z   type: 'test'
+2026-07-07T17:43:18.3194022Z   ...
+2026-07-07T17:43:18.3194695Z # Subtest: Approval Ledger Queues Gating Checks
+2026-07-07T17:43:18.3195489Z ok 6 - Approval Ledger Queues Gating Checks
+2026-07-07T17:43:18.3196075Z   ---
+2026-07-07T17:43:18.3196534Z   duration_ms: 0.241021
+2026-07-07T17:43:18.3197078Z   type: 'test'
+2026-07-07T17:43:18.3197580Z   ...
+2026-07-07T17:43:18.3198195Z # Subtest: Manual Import Local Updates Only
+2026-07-07T17:43:18.3198913Z ok 7 - Manual Import Local Updates Only
+2026-07-07T17:43:18.3199437Z   ---
+2026-07-07T17:43:18.3199859Z   duration_ms: 0.198377
+2026-07-07T17:43:18.3200339Z   type: 'test'
+2026-07-07T17:43:18.3201138Z   ...
+2026-07-07T17:43:18.3201813Z # Subtest: Jarvis Conversational Guidance Safety Check
+2026-07-07T17:43:18.3202678Z ok 8 - Jarvis Conversational Guidance Safety Check
+2026-07-07T17:43:18.3203312Z   ---
+2026-07-07T17:43:18.3203818Z   duration_ms: 1.032343
+2026-07-07T17:43:18.3204345Z   type: 'test'
+2026-07-07T17:43:18.3204852Z   ...
+2026-07-07T17:43:18.5551977Z # [SQLITE] Searching (FTS5=true) for: "farming"
+2026-07-07T17:43:18.5571395Z # Generating AI response...
+2026-07-07T17:43:18.5582231Z # [SQLITE] Searching (FTS5=true) for: "wiring"
+2026-07-07T17:43:18.5591272Z # Generating AI response...
+2026-07-07T17:43:18.5611512Z # [SQLITE] Searching (FTS5=true) for: "unrelated query matching nothing"
+2026-07-07T17:43:18.5631767Z # [SQLITE] Searching (FTS5=true) for: "farming"
+2026-07-07T17:43:18.5651352Z # Generating AI response...
+2026-07-07T17:43:18.5652109Z # [LLM] General knowledge query: "history of Rome"
+2026-07-07T17:43:18.5671787Z # (node:2223) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+2026-07-07T17:43:18.5691448Z # (Use `node --trace-warnings ...` to show where the warning was created)
+2026-07-07T17:43:18.5711684Z # Subtest: AI RAG and safety handling test suite
+2026-07-07T17:43:18.5732847Z     # Subtest: 1. Verified local response & source object shape
+2026-07-07T17:43:18.5751798Z     ok 1 - 1. Verified local response & source object shape
+2026-07-07T17:43:18.5771119Z       ---
+2026-07-07T17:43:18.5791629Z       duration_ms: 4.851431
+2026-07-07T17:43:18.5809637Z       type: 'test'
+2026-07-07T17:43:18.5810124Z       ...
+2026-07-07T17:43:18.5827975Z     # Subtest: 2. Non-PDF section labeling and match label ranks
+2026-07-07T17:43:18.5842688Z     ok 2 - 2. Non-PDF section labeling and match label ranks
+2026-07-07T17:43:18.5861178Z       ---
+2026-07-07T17:43:18.5881300Z       duration_ms: 1.353923
+2026-07-07T17:43:18.5901289Z       type: 'test'
+2026-07-07T17:43:18.5901815Z       ...
+2026-07-07T17:43:18.5921459Z     # Subtest: 3. Insufficient context fallback detection
+2026-07-07T17:43:18.5933871Z     ok 3 - 3. Insufficient context fallback detection
+2026-07-07T17:43:18.5947823Z       ---
+2026-07-07T17:43:18.5948316Z       duration_ms: 1.542074
+2026-07-07T17:43:18.5948834Z       type: 'test'
+2026-07-07T17:43:18.5949276Z       ...
+2026-07-07T17:43:18.5949854Z     # Subtest: 4. General knowledge uncited model fallback
+2026-07-07T17:43:18.5951837Z     ok 4 - 4. General knowledge uncited model fallback
+2026-07-07T17:43:18.5952458Z       ---
+2026-07-07T17:43:18.5952904Z       duration_ms: 0.461149
+2026-07-07T17:43:18.5953359Z       type: 'test'
+2026-07-07T17:43:18.5953759Z       ...
+2026-07-07T17:43:18.5954325Z     # Subtest: 5. Blocking uncited fallback for high-risk topics
+2026-07-07T17:43:18.5955113Z     ok 5 - 5. Blocking uncited fallback for high-risk topics
+2026-07-07T17:43:18.5955687Z       ---
+2026-07-07T17:43:18.5956082Z       duration_ms: 0.331285
+2026-07-07T17:43:18.5956528Z       type: 'test'
+2026-07-07T17:43:18.5956913Z       ...
+2026-07-07T17:43:18.5957284Z     1..5
+2026-07-07T17:43:18.5957803Z ok 9 - AI RAG and safety handling test suite
+2026-07-07T17:43:18.5958344Z   ---
+2026-07-07T17:43:18.5958727Z   duration_ms: 11.484554
+2026-07-07T17:43:18.5959158Z   type: 'test'
+2026-07-07T17:43:18.5959537Z   ...
+2026-07-07T17:43:18.6689280Z # Subtest: calculateWaterReserves - correct calculations and alerts
+2026-07-07T17:43:18.6711420Z ok 10 - calculateWaterReserves - correct calculations and alerts
+2026-07-07T17:43:18.6713843Z   ---
+2026-07-07T17:43:18.6732814Z   duration_ms: 1.631038
+2026-07-07T17:43:18.6751252Z   type: 'test'
+2026-07-07T17:43:18.6752727Z   ...
+2026-07-07T17:43:18.6754121Z # Subtest: calculatePantryReserves - evaluates surplus and deficits
+2026-07-07T17:43:18.6755739Z ok 11 - calculatePantryReserves - evaluates surplus and deficits
+2026-07-07T17:43:18.6756467Z   ---
+2026-07-07T17:43:18.6756888Z   duration_ms: 0.545896
+2026-07-07T17:43:18.6757366Z   type: 'test'
+2026-07-07T17:43:18.6757777Z   ...
+2026-07-07T17:43:18.6758439Z # Subtest: calculateReadinessScore - returns composite score
+2026-07-07T17:43:18.6759308Z ok 12 - calculateReadinessScore - returns composite score
+2026-07-07T17:43:18.6759941Z   ---
+2026-07-07T17:43:18.6760351Z   duration_ms: 0.6426
+2026-07-07T17:43:18.6761018Z   type: 'test'
+2026-07-07T17:43:18.6761440Z   ...
+2026-07-07T17:43:19.0198782Z # [SQLITE] Auto-crawler disabled. Standing by for manual triggers.
+2026-07-07T17:43:19.0626247Z # (node:2237) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+2026-07-07T17:43:19.0637908Z # (Use `node --trace-warnings ...` to show where the warning was created)
+2026-07-07T17:43:19.0639063Z # SOS Server running on http://localhost:3099
+2026-07-07T17:43:19.0901951Z # Subtest: SOS End-to-End API Integration Suite
+2026-07-07T17:43:19.0926181Z     # Subtest: 1. API Health Check endpoint roundtrip
+2026-07-07T17:43:19.0951689Z     ok 1 - 1. API Health Check endpoint roundtrip
+2026-07-07T17:43:19.0952471Z       ---
+2026-07-07T17:43:19.0971415Z       duration_ms: 53.199424
+2026-07-07T17:43:19.0998395Z       type: 'test'
+2026-07-07T17:43:19.1021212Z       ...
+2026-07-07T17:43:19.1022127Z     # Subtest: 2. Materials Index list endpoint roundtrip
+2026-07-07T17:43:19.1041422Z     ok 2 - 2. Materials Index list endpoint roundtrip
+2026-07-07T17:43:19.1056353Z       ---
+2026-07-07T17:43:19.1058397Z       duration_ms: 9.886546
+2026-07-07T17:43:19.1098656Z       type: 'test'
+2026-07-07T17:43:19.1101100Z       ...
+2026-07-07T17:43:19.1121793Z     # Subtest: 3. Non-existent media route returns 404
+2026-07-07T17:43:19.1151254Z     ok 3 - 3. Non-existent media route returns 404
+2026-07-07T17:43:19.1170988Z       ---
+2026-07-07T17:43:19.1171486Z       duration_ms: 5.98196
+2026-07-07T17:43:19.1191041Z       type: 'test'
+2026-07-07T17:43:19.1211005Z       ...
+2026-07-07T17:43:19.1220987Z     1..3
+2026-07-07T17:43:19.1231255Z ok 13 - SOS End-to-End API Integration Suite
+2026-07-07T17:43:19.1251011Z   ---
+2026-07-07T17:43:19.1271079Z   duration_ms: 374.198924
+2026-07-07T17:43:19.1271708Z   type: 'test'
+2026-07-07T17:43:19.1291018Z   ...
+2026-07-07T17:43:19.3536009Z # [TOOLKIT ROUTE] Staging read failed: Error: Sensitive filesystem root exception or Users folder path leak
+2026-07-07T17:43:19.3539381Z #     at fs.readdirSync (file:///home/runner/work/SOS/SOS/sos-server/tests/importApprovalLedger.test.mjs:235:11)
+2026-07-07T17:43:19.3541101Z #     at /home/runner/work/SOS/SOS/sos-server/routes/toolkit.routes.js:59:22
+2026-07-07T17:43:19.3542708Z #     at Promise.then.Promise.req.req (file:///home/runner/work/SOS/SOS/sos-server/tests/importApprovalLedger.test.mjs:251:5)
+2026-07-07T17:43:19.3543944Z #     at new Promise (<anonymous>)
+2026-07-07T17:43:19.3545286Z #     at TestContext.<anonymous> (file:///home/runner/work/SOS/SOS/sos-server/tests/importApprovalLedger.test.mjs:238:10)
+2026-07-07T17:43:19.3554767Z #     at Test.runInAsyncScope (node:async_hooks:214:14)
+2026-07-07T17:43:19.3571642Z #     at Test.run (node:internal/test_runner/test:1047:25)
+2026-07-07T17:43:19.3591707Z #     at Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+2026-07-07T17:43:19.3610373Z #     at Test.postRun (node:internal/test_runner/test:1173:19)
+2026-07-07T17:43:19.3611541Z #     at Test.run (node:internal/test_runner/test:1101:12)
+2026-07-07T17:43:19.3631893Z # [TOOLKIT ROUTE] ZIM read failed: Error: Sensitive filesystem root exception or Users folder path leak
+2026-07-07T17:43:19.3651888Z #     at fs.readdirSync (file:///home/runner/work/SOS/SOS/sos-server/tests/importApprovalLedger.test.mjs:235:11)
+2026-07-07T17:43:19.3671544Z #     at /home/runner/work/SOS/SOS/sos-server/routes/toolkit.routes.js:119:22
+2026-07-07T17:43:19.3681813Z #     at file:///home/runner/work/SOS/SOS/sos-server/tests/importApprovalLedger.test.mjs:269:7
+2026-07-07T17:43:19.3686824Z #     at new Promise (<anonymous>)
+2026-07-07T17:43:19.3687986Z #     at file:///home/runner/work/SOS/SOS/sos-server/tests/importApprovalLedger.test.mjs:253:12
+2026-07-07T17:43:19.3689152Z #     at async Test.run (node:internal/test_runner/test:1054:7)
+2026-07-07T17:43:19.3690248Z #     at async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+2026-07-07T17:43:19.3691559Z # Subtest: Approval Ledger Store Namespace & CRUD
+2026-07-07T17:43:19.3692367Z ok 14 - Approval Ledger Store Namespace & CRUD
+2026-07-07T17:43:19.3693003Z   ---
+2026-07-07T17:43:19.3693483Z   duration_ms: 2.008221
+2026-07-07T17:43:19.3693988Z   type: 'test'
+2026-07-07T17:43:19.3694451Z   ...
+2026-07-07T17:43:19.3695271Z # Subtest: Ledger Validation Rules (Absolute Paths & Injection URL schemes)
+2026-07-07T17:43:19.3696409Z ok 15 - Ledger Validation Rules (Absolute Paths & Injection URL schemes)
+2026-07-07T17:43:19.3697166Z   ---
+2026-07-07T17:43:19.3697645Z   duration_ms: 0.570042
+2026-07-07T17:43:19.3698157Z   type: 'test'
+2026-07-07T17:43:19.3698628Z   ...
+2026-07-07T17:43:19.3699250Z # Subtest: UI Components Hardening Wording Checks
+2026-07-07T17:43:19.3700030Z ok 16 - UI Components Hardening Wording Checks
+2026-07-07T17:43:19.3700927Z   ---
+2026-07-07T17:43:19.3703744Z   duration_ms: 0.266829
+2026-07-07T17:43:19.3704639Z   type: 'test'
+2026-07-07T17:43:19.3705116Z   ...
+2026-07-07T17:43:19.3705767Z # Subtest: Ledger JSON Export/Import & Markdown Report
+2026-07-07T17:43:19.3706622Z ok 17 - Ledger JSON Export/Import & Markdown Report
+2026-07-07T17:43:19.3707271Z   ---
+2026-07-07T17:43:19.3707737Z   duration_ms: 0.724794
+2026-07-07T17:43:19.3708248Z   type: 'test'
+2026-07-07T17:43:19.3711282Z   ...
+2026-07-07T17:43:19.3712479Z # Subtest: Toolkit Routes Exception Generic Hardening
+2026-07-07T17:43:19.3713327Z ok 18 - Toolkit Routes Exception Generic Hardening
+2026-07-07T17:43:19.3713907Z   ---
+2026-07-07T17:43:19.3714323Z   duration_ms: 3.939327
+2026-07-07T17:43:19.3714980Z   type: 'test'
+2026-07-07T17:43:19.3715405Z   ...
+2026-07-07T17:43:19.5861564Z # [INTEGRITY] Repaired 2 manifest index flags.
+2026-07-07T17:43:19.6074365Z # Indexing /home/runner/work/SOS/SOS/temp_test_doc.txt...
+2026-07-07T17:43:19.6075907Z # [SQLITE] Primary Indexing to SQLite: /materials/temp_test_doc.txt
+2026-07-07T17:43:19.6125572Z # Generated 1 chunks. Generating embeddings...
+2026-07-07T17:43:19.6126984Z # [OLLAMA] Vector store update failed for /home/runner/work/SOS/SOS/temp_test_doc.txt: Mock load failure
+2026-07-07T17:43:19.6139938Z # (node:2256) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+2026-07-07T17:43:19.6141344Z # (Use `node --trace-warnings ...` to show where the warning was created)
+2026-07-07T17:43:19.6147796Z # Subtest: SOS Index Integrity Layer Test Suite
+2026-07-07T17:43:19.6149070Z     # Subtest: 1. checkDocumentIndexedStatus detects correctly based on SQLite table contents
+2026-07-07T17:43:19.6150990Z     ok 1 - 1. checkDocumentIndexedStatus detects correctly based on SQLite table contents
+2026-07-07T17:43:19.6152129Z       ---
+2026-07-07T17:43:19.6153018Z       duration_ms: 5.773108
+2026-07-07T17:43:19.6153718Z       type: 'test'
+2026-07-07T17:43:19.6154706Z       ...
+2026-07-07T17:43:19.6271549Z     # Subtest: 2. Audit detects mismatched manifest flags correctly
+2026-07-07T17:43:19.6310820Z     ok 2 - 2. Audit detects mismatched manifest flags correctly
+2026-07-07T17:43:19.6311400Z       ---
+2026-07-07T17:43:19.6316736Z       duration_ms: 6.835181
+2026-07-07T17:43:19.6317396Z       type: 'test'
+2026-07-07T17:43:19.6318520Z       ...
+2026-07-07T17:43:19.6322705Z     # Subtest: 3. Auto-crawler flag is checked and stays off by default
+2026-07-07T17:43:19.6323711Z     ok 3 - 3. Auto-crawler flag is checked and stays off by default
+2026-07-07T17:43:19.6324748Z       ---
+2026-07-07T17:43:19.6325265Z       duration_ms: 3.267534
+2026-07-07T17:43:19.6326126Z       type: 'test'
+2026-07-07T17:43:19.6326803Z       ...
+2026-07-07T17:43:19.6327993Z     # Subtest: 4. webPathToMaterialAbsolutePath validates materials path and blocks traversal
+2026-07-07T17:43:19.6330098Z     ok 4 - 4. webPathToMaterialAbsolutePath validates materials path and blocks traversal
+2026-07-07T17:43:19.6344994Z       ---
+2026-07-07T17:43:19.6347488Z       duration_ms: 1.862129
+2026-07-07T17:43:19.6347903Z       type: 'test'
+2026-07-07T17:43:19.6348236Z       ...
+2026-07-07T17:43:19.6348904Z     # Subtest: 5. writeDocumentChunksToSqlite replaces chunks and prevents duplicates
+2026-07-07T17:43:19.6349946Z     ok 5 - 5. writeDocumentChunksToSqlite replaces chunks and prevents duplicates
+2026-07-07T17:43:19.6350906Z       ---
+2026-07-07T17:43:19.6351208Z       duration_ms: 7.556784
+2026-07-07T17:43:19.6351560Z       type: 'test'
+2026-07-07T17:43:19.6351860Z       ...
+2026-07-07T17:43:19.6352394Z     # Subtest: 6. zero-chunk indexed_docs entries get repaired by re-indexing
+2026-07-07T17:43:19.6353201Z     ok 6 - 6. zero-chunk indexed_docs entries get repaired by re-indexing
+2026-07-07T17:43:19.6353781Z       ---
+2026-07-07T17:43:19.6354081Z       duration_ms: 5.076507
+2026-07-07T17:43:19.6354449Z       type: 'test'
+2026-07-07T17:43:19.6354761Z       ...
+2026-07-07T17:43:19.6355460Z     # Subtest: 7. indexFile returns success and warning on vector store failure if SQLite succeeded
+2026-07-07T17:43:19.6356512Z     ok 7 - 7. indexFile returns success and warning on vector store failure if SQLite succeeded
+2026-07-07T17:43:19.6357200Z       ---
+2026-07-07T17:43:19.6357502Z       duration_ms: 6.934063
+2026-07-07T17:43:19.6357856Z       type: 'test'
+2026-07-07T17:43:19.6358164Z       ...
+2026-07-07T17:43:19.6358446Z     1..7
+2026-07-07T17:43:19.6358878Z ok 19 - SOS Index Integrity Layer Test Suite
+2026-07-07T17:43:19.6359332Z   ---
+2026-07-07T17:43:19.6360109Z   duration_ms: 39.565753
+2026-07-07T17:43:19.6360514Z   type: 'test'
+2026-07-07T17:43:19.6361000Z   ...
+2026-07-07T17:43:19.7021256Z # Subtest: Path Validator Cleanups
+2026-07-07T17:43:19.7022652Z ok 20 - Path Validator Cleanups
+2026-07-07T17:43:19.7024476Z   ---
+2026-07-07T17:43:19.7025174Z   duration_ms: 0.984521
+2026-07-07T17:43:19.7026274Z   type: 'test'
+2026-07-07T17:43:19.7027001Z   ...
+2026-07-07T17:43:19.7028218Z # Subtest: Lifecycle Analyzer State Reconciliation Rules
+2026-07-07T17:43:19.7031681Z ok 21 - Lifecycle Analyzer State Reconciliation Rules
+2026-07-07T17:43:19.7032213Z   ---
+2026-07-07T17:43:19.7032520Z   duration_ms: 1.0371
+2026-07-07T17:43:19.7032863Z   type: 'test'
+2026-07-07T17:43:19.7033177Z   ...
+2026-07-07T17:43:19.7033689Z # Subtest: operatorTrusted Evidence & Wording Safeguards
+2026-07-07T17:43:19.7034400Z ok 22 - operatorTrusted Evidence & Wording Safeguards
+2026-07-07T17:43:19.7034888Z   ---
+2026-07-07T17:43:19.7035202Z   duration_ms: 0.395071
+2026-07-07T17:43:19.7035580Z   type: 'test'
+2026-07-07T17:43:19.7035906Z   ...
+2026-07-07T17:43:19.7036377Z # Subtest: Lifecycle UI Guardrails & Export safety
+2026-07-07T17:43:19.7037029Z ok 23 - Lifecycle UI Guardrails & Export safety
+2026-07-07T17:43:19.7037501Z   ---
+2026-07-07T17:43:19.7037853Z   duration_ms: 0.362652
+2026-07-07T17:43:19.7038213Z   type: 'test'
+2026-07-07T17:43:19.7038518Z   ...
+2026-07-07T17:43:19.7038936Z # Subtest: Jarvis Lifecycle Guidance Checks
+2026-07-07T17:43:19.7039508Z ok 24 - Jarvis Lifecycle Guidance Checks
+2026-07-07T17:43:19.7039939Z   ---
+2026-07-07T17:43:19.7040253Z   duration_ms: 1.158852
+2026-07-07T17:43:19.7040787Z   type: 'test'
+2026-07-07T17:43:19.7041096Z   ...
+2026-07-07T17:43:19.7041518Z # Subtest: manifestChecked Fallback Rules
+2026-07-07T17:43:19.7042088Z ok 25 - manifestChecked Fallback Rules
+2026-07-07T17:43:19.7042438Z   ---
+2026-07-07T17:43:19.7042685Z   duration_ms: 0.289122
+2026-07-07T17:43:19.7042972Z   type: 'test'
+2026-07-07T17:43:19.7043225Z   ...
+2026-07-07T17:43:19.7733859Z # [MANIFEST] Rebuilding material manifest (directory scan)...
+2026-07-07T17:43:19.7735456Z # [MANIFEST] Rebuilt successfully. Saved 3 records.
+2026-07-07T17:43:19.7791978Z # (node:2270) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+2026-07-07T17:43:19.7793443Z # (Use `node --trace-warnings ...` to show where the warning was created)
+2026-07-07T17:43:19.7823667Z # Subtest: Manifest Service - rebuild and load manifest using isolated mock directory
+2026-07-07T17:43:19.7832084Z not ok 26 - Manifest Service - rebuild and load manifest using isolated mock directory
+2026-07-07T17:43:19.7833177Z   ---
+2026-07-07T17:43:19.7833750Z   duration_ms: 18.773688
+2026-07-07T17:43:19.7834382Z   type: 'test'
+2026-07-07T17:43:19.7835246Z   location: '/home/runner/work/SOS/SOS/sos-server/tests/manifest.test.mjs:15:1'
+2026-07-07T17:43:19.7836194Z   failureType: 'testCodeFailure'
+2026-07-07T17:43:19.7836870Z   error: |-
+2026-07-07T17:43:19.7837513Z     The expression evaluated to a falsy value:
+2026-07-07T17:43:19.7838204Z     
+2026-07-07T17:43:19.7838841Z       assert.ok(fs.existsSync(MANIFEST_FILE))
+2026-07-07T17:43:19.7839500Z     
+2026-07-07T17:43:19.7840030Z   code: 'ERR_ASSERTION'
+2026-07-07T17:43:19.7840933Z   name: 'AssertionError'
+2026-07-07T17:43:19.7841591Z   expected: true
+2026-07-07T17:43:19.7842156Z   actual: false
+2026-07-07T17:43:19.7842696Z   operator: '=='
+2026-07-07T17:43:19.7843235Z   stack: |-
+2026-07-07T17:43:19.7844234Z     TestContext.<anonymous> (file:///home/runner/work/SOS/SOS/sos-server/tests/manifest.test.mjs:51:12)
+2026-07-07T17:43:19.7845414Z     Test.runInAsyncScope (node:async_hooks:214:14)
+2026-07-07T17:43:19.7846300Z     Test.run (node:internal/test_runner/test:1047:25)
+2026-07-07T17:43:19.7847167Z     Test.start (node:internal/test_runner/test:944:17)
+2026-07-07T17:43:19.7848184Z     startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+2026-07-07T17:43:19.7849093Z   ...
+2026-07-07T17:43:20.1473636Z # (node:2277) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+2026-07-07T17:43:20.1514036Z # (Use `node --trace-warnings ...` to show where the warning was created)
+2026-07-07T17:43:20.1571642Z # Subtest: SOS Material Boundary & Crawler Hardening Test Suite
+2026-07-07T17:43:20.1591501Z     # Subtest: 1. SOS_MATERIALS_DIR and Fallback compatibility mode
+2026-07-07T17:43:20.1628642Z     ok 1 - 1. SOS_MATERIALS_DIR and Fallback compatibility mode
+2026-07-07T17:43:20.1651601Z       ---
+2026-07-07T17:43:20.1671293Z       duration_ms: 0.76974
+2026-07-07T17:43:20.1672285Z       type: 'test'
+2026-07-07T17:43:20.1691264Z       ...
+2026-07-07T17:43:20.1703547Z     # Subtest: 2. Path traversal rejection and invalid webPath
+2026-07-07T17:43:20.1717988Z     ok 2 - 2. Path traversal rejection and invalid webPath
+2026-07-07T17:43:20.1719144Z       ---
+2026-07-07T17:43:20.1719830Z       duration_ms: 0.653977
+2026-07-07T17:43:20.1720403Z       type: 'test'
+2026-07-07T17:43:20.1736580Z       ...
+2026-07-07T17:43:20.1737597Z     # Subtest: 3. Blocked source directories and runtime files
+2026-07-07T17:43:20.1738847Z     ok 3 - 3. Blocked source directories and runtime files
+2026-07-07T17:43:20.1739715Z       ---
+2026-07-07T17:43:20.1740339Z       duration_ms: 0.395681
+2026-07-07T17:43:20.1744538Z       type: 'test'
+2026-07-07T17:43:20.1745266Z       ...
+2026-07-07T17:43:20.2058073Z # [CRAWLER] Rebuilding material manifest in inventory mode...
+2026-07-07T17:43:20.2101980Z # [MANIFEST] Rebuilding material manifest (directory scan)...
+2026-07-07T17:43:20.2692007Z # [MANIFEST] Rebuilt successfully. Saved 1 records.
+2026-07-07T17:43:20.2740979Z # Crawler crashed: Error: Missing or invalid confirmation phrase for ZIP extraction.
+2026-07-07T17:43:20.2755041Z #     at Object.start (/home/runner/work/SOS/SOS/sos-server/crawler.js:140:15)
+2026-07-07T17:43:20.2781126Z #     at TestContext.<anonymous> (file:///home/runner/work/SOS/SOS/sos-server/tests/materialBoundary.test.mjs:174:19)
+2026-07-07T17:43:20.2784688Z #     at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+2026-07-07T17:43:20.2792712Z #     at async Test.run (node:internal/test_runner/test:1054:7)
+2026-07-07T17:43:20.2797714Z #     at async TestContext.<anonymous> (file:///home/runner/work/SOS/SOS/sos-server/tests/materialBoundary.test.mjs:163:3)
+2026-07-07T17:43:20.2799712Z #     at async Test.run (node:internal/test_runner/test:1054:7)
+2026-07-07T17:43:20.2803563Z #     at async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+2026-07-07T17:43:20.2804707Z # [CRAWLER] Dry Run found 1 ZIP archives.
+2026-07-07T17:43:20.2807806Z # [SQLITE] Index rebuild requested. Creating backups of database and metadata...
+2026-07-07T17:43:20.2808765Z # [SQLITE] Clearing document_chunks and indexed_docs tables for rebuild...
+2026-07-07T17:43:20.2821954Z # [SQLITE] Reading content for FTS5 indexing: /materials/safety_guide.txt
+2026-07-07T17:43:20.2825119Z # [SQLITE] Crawler triggered manually (mode: index, dryRun: false).
+2026-07-07T17:43:20.3078051Z # [SQLITE] Successfully indexed 1 pages/chunks for /materials/safety_guide.txt
+2026-07-07T17:43:20.3086189Z     # Subtest: 4. Guarded /materials Express 5 route integration
+2026-07-07T17:43:20.3121731Z     ok 4 - 4. Guarded /materials Express 5 route integration
+2026-07-07T17:43:20.3122616Z       ---
+2026-07-07T17:43:20.3123477Z       duration_ms: 88.706541
+2026-07-07T17:43:20.3124160Z       type: 'test'
+2026-07-07T17:43:20.3124998Z       ...
+2026-07-07T17:43:20.3151073Z     # Subtest: 5. Media and Index routes boundary checks
+2026-07-07T17:43:20.3151933Z     ok 5 - 5. Media and Index routes boundary checks
+2026-07-07T17:43:20.3152400Z       ---
+2026-07-07T17:43:20.3152729Z       duration_ms: 0.598575
+2026-07-07T17:43:20.3153113Z       type: 'test'
+2026-07-07T17:43:20.3153438Z       ...
+2026-07-07T17:43:20.3153986Z     # Subtest: 6. Crawler Modes: inventory, index and extract-zips rules
+2026-07-07T17:43:20.3154784Z     ok 6 - 6. Crawler Modes: inventory, index and extract-zips rules
+2026-07-07T17:43:20.3155329Z       ---
+2026-07-07T17:43:20.3156173Z       duration_ms: 71.984574
+2026-07-07T17:43:20.3156560Z       type: 'test'
+2026-07-07T17:43:20.3156868Z       ...
+2026-07-07T17:43:20.3157287Z     # Subtest: 7. crawler.routes.js validation checks
+2026-07-07T17:43:20.3158105Z     ok 7 - 7. crawler.routes.js validation checks
+2026-07-07T17:43:20.3158563Z       ---
+2026-07-07T17:43:20.3158873Z       duration_ms: 14.317153
+2026-07-07T17:43:20.3159237Z       type: 'test'
+2026-07-07T17:43:20.3159543Z       ...
+2026-07-07T17:43:20.3159817Z     1..7
+2026-07-07T17:43:20.3160338Z ok 27 - SOS Material Boundary & Crawler Hardening Test Suite
+2026-07-07T17:43:20.3161027Z   ---
+2026-07-07T17:43:20.3161329Z   duration_ms: 184.246486
+2026-07-07T17:43:20.3161681Z   type: 'test'
+2026-07-07T17:43:20.3161976Z   ...
+2026-07-07T17:43:20.4555179Z # Subtest: SOS Mission Briefing and guided intake logic suite
+2026-07-07T17:43:20.4561690Z     # Subtest: 1. briefing builds from mission with no attachments
+2026-07-07T17:43:20.4616702Z     ok 1 - 1. briefing builds from mission with no attachments
+2026-07-07T17:43:20.4617281Z       ---
+2026-07-07T17:43:20.4617627Z       duration_ms: 0.892694
+2026-07-07T17:43:20.4618013Z       type: 'test'
+2026-07-07T17:43:20.4618343Z       ...
+2026-07-07T17:43:20.4618839Z     # Subtest: 2. briefing counts objectives/tasks correctly
+2026-07-07T17:43:20.4619509Z     ok 2 - 2. briefing counts objectives/tasks correctly
+2026-07-07T17:43:20.4620011Z       ---
+2026-07-07T17:43:20.4620321Z       duration_ms: 1.134766
+2026-07-07T17:43:20.4620900Z       type: 'test'
+2026-07-07T17:43:20.4621216Z       ...
+2026-07-07T17:43:20.4621646Z     # Subtest: 3. organization score labels are correct
+2026-07-07T17:43:20.4622246Z     ok 3 - 3. organization score labels are correct
+2026-07-07T17:43:20.4622706Z       ---
+2026-07-07T17:43:20.4623019Z       duration_ms: 0.248822
+2026-07-07T17:43:20.4623398Z       type: 'test'
+2026-07-07T17:43:20.4623717Z       ...
+2026-07-07T17:43:20.4624163Z     # Subtest: 4. queued sources reduce organization score
+2026-07-07T17:43:20.4624800Z     ok 4 - 4. queued sources reduce organization score
+2026-07-07T17:43:20.4625277Z       ---
+2026-07-07T17:43:20.4625590Z       duration_ms: 0.164235
+2026-07-07T17:43:20.4625969Z       type: 'test'
+2026-07-07T17:43:20.4626284Z       ...
+2026-07-07T17:43:20.4626736Z     # Subtest: 5. attached sources improve organization score
+2026-07-07T17:43:20.4641921Z     ok 5 - 5. attached sources improve organization score
+2026-07-07T17:43:20.4642966Z       ---
+2026-07-07T17:43:20.4646829Z       duration_ms: 0.185247
+2026-07-07T17:43:20.4647681Z       type: 'test'
+2026-07-07T17:43:20.4648702Z       ...
+2026-07-07T17:43:20.4649557Z     # Subtest: 6. high-risk categories create safety warnings
+2026-07-07T17:43:20.4651198Z     ok 6 - 6. high-risk categories create safety warnings
+2026-07-07T17:43:20.4652202Z       ---
+2026-07-07T17:43:20.4653219Z       duration_ms: 0.189463
+2026-07-07T17:43:20.4654019Z       type: 'test'
+2026-07-07T17:43:20.4655035Z       ...
+2026-07-07T17:43:20.4655883Z     # Subtest: 7. medical mission does not generate treatment advice
+2026-07-07T17:43:20.4657413Z     ok 7 - 7. medical mission does not generate treatment advice
+2026-07-07T17:43:20.4658237Z       ---
+2026-07-07T17:43:20.4659105Z       duration_ms: 0.197295
+2026-07-07T17:43:20.4662750Z       type: 'test'
+2026-07-07T17:43:20.4663965Z       ...
+2026-07-07T17:43:20.4666925Z     # Subtest: 8. firearms risk does not generate tactical/offensive guidance
+2026-07-07T17:43:20.4667807Z     ok 8 - 8. firearms risk does not generate tactical/offensive guidance
+2026-07-07T17:43:20.4668394Z       ---
+2026-07-07T17:43:20.4668715Z       duration_ms: 0.312617
+2026-07-07T17:43:20.4669097Z       type: 'test'
+2026-07-07T17:43:20.4669419Z       ...
+2026-07-07T17:43:20.4696724Z     # Subtest: 9. detects "I wanna go fishing" as mission intake
+2026-07-07T17:43:20.4698316Z     ok 9 - 9. detects "I wanna go fishing" as mission intake
+2026-07-07T17:43:20.4699316Z       ---
+2026-07-07T17:43:20.4700354Z       duration_ms: 0.326949
+2026-07-07T17:43:20.4705391Z       type: 'test'
+2026-07-07T17:43:20.4706160Z       ...
+2026-07-07T17:43:20.4706695Z     # Subtest: 10. does not auto-create mission from one sentence
+2026-07-07T17:43:20.4707439Z     ok 10 - 10. does not auto-create mission from one sentence
+2026-07-07T17:43:20.4708200Z       ---
+2026-07-07T17:43:20.4708516Z       duration_ms: 0.506247
+2026-07-07T17:43:20.4708888Z       type: 'test'
+2026-07-07T17:43:20.4709184Z       ...
+2026-07-07T17:43:20.4709575Z     # Subtest: 11. asks fishing-specific questions
+2026-07-07T17:43:20.4710135Z     ok 11 - 11. asks fishing-specific questions
+2026-07-07T17:43:20.4710751Z       ---
+2026-07-07T17:43:20.4711056Z       duration_ms: 0.136103
+2026-07-07T17:43:20.4711418Z       type: 'test'
+2026-07-07T17:43:20.4711781Z       ...
+2026-07-07T17:43:20.4712215Z     # Subtest: 12. builds draft fishing mission from answers
+2026-07-07T17:43:20.4712810Z     ok 12 - 12. builds draft fishing mission from answers
+2026-07-07T17:43:20.4713955Z       ---
+2026-07-07T17:43:20.4714622Z       duration_ms: 0.422502
+2026-07-07T17:43:20.4715552Z       type: 'test'
+2026-07-07T17:43:20.4716170Z       ...
+2026-07-07T17:43:20.4717276Z     # Subtest: 13. requires user approval before creating mission
+2026-07-07T17:43:20.4718334Z     ok 13 - 13. requires user approval before creating mission
+2026-07-07T17:43:20.4719432Z       ---
+2026-07-07T17:43:20.4719998Z       duration_ms: 0.345436
+2026-07-07T17:43:20.4721429Z       type: 'test'
+2026-07-07T17:43:20.4741127Z       ...
+2026-07-07T17:43:20.4773530Z     1..13
+2026-07-07T17:43:20.4776300Z ok 28 - SOS Mission Briefing and guided intake logic suite
+2026-07-07T17:43:20.4776865Z   ---
+2026-07-07T17:43:20.4777197Z   duration_ms: 7.484146
+2026-07-07T17:43:20.4777581Z   type: 'test'
+2026-07-07T17:43:20.4777882Z   ...
+2026-07-07T17:43:20.5521995Z # Subtest: SOS Mission Mode Test Suite
+2026-07-07T17:43:20.5523362Z     # Subtest: 1. Mission templates list loads configurations
+2026-07-07T17:43:20.5524915Z     ok 1 - 1. Mission templates list loads configurations
+2026-07-07T17:43:20.5525951Z       ---
+2026-07-07T17:43:20.5526985Z       duration_ms: 0.693947
+2026-07-07T17:43:20.5527790Z       type: 'test'
+2026-07-07T17:43:20.5528878Z       ...
+2026-07-07T17:43:20.5529946Z     # Subtest: 2. Mission initialization from template maps custom parameters
+2026-07-07T17:43:20.5531827Z     ok 2 - 2. Mission initialization from template maps custom parameters
+2026-07-07T17:43:20.5532746Z       ---
+2026-07-07T17:43:20.5533736Z       duration_ms: 2.285566
+2026-07-07T17:43:20.5534533Z       type: 'test'
+2026-07-07T17:43:20.5535564Z       ...
+2026-07-07T17:43:20.5536707Z     # Subtest: 3. Status transitions update status, completedAt, and log timeline event
+2026-07-07T17:43:20.5538410Z     ok 3 - 3. Status transitions update status, completedAt, and log timeline event
+2026-07-07T17:43:20.5621358Z       ---
+2026-07-07T17:43:20.5628379Z       duration_ms: 0.335431
+2026-07-07T17:43:20.5629812Z       type: 'test'
+2026-07-07T17:43:20.5630411Z       ...
+2026-07-07T17:43:20.5632844Z     # Subtest: 4. Risk detector audits multiple resource categories
+2026-07-07T17:43:20.5635087Z     ok 4 - 4. Risk detector audits multiple resource categories
+2026-07-07T17:43:20.5636695Z       ---
+2026-07-07T17:43:20.5637353Z       duration_ms: 0.391946
+2026-07-07T17:43:20.5638240Z       type: 'test'
+2026-07-07T17:43:20.5638826Z       ...
+2026-07-07T17:43:20.5639966Z     # Subtest: 5. Markdown report generation matches structural format requirements
+2026-07-07T17:43:20.5642759Z     ok 5 - 5. Markdown report generation matches structural format requirements
+2026-07-07T17:43:20.5643352Z       ---
+2026-07-07T17:43:20.5643638Z       duration_ms: 16.085741
+2026-07-07T17:43:20.5643974Z       type: 'test'
+2026-07-07T17:43:20.5644252Z       ...
+2026-07-07T17:43:20.5644726Z     # Subtest: 6. Version 2 backup and backward compatibility validation
+2026-07-07T17:43:20.5645212Z     ok 6 - 6. Version 2 backup and backward compatibility validation
+2026-07-07T17:43:20.5645552Z       ---
+2026-07-07T17:43:20.5645765Z       duration_ms: 0.335612
+2026-07-07T17:43:20.5646590Z       type: 'test'
+2026-07-07T17:43:20.5646875Z       ...
+2026-07-07T17:43:20.5647103Z     1..6
+2026-07-07T17:43:20.5647425Z ok 29 - SOS Mission Mode Test Suite
+2026-07-07T17:43:20.5647782Z   ---
+2026-07-07T17:43:20.5648234Z   duration_ms: 21.689076
+2026-07-07T17:43:20.5648546Z   type: 'test'
+2026-07-07T17:43:20.5648814Z   ...
+2026-07-07T17:43:20.6341283Z # Subtest: SOS Mission-Aware Library Search & Queue Test Suite
+2026-07-07T17:43:20.6364723Z     # Subtest: 1. Normalization and tokenization functions work correctly
+2026-07-07T17:43:20.6365939Z     ok 1 - 1. Normalization and tokenization functions work correctly
+2026-07-07T17:43:20.6366912Z       ---
+2026-07-07T17:43:20.6367424Z       duration_ms: 1.292361
+2026-07-07T17:43:20.6367979Z       type: 'test'
+2026-07-07T17:43:20.6368473Z       ...
+2026-07-07T17:43:20.6369183Z     # Subtest: 2. Term extractor merges parameters and templates
+2026-07-07T17:43:20.6370079Z     ok 2 - 2. Term extractor merges parameters and templates
+2026-07-07T17:43:20.6370977Z       ---
+2026-07-07T17:43:20.6371507Z       duration_ms: 0.439557
+2026-07-07T17:43:20.6372070Z       type: 'test'
+2026-07-07T17:43:20.6372554Z       ...
+2026-07-07T17:43:20.6373414Z     # Subtest: 3. Document scoring yields expected matches and transparent matchLabel thresholds
+2026-07-07T17:43:20.6374700Z     ok 3 - 3. Document scoring yields expected matches and transparent matchLabel thresholds
+2026-07-07T17:43:20.6375596Z       ---
+2026-07-07T17:43:20.6376035Z       duration_ms: 0.46223
+2026-07-07T17:43:20.6376645Z       type: 'test'
+2026-07-07T17:43:20.6377081Z       ...
+2026-07-07T17:43:20.6377799Z     # Subtest: 4. Ranker sorts items descending by score and filters index status / risks
+2026-07-07T17:43:20.6378829Z     ok 4 - 4. Ranker sorts items descending by score and filters index status / risks
+2026-07-07T17:43:20.6379542Z       ---
+2026-07-07T17:43:20.6379965Z       duration_ms: 0.501289
+2026-07-07T17:43:20.6380463Z       type: 'test'
+2026-07-07T17:43:20.6381246Z       ...
+2026-07-07T17:43:20.6381890Z     # Subtest: 5. Source review queue store CRUD and deduplication logic
+2026-07-07T17:43:20.6382765Z     ok 5 - 5. Source review queue store CRUD and deduplication logic
+2026-07-07T17:43:20.6383478Z       ---
+2026-07-07T17:43:20.6383983Z       duration_ms: 2.220048
+2026-07-07T17:43:20.6384535Z       type: 'test'
+2026-07-07T17:43:20.6385030Z       ...
+2026-07-07T17:43:20.6385789Z     # Subtest: 6. Markdown exporter includes queue and recommendations sections
+2026-07-07T17:43:20.6386845Z     ok 6 - 6. Markdown exporter includes queue and recommendations sections
+2026-07-07T17:43:20.6387615Z       ---
+2026-07-07T17:43:20.6388102Z       duration_ms: 15.143317
+2026-07-07T17:43:20.6388647Z       type: 'test'
+2026-07-07T17:43:20.6389118Z       ...
+2026-07-07T17:43:20.6405976Z     1..6
+2026-07-07T17:43:20.6406820Z ok 30 - SOS Mission-Aware Library Search & Queue Test Suite
+2026-07-07T17:43:20.6407620Z   ---
+2026-07-07T17:43:20.6408171Z   duration_ms: 21.618269
+2026-07-07T17:43:20.6408769Z   type: 'test'
+2026-07-07T17:43:20.6409324Z   ...
+2026-07-07T17:43:20.7016841Z # Subtest: Backup Registry Checks
+2026-07-07T17:43:20.7017628Z ok 31 - Backup Registry Checks
+2026-07-07T17:43:20.7018523Z   ---
+2026-07-07T17:43:20.7026892Z   duration_ms: 0.845693
+2026-07-07T17:43:20.7027524Z   type: 'test'
+2026-07-07T17:43:20.7028077Z   ...
+2026-07-07T17:43:20.7028789Z # Subtest: Backup Structure & Schema Version 3
+2026-07-07T17:43:20.7029651Z ok 32 - Backup Structure & Schema Version 3
+2026-07-07T17:43:20.7030339Z   ---
+2026-07-07T17:43:20.7031088Z   duration_ms: 0.771803
+2026-07-07T17:43:20.7031664Z   type: 'test'
+2026-07-07T17:43:20.7032203Z   ...
+2026-07-07T17:43:20.7036086Z # Subtest: Backup Validation Logic (Rejections & Path Rules)
+2026-07-07T17:43:20.7038739Z ok 33 - Backup Validation Logic (Rejections & Path Rules)
+2026-07-07T17:43:20.7039556Z   ---
+2026-07-07T17:43:20.7040094Z   duration_ms: 1.47861
+2026-07-07T17:43:20.7040948Z   type: 'test'
+2026-07-07T17:43:20.7041519Z   ...
+2026-07-07T17:43:20.7046417Z # Subtest: Preview Mode Independence
+2026-07-07T17:43:20.7048689Z ok 34 - Preview Mode Independence
+2026-07-07T17:43:20.7049359Z   ---
+2026-07-07T17:43:20.7049909Z   duration_ms: 0.279528
+2026-07-07T17:43:20.7050484Z   type: 'test'
+2026-07-07T17:43:20.7051586Z   ...
+2026-07-07T17:43:20.7078611Z # Subtest: Restore Options (Merge vs Replace Confirmations)
+2026-07-07T17:43:20.7099630Z ok 35 - Restore Options (Merge vs Replace Confirmations)
+2026-07-07T17:43:20.7101447Z   ---
+2026-07-07T17:43:20.7102057Z   duration_ms: 1.191921
+2026-07-07T17:43:20.7102580Z   type: 'test'
+2026-07-07T17:43:20.7103070Z   ...
+2026-07-07T17:43:20.7103658Z # Subtest: Integrity Audit Auditing Rules
+2026-07-07T17:43:20.7104368Z ok 36 - Integrity Audit Auditing Rules
+2026-07-07T17:43:20.7104937Z   ---
+2026-07-07T17:43:20.7105402Z   duration_ms: 1.014927
+2026-07-07T17:43:20.7105901Z   type: 'test'
+2026-07-07T17:43:20.7106350Z   ...
+2026-07-07T17:43:20.7106909Z # Subtest: Backup UI & Jarvis safety audits
+2026-07-07T17:43:20.7107617Z ok 37 - Backup UI & Jarvis safety audits
+2026-07-07T17:43:20.7108176Z   ---
+2026-07-07T17:43:20.7108647Z   duration_ms: 1.042799
+2026-07-07T17:43:20.7109131Z   type: 'test'
+2026-07-07T17:43:20.7109595Z   ...
+2026-07-07T17:43:20.7110236Z # Subtest: Demo Data & Reset Profile Hardening Checks
+2026-07-07T17:43:20.7111296Z ok 38 - Demo Data & Reset Profile Hardening Checks
+2026-07-07T17:43:20.7111922Z   ---
+2026-07-07T17:43:20.7112423Z   duration_ms: 1.717808
+2026-07-07T17:43:20.7112920Z   type: 'test'
+2026-07-07T17:43:20.7113369Z   ...
+2026-07-07T17:43:20.7666255Z # Subtest: SOS Path & Environment Compatibility Test Suite
+2026-07-07T17:43:20.7667537Z     # Subtest: 1. Spaces in Paths Resolution
+2026-07-07T17:43:20.7684184Z     ok 1 - 1. Spaces in Paths Resolution
+2026-07-07T17:43:20.7701404Z       ---
+2026-07-07T17:43:20.7709350Z       duration_ms: 1.845167
+2026-07-07T17:43:20.7709970Z       type: 'test'
+2026-07-07T17:43:20.7710754Z       ...
+2026-07-07T17:43:20.7712505Z     # Subtest: 2. Unicode & Multi-lingual Characters in Paths
+2026-07-07T17:43:20.7713404Z     ok 2 - 2. Unicode & Multi-lingual Characters in Paths
+2026-07-07T17:43:20.7714112Z       ---
+2026-07-07T17:43:20.7714634Z       duration_ms: 0.27474
+2026-07-07T17:43:20.7715178Z       type: 'test'
+2026-07-07T17:43:20.7715697Z       ...
+2026-07-07T17:43:20.7716280Z     # Subtest: 3. Mixed Cross-Platform Slashes
+2026-07-07T17:43:20.7717047Z     not ok 3 - 3. Mixed Cross-Platform Slashes
+2026-07-07T17:43:20.7717694Z       ---
+2026-07-07T17:43:20.7718194Z       duration_ms: 1.198631
+2026-07-07T17:43:20.7718759Z       type: 'test'
+2026-07-07T17:43:20.7719654Z       location: '/home/runner/work/SOS/SOS/sos-server/tests/pathCompatibility.test.mjs:45:11'
+2026-07-07T17:43:20.7720990Z       failureType: 'testCodeFailure'
+2026-07-07T17:43:20.7721634Z       error: |-
+2026-07-07T17:43:20.7722266Z         Expected values to be strictly equal:
+2026-07-07T17:43:20.7722937Z         + actual - expected
+2026-07-07T17:43:20.7723476Z         
+2026-07-07T17:43:20.7724396Z         + '/home/runner/work/SOS/SOS/sos-server/tests/path_temp_fixture/subfolder\\another-sub/file.pdf'
+2026-07-07T17:43:20.7725831Z         - '/home/runner/work/SOS/SOS/sos-server/tests/path_temp_fixture/subfolder/another-sub/file.pdf'
+2026-07-07T17:43:20.7726780Z         
+2026-07-07T17:43:20.7727256Z       code: 'ERR_ASSERTION'
+2026-07-07T17:43:20.7727802Z       name: 'AssertionError'
+2026-07-07T17:43:20.7728823Z       expected: '/home/runner/work/SOS/SOS/sos-server/tests/path_temp_fixture/subfolder/another-sub/file.pdf'
+2026-07-07T17:43:20.7730339Z       actual: '/home/runner/work/SOS/SOS/sos-server/tests/path_temp_fixture/subfolder\\another-sub/file.pdf'
+2026-07-07T17:43:20.7731640Z       operator: 'strictEqual'
+2026-07-07T17:43:20.7732219Z       stack: |-
+2026-07-07T17:43:20.7733255Z         TestContext.<anonymous> (file:///home/runner/work/SOS/SOS/sos-server/tests/pathCompatibility.test.mjs:51:12)
+2026-07-07T17:43:20.7734497Z         Test.runInAsyncScope (node:async_hooks:214:14)
+2026-07-07T17:43:20.7735787Z         Test.run (node:internal/test_runner/test:1047:25)
+2026-07-07T17:43:20.7737159Z         async TestContext.<anonymous> (file:///home/runner/work/SOS/SOS/sos-server/tests/pathCompatibility.test.mjs:45:3)
+2026-07-07T17:43:20.7738461Z         async Test.run (node:internal/test_runner/test:1054:7)
+2026-07-07T17:43:20.7739277Z         async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+2026-07-07T17:43:20.7739916Z       ...
+2026-07-07T17:43:20.7740304Z     # Subtest: 4. Web Path Translation Roundtrip
+2026-07-07T17:43:20.7741085Z     ok 4 - 4. Web Path Translation Roundtrip
+2026-07-07T17:43:20.7741507Z       ---
+2026-07-07T17:43:20.7741801Z       duration_ms: 0.768529
+2026-07-07T17:43:20.7742161Z       type: 'test'
+2026-07-07T17:43:20.7742480Z       ...
+2026-07-07T17:43:20.7742764Z     1..4
+2026-07-07T17:43:20.7743271Z not ok 39 - SOS Path & Environment Compatibility Test Suite
+2026-07-07T17:43:20.7743786Z   ---
+2026-07-07T17:43:20.7744092Z   duration_ms: 6.30303
+2026-07-07T17:43:20.7744457Z   type: 'test'
+2026-07-07T17:43:20.7745136Z   location: '/home/runner/work/SOS/SOS/sos-server/tests/pathCompatibility.test.mjs:18:1'
+2026-07-07T17:43:20.7745907Z   failureType: 'subtestsFailed'
+2026-07-07T17:43:20.7746323Z   error: '1 subtest failed'
+2026-07-07T17:43:20.7746740Z   code: 'ERR_TEST_FAILURE'
+2026-07-07T17:43:20.7747121Z   ...
+2026-07-07T17:43:20.8325381Z # Subtest: Production Readiness Diagnostics & Launcher Files
+2026-07-07T17:43:20.8333242Z ok 40 - Production Readiness Diagnostics & Launcher Files
+2026-07-07T17:43:20.8348239Z   ---
+2026-07-07T17:43:20.8348658Z   duration_ms: 1.144551
+2026-07-07T17:43:20.8349040Z   type: 'test'
+2026-07-07T17:43:20.8349360Z   ...
+2026-07-07T17:43:20.8849953Z # [MANIFEST] Rebuilding material manifest (directory scan)...
+2026-07-07T17:43:20.9280383Z # [MANIFEST] Rebuilt successfully. Saved 2 records.
+2026-07-07T17:43:20.9332835Z # (node:2331) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+2026-07-07T17:43:20.9334286Z # (Use `node --trace-warnings ...` to show where the warning was created)
+2026-07-07T17:43:20.9373579Z # Subtest: SOS Quality & Data Format Validation Test Suite
+2026-07-07T17:43:20.9374573Z     # Subtest: 1. Directory Scanning & Manifest Rebuilding
+2026-07-07T17:43:20.9375592Z     ok 1 - 1. Directory Scanning & Manifest Rebuilding
+2026-07-07T17:43:20.9376394Z       ---
+2026-07-07T17:43:20.9376946Z       duration_ms: 45.049198
+2026-07-07T17:43:20.9377585Z       type: 'test'
+2026-07-07T17:43:20.9378137Z       ...
+2026-07-07T17:43:20.9386948Z     # Subtest: 2. Manifest Loading Fallbacks
+2026-07-07T17:43:20.9390134Z     ok 2 - 2. Manifest Loading Fallbacks
+2026-07-07T17:43:20.9394669Z       ---
+2026-07-07T17:43:20.9395293Z       duration_ms: 0.40152
+2026-07-07T17:43:20.9395928Z       type: 'test'
+2026-07-07T17:43:20.9397214Z       ...
+2026-07-07T17:43:20.9411696Z     # Subtest: 3. OCR Output Formatting Standards
+2026-07-07T17:43:20.9412544Z     ok 3 - 3. OCR Output Formatting Standards
+2026-07-07T17:43:20.9413226Z       ---
+2026-07-07T17:43:20.9413756Z       duration_ms: 0.33451
+2026-07-07T17:43:20.9414331Z       type: 'test'
+2026-07-07T17:43:20.9414915Z       ...
+2026-07-07T17:43:20.9415443Z     1..3
+2026-07-07T17:43:20.9416139Z ok 41 - SOS Quality & Data Format Validation Test Suite
+2026-07-07T17:43:20.9416883Z   ---
+2026-07-07T17:43:20.9431244Z   duration_ms: 50.149952
+2026-07-07T17:43:20.9431986Z   type: 'test'
+2026-07-07T17:43:20.9432527Z   ...
+2026-07-07T17:43:21.0235620Z # Subtest: Release Readiness Analyzer States
+2026-07-07T17:43:21.0238433Z ok 42 - Release Readiness Analyzer States
+2026-07-07T17:43:21.0239164Z   ---
+2026-07-07T17:43:21.0239654Z   duration_ms: 1.772229
+2026-07-07T17:43:21.0240190Z   type: 'test'
+2026-07-07T17:43:21.0240902Z   ...
+2026-07-07T17:43:21.0246663Z # Subtest: Readiness Report Path and Secret Sanitization
+2026-07-07T17:43:21.0250265Z ok 43 - Readiness Report Path and Secret Sanitization
+2026-07-07T17:43:21.0251116Z   ---
+2026-07-07T17:43:21.0251575Z   duration_ms: 1.824346
+2026-07-07T17:43:21.0252459Z   type: 'test'
+2026-07-07T17:43:21.0252937Z   ...
+2026-07-07T17:43:21.0265713Z # Subtest: Release Check UI Options and Exclusions
+2026-07-07T17:43:21.0266613Z ok 44 - Release Check UI Options and Exclusions
+2026-07-07T17:43:21.0267611Z   ---
+2026-07-07T17:43:21.0268060Z   duration_ms: 0.635209
+2026-07-07T17:43:21.0268552Z   type: 'test'
+2026-07-07T17:43:21.0268976Z   ...
+2026-07-07T17:43:21.0269516Z # Subtest: API Health endpoint safety checks
+2026-07-07T17:43:21.0270224Z ok 45 - API Health endpoint safety checks
+2026-07-07T17:43:21.0270957Z   ---
+2026-07-07T17:43:21.0271360Z   duration_ms: 0.313228
+2026-07-07T17:43:21.0271822Z   type: 'test'
+2026-07-07T17:43:21.0272212Z   ...
+2026-07-07T17:43:21.0272822Z # Subtest: Jarvis Release Guidance Matches & Boundaries
+2026-07-07T17:43:21.0273622Z ok 46 - Jarvis Release Guidance Matches & Boundaries
+2026-07-07T17:43:21.0274194Z   ---
+2026-07-07T17:43:21.0274580Z   duration_ms: 1.767562
+2026-07-07T17:43:21.0275018Z   type: 'test'
+2026-07-07T17:43:21.0275416Z   ...
+2026-07-07T17:43:21.0287401Z # Subtest: Release Documentation and Config Verification
+2026-07-07T17:43:21.0290398Z ok 47 - Release Documentation and Config Verification
+2026-07-07T17:43:21.0291276Z   ---
+2026-07-07T17:43:21.0291721Z   duration_ms: 0.637002
+2026-07-07T17:43:21.0292196Z   type: 'test'
+2026-07-07T17:43:21.0292623Z   ...
+2026-07-07T17:43:21.4172501Z # (node:2345) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+2026-07-07T17:43:21.4173876Z # (Use `node --trace-warnings ...` to show where the warning was created)
+2026-07-07T17:43:21.4270835Z # Subtest: Routes - Health route diagnostics status
+2026-07-07T17:43:21.4295524Z ok 48 - Routes - Health route diagnostics status
+2026-07-07T17:43:21.4302556Z   ---
+2026-07-07T17:43:21.4310082Z   duration_ms: 11.581389
+2026-07-07T17:43:21.4343709Z   type: 'test'
+2026-07-07T17:43:21.4344161Z   ...
+2026-07-07T17:43:21.4344766Z # Subtest: Routes - Materials list from manifest
+2026-07-07T17:43:21.4345592Z ok 49 - Routes - Materials list from manifest
+2026-07-07T17:43:21.4346191Z   ---
+2026-07-07T17:43:21.4346587Z   duration_ms: 0.545156
+2026-07-07T17:43:21.4347057Z   type: 'test'
+2026-07-07T17:43:21.4347425Z   ...
+2026-07-07T17:43:21.5127464Z # (node:2352) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+2026-07-07T17:43:21.5129186Z # (Use `node --trace-warnings ...` to show where the warning was created)
+2026-07-07T17:43:21.5154492Z # Subtest: SOS Security Hardening Test Suite
+2026-07-07T17:43:21.5157101Z     # Subtest: 1. Advanced Path Traversal Defenses
+2026-07-07T17:43:21.5163204Z     not ok 1 - 1. Advanced Path Traversal Defenses
+2026-07-07T17:43:21.5164007Z       ---
+2026-07-07T17:43:21.5164563Z       duration_ms: 2.776295
+2026-07-07T17:43:21.5165231Z       type: 'test'
+2026-07-07T17:43:21.5166193Z       location: '/home/runner/work/SOS/SOS/sos-server/tests/securityHardening.test.mjs:32:11'
+2026-07-07T17:43:21.5167247Z       failureType: 'testCodeFailure'
+2026-07-07T17:43:21.5167954Z       error: |-
+2026-07-07T17:43:21.5168772Z         The input did not match the regular expression /Out of bounds/. Input:
+2026-07-07T17:43:21.5169627Z         
+2026-07-07T17:43:21.5170252Z         'Error: Access denied to blocked path'
+2026-07-07T17:43:21.5171161Z         
+2026-07-07T17:43:21.5171696Z       code: 'ERR_ASSERTION'
+2026-07-07T17:43:21.5172333Z       name: 'AssertionError'
+2026-07-07T17:43:21.5172936Z       expected:
+2026-07-07T17:43:21.5173630Z       actual:
+2026-07-07T17:43:21.5174295Z       error: 'Access denied to blocked path'
+2026-07-07T17:43:21.5174979Z       stack: |-
+2026-07-07T17:43:21.5176005Z         resolveMaterialPath (/home/runner/work/SOS/SOS/sos-server/services/materialRootService.js:101:11)
+2026-07-07T17:43:21.5177471Z         file:///home/runner/work/SOS/SOS/sos-server/tests/securityHardening.test.mjs:39:7
+2026-07-07T17:43:21.5178516Z         getActual (node:assert:609:5)
+2026-07-07T17:43:21.5179301Z         Function.throws (node:assert:757:24)
+2026-07-07T17:43:21.5181182Z         TestContext.<anonymous> (file:///home/runner/work/SOS/SOS/sos-server/tests/securityHardening.test.mjs:38:12)
+2026-07-07T17:43:21.5182530Z         Test.runInAsyncScope (node:async_hooks:214:14)
+2026-07-07T17:43:21.5183760Z         Test.run (node:internal/test_runner/test:1047:25)
+2026-07-07T17:43:21.5185050Z         async TestContext.<anonymous> (file:///home/runner/work/SOS/SOS/sos-server/tests/securityHardening.test.mjs:32:3)
+2026-07-07T17:43:21.5186376Z         async Test.run (node:internal/test_runner/test:1054:7)
+2026-07-07T17:43:21.5187473Z         async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+2026-07-07T17:43:21.5188425Z       operator: 'throws'
+2026-07-07T17:43:21.5189025Z       stack: |-
+2026-07-07T17:43:21.5190110Z         TestContext.<anonymous> (file:///home/runner/work/SOS/SOS/sos-server/tests/securityHardening.test.mjs:38:12)
+2026-07-07T17:43:21.5191604Z         Test.runInAsyncScope (node:async_hooks:214:14)
+2026-07-07T17:43:21.5192456Z         Test.run (node:internal/test_runner/test:1047:25)
+2026-07-07T17:43:21.5193689Z         async TestContext.<anonymous> (file:///home/runner/work/SOS/SOS/sos-server/tests/securityHardening.test.mjs:32:3)
+2026-07-07T17:43:21.5194954Z         async Test.run (node:internal/test_runner/test:1054:7)
+2026-07-07T17:43:21.5195961Z         async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+2026-07-07T17:43:21.5196784Z       ...
+2026-07-07T17:43:21.5197372Z     # Subtest: 2. Null Byte Injection Block
+2026-07-07T17:43:21.5198049Z     ok 2 - 2. Null Byte Injection Block
+2026-07-07T17:43:21.5198640Z       ---
+2026-07-07T17:43:21.5199125Z       duration_ms: 0.330902
+2026-07-07T17:43:21.5199668Z       type: 'test'
+2026-07-07T17:43:21.5200165Z       ...
+2026-07-07T17:43:21.5200920Z     # Subtest: 3. Database SQL Injection Protection
+2026-07-07T17:43:21.5210861Z     ok 3 - 3. Database SQL Injection Protection
+2026-07-07T17:43:21.5215967Z       ---
+2026-07-07T17:43:21.5216639Z       duration_ms: 0.938622
+2026-07-07T17:43:21.5217286Z       type: 'test'
+2026-07-07T17:43:21.5217837Z       ...
+2026-07-07T17:43:21.5218435Z     # Subtest: 4. Blocked File Access Rules
+2026-07-07T17:43:21.5219190Z     ok 4 - 4. Blocked File Access Rules
+2026-07-07T17:43:21.5219862Z       ---
+2026-07-07T17:43:21.5220393Z       duration_ms: 1.107158
+2026-07-07T17:43:21.5221279Z       type: 'test'
+2026-07-07T17:43:21.5221825Z       ...
+2026-07-07T17:43:21.5222371Z     1..4
+2026-07-07T17:43:21.5226451Z not ok 50 - SOS Security Hardening Test Suite
+2026-07-07T17:43:21.5227200Z   ---
+2026-07-07T17:43:21.5227683Z   duration_ms: 8.313418
+2026-07-07T17:43:21.5228246Z   type: 'test'
+2026-07-07T17:43:21.5229171Z   location: '/home/runner/work/SOS/SOS/sos-server/tests/securityHardening.test.mjs:21:1'
+2026-07-07T17:43:21.5230156Z   failureType: 'subtestsFailed'
+2026-07-07T17:43:21.5230959Z   error: '1 subtest failed'
+2026-07-07T17:43:21.5231541Z   code: 'ERR_TEST_FAILURE'
+2026-07-07T17:43:21.5232097Z   ...
+2026-07-07T17:43:21.6011130Z # Subtest: Session Notes and Reports Test Suite
+2026-07-07T17:43:21.6011898Z     # Subtest: 1. Report JSON generation preserves structure
+2026-07-07T17:43:21.6012610Z     ok 1 - 1. Report JSON generation preserves structure
+2026-07-07T17:43:21.6013137Z       ---
+2026-07-07T17:43:21.6013510Z       duration_ms: 0.703355
+2026-07-07T17:43:21.6013895Z       type: 'test'
+2026-07-07T17:43:21.6014222Z       ...
+2026-07-07T17:43:21.6028404Z     # Subtest: 2. Report Markdown generation formats correctly and includes risk warnings
+2026-07-07T17:43:21.6041370Z     ok 2 - 2. Report Markdown generation formats correctly and includes risk warnings
+2026-07-07T17:43:21.6042322Z       ---
+2026-07-07T17:43:21.6042963Z       duration_ms: 14.833251
+2026-07-07T17:43:21.6043698Z       type: 'test'
+2026-07-07T17:43:21.6044251Z       ...
+2026-07-07T17:43:21.6045098Z     # Subtest: 3. High-risk warning omitted when no high-risk items are included
+2026-07-07T17:43:21.6046242Z     ok 3 - 3. High-risk warning omitted when no high-risk items are included
+2026-07-07T17:43:21.6047615Z       ---
+2026-07-07T17:43:21.6048236Z       duration_ms: 0.216848
+2026-07-07T17:43:21.6048845Z       type: 'test'
+2026-07-07T17:43:21.6049394Z       ...
+2026-07-07T17:43:21.6053188Z     # Subtest: 4. Backup Validation Schema Checks
+2026-07-07T17:43:21.6054395Z     ok 4 - 4. Backup Validation Schema Checks
+2026-07-07T17:43:21.6055098Z       ---
+2026-07-07T17:43:21.6055652Z       duration_ms: 0.878431
+2026-07-07T17:43:21.6056258Z       type: 'test'
+2026-07-07T17:43:21.6056812Z       ...
+2026-07-07T17:43:21.6058468Z     # Subtest: 5. Deduplication and Merging behavior
+2026-07-07T17:43:21.6061178Z     ok 5 - 5. Deduplication and Merging behavior
+2026-07-07T17:43:21.6082233Z       ---
+2026-07-07T17:43:21.6082803Z       duration_ms: 0.348117
+2026-07-07T17:43:21.6083481Z       type: 'test'
+2026-07-07T17:43:21.6084104Z       ...
+2026-07-07T17:43:21.6084640Z     1..5
+2026-07-07T17:43:21.6085304Z ok 51 - Session Notes and Reports Test Suite
+2026-07-07T17:43:21.6086004Z   ---
+2026-07-07T17:43:21.6086558Z   duration_ms: 18.513034
+2026-07-07T17:43:21.6087159Z   type: 'test'
+2026-07-07T17:43:21.6087681Z   ...
+2026-07-07T17:43:21.7355152Z # Subtest: Offline Toolkit Catalog Safety Verification
+2026-07-07T17:43:21.7364647Z ok 52 - Offline Toolkit Catalog Safety Verification
+2026-07-07T17:43:21.7371626Z   ---
+2026-07-07T17:43:21.7372190Z   duration_ms: 1.061418
+2026-07-07T17:43:21.7372842Z   type: 'test'
+2026-07-07T17:43:21.7373452Z   ...
+2026-07-07T17:43:21.7374216Z # Subtest: Setup Progress Store Verification & Exact Keys
+2026-07-07T17:43:21.7375188Z ok 53 - Setup Progress Store Verification & Exact Keys
+2026-07-07T17:43:21.7375914Z   ---
+2026-07-07T17:43:21.7376437Z   duration_ms: 0.427087
+2026-07-07T17:43:21.7377025Z   type: 'test'
+2026-07-07T17:43:21.7377538Z   ...
+2026-07-07T17:43:21.7378252Z # Subtest: Toolkit Cards Checkmark Persistence & Exact Keys
+2026-07-07T17:43:21.7384127Z ok 54 - Toolkit Cards Checkmark Persistence & Exact Keys
+2026-07-07T17:43:21.7384904Z   ---
+2026-07-07T17:43:21.7385453Z   duration_ms: 0.800643
+2026-07-07T17:43:21.7386047Z   type: 'test'
+2026-07-07T17:43:21.7386565Z   ...
+2026-07-07T17:43:21.7387234Z # Subtest: One-time Fallback Migration Verification
+2026-07-07T17:43:21.7388122Z ok 55 - One-time Fallback Migration Verification
+2026-07-07T17:43:21.7388806Z   ---
+2026-07-07T17:43:21.7389314Z   duration_ms: 0.216147
+2026-07-07T17:43:21.7389887Z   type: 'test'
+2026-07-07T17:43:21.7390419Z   ...
+2026-07-07T17:43:21.7391341Z # Subtest: Content Provider Registry Safety Verification
+2026-07-07T17:43:21.7392356Z ok 56 - Content Provider Registry Safety Verification
+2026-07-07T17:43:21.7393051Z   ---
+2026-07-07T17:43:21.7393556Z   duration_ms: 0.286505
+2026-07-07T17:43:21.7394106Z   type: 'test'
+2026-07-07T17:43:21.7394712Z   ...
+2026-07-07T17:43:21.7395465Z # Subtest: Content Gap Analyzer Safety & Parsing Verification
+2026-07-07T17:43:21.7396463Z ok 57 - Content Gap Analyzer Safety & Parsing Verification
+2026-07-07T17:43:21.7397224Z   ---
+2026-07-07T17:43:21.7397743Z   duration_ms: 0.178701
+2026-07-07T17:43:21.7398314Z   type: 'test'
+2026-07-07T17:43:21.7398848Z   ...
+2026-07-07T17:43:21.7399612Z # Subtest: Toolkit Routes Handler Metadata-Only Verification
+2026-07-07T17:43:21.7400788Z ok 58 - Toolkit Routes Handler Metadata-Only Verification
+2026-07-07T17:43:21.7401614Z   ---
+2026-07-07T17:43:21.7402148Z   duration_ms: 3.119155
+2026-07-07T17:43:21.7402720Z   type: 'test'
+2026-07-07T17:43:21.7403217Z   ...
+2026-07-07T17:43:21.7482955Z 1..58
+2026-07-07T17:43:21.7483711Z # tests 121
+2026-07-07T17:43:21.7484147Z # suites 0
+2026-07-07T17:43:21.7484572Z # pass 116
+2026-07-07T17:43:21.7484989Z # fail 5
+2026-07-07T17:43:21.7485403Z # cancelled 0
+2026-07-07T17:43:21.7485840Z # skipped 0
+2026-07-07T17:43:21.7486293Z # todo 0
+2026-07-07T17:43:21.7486751Z # duration_ms 3507.249463
+2026-07-07T17:43:21.7566193Z ##[error]Process completed with exit code 1.
+2026-07-07T17:43:21.7713904Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-07-07T17:43:21.7715050Z Post job cleanup.
+2026-07-07T17:43:21.8701589Z [command]/usr/bin/git version
+2026-07-07T17:43:21.8762483Z git version 2.54.0
+2026-07-07T17:43:21.8833492Z Temporarily overriding HOME='/home/runner/work/_temp/aa3142ce-feb0-46c3-8fbe-ce0ffcd2ab14' before making global git config changes
+2026-07-07T17:43:21.8841746Z Adding repository directory to the temporary git global config as a safe directory
+2026-07-07T17:43:21.8871817Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/SOS/SOS
+2026-07-07T17:43:21.8914984Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-07-07T17:43:21.8947453Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-07-07T17:43:21.9305761Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-07-07T17:43:21.9349239Z http.https://github.com/.extraheader
+2026-07-07T17:43:21.9377548Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-07-07T17:43:21.9442114Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-07-07T17:43:21.9962136Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-07-07T17:43:22.0016110Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-07-07T17:43:22.0550970Z Cleaning up orphan processes
+2026-07-07T17:43:22.0845979Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-node@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

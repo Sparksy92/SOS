@@ -88,7 +88,8 @@ function resolveMaterialPath(webPath) {
   }
 
   const materialsRoot = getMaterialRoot();
-  const absolutePath = path.resolve(materialsRoot, relPath);
+  const normalizedRelPath = relPath.replace(/\\/g, path.sep).replace(/\//g, path.sep);
+  const absolutePath = path.resolve(materialsRoot, normalizedRelPath);
 
   // Boundary check
   const root = path.resolve(materialsRoot);

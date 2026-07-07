@@ -3,14 +3,14 @@ import test from 'node:test';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import pkg from '../services/manifestService.js';
-const { loadManifest, rebuildManifest, setMaterialsDir, MANIFEST_FILE } = pkg;
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 process.env.SOS_MANIFEST_PATH = path.join(__dirname, 'manifest_test.json');
 process.env.SOS_METADATA_PATH = path.join(__dirname, 'metadata_test.json');
+
+import pkg from '../services/manifestService.js';
+const { loadManifest, rebuildManifest, setMaterialsDir } = pkg;
 
 test('Manifest Service - rebuild and load manifest using isolated mock directory', () => {
   // Create an isolated temp directory for materials
@@ -48,7 +48,7 @@ test('Manifest Service - rebuild and load manifest using isolated mock directory
     assert.strictEqual(manifest.fileCount, 3);
     assert.strictEqual(manifest.totalFiles, 3);
     assert.ok(manifest.categories);
-    assert.ok(fs.existsSync(MANIFEST_FILE));
+    assert.ok(fs.existsSync(pkg.MANIFEST_FILE));
 
     // Verify categories mapping
     const categories = Object.keys(manifest.categories);
