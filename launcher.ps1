@@ -1,4 +1,5 @@
-# SurvivalOS Operator Launcher Script (Windows PowerShell)
+# SurvivalOS Operator Launcher (Windows PowerShell)
+
 $root = $PSScriptRoot
 $serverPath = Join-Path $root "sos-server"
 $appPath = Join-Path $root "sos-app"
@@ -25,7 +26,6 @@ function Get-ProcessByPort($port) {
         try {
             $proc = Get-Process -Id $pid -ErrorAction SilentlyContinue
             if ($proc) {
-                # Get CommandLine if supported on this Windows/PS version
                 $cmdLine = "Unknown"
                 try {
                     $cmdLine = (Get-CimInstance Win32_Process -Filter "ProcessId = $pid").CommandLine
@@ -56,11 +56,9 @@ function Stop-PortProcess($port, $label) {
             Write-Host "Sending graceful close request to PID $($procInfo.PID)..."
             Write-Log "Requested stop for $label on port $port (PID: $($procInfo.PID))"
             
-            # Graceful stop
             $procInfo.Process.CloseMainWindow() | Out-Null
             Start-Sleep -Seconds 2
             
-            # Check if still running
             $checkAgain = Get-Process -Id $procInfo.PID -ErrorAction SilentlyContinue
             if ($checkAgain) {
                 $force = Read-Host "Process is still running. Force terminate PID $($procInfo.PID)? (y/n)"
@@ -69,7 +67,7 @@ function Stop-PortProcess($port, $label) {
                     Write-Host "Process on port $port force stopped." -ForegroundColor Green
                     Write-Log "Force killed PID $($procInfo.PID) on port $port"
                 } else {
-                    Write-Host "Keep process running." -ForegroundColor Yellow
+                    Write-Host "Keeping process running." -ForegroundColor Yellow
                 }
             } else {
                 Write-Host "Process on port $port stopped gracefully." -ForegroundColor Green
@@ -81,11 +79,153 @@ function Stop-PortProcess($port, $label) {
     }
 }
 
+function Run-Diagnostics {
+    Write-Host "`n==========================================================" -ForegroundColor Cyan
+    Write-Host "             SURVIVALOS SYSTEM DIAGNOSTICS                " -ForegroundColor Cyan
+    Write-Host "==========================================================" -ForegroundColor Cyan
+    
+    # 1. Dependency Checks
+    Write-Host "[1/4] Checking Core Dependencies:" -ForegroundColor White
+    
+    $nodeCheck = Get-Command node -ErrorAction SilentlyContinue
+    if ($nodeCheck) {
+        Write-Host "  Node.js:   Installed ($($nodeCheck.Version -or (node -v)))" -ForegroundColor Green
+    } else {
+        Write-Host "  Node.js:   NOT FOUND (Required)" -ForegroundColor Red
+    }
+
+    $pythonCheck = Get-Command python -ErrorAction SilentlyContinue
+    if ($pythonCheck) {
+        $pyVer = python --version 2>&1
+        Write-Host "  Python:    Installed ($($pyVer -replace 'Python ', ''))" -ForegroundColor Green
+    } else {
+        Write-Host "  Python:    NOT FOUND (Optional, required for compilers)" -ForegroundColor Yellow
+    }
+
+    $gitCheck = Get-Command git -ErrorAction SilentlyContinue
+    if ($gitCheck) {
+        Write-Host "  Git:       Installed" -ForegroundColor Green
+    } else {
+        Write-Host "  Git:       NOT FOUND" -ForegroundColor Yellow
+    }
+
+    $ollamaCheck = Get-Command ollama -ErrorAction SilentlyContinue
+    if ($ollamaCheck) {
+        Write-Host "  Ollama:    Installed" -ForegroundColor Green
+    } else {
+        Write-Host "  Ollama:    NOT FOUND (Optional, required for offline LLM features)" -ForegroundColor Yellow
+    }
+
+    if ((Test-Path (Join-Path $serverPath "node_modules")) -and (Test-Path (Join-Path $appPath "node_modules"))) {
+        Write-Host "  Packages:  All node_modules are installed." -ForegroundColor Green
+    } else {
+        Write-Host "  Packages:  MISSING node_modules. Select Option 3 to install." -ForegroundColor Yellow
+    }
+
+    # 2. Hardware Capabilities
+    Write-Host "`n[2/4] Analyzing Hardware Specifications:" -ForegroundColor White
+    
+    $cpuCores = $env:NUMBER_OF_PROCESSORS
+    Write-Host "  CPU Cores: $cpuCores logical processors"
+    
+    $ramBytes = (Get-CimInstance Win32_PhysicalMemory -ErrorAction SilentlyContinue | Measure-Object -Property Capacity -Sum).Sum
+    if ($ramBytes) {
+        $ramGb = [Math]::Round($ramBytes / 1GB)
+        Write-Host "  System RAM: $ramGb GB"
+    } else {
+        $ramGb = 8
+        Write-Host "  System RAM: Unknown (Defaulting recommendations to mid-spec)" -ForegroundColor Yellow
+    }
+
+    $gpus = Get-CimInstance Win32_VideoController -ErrorAction SilentlyContinue
+    $hasCuda = $false
+    foreach ($gpu in $gpus) {
+        $vram = ""
+        if ($gpu.AdapterRAM) {
+            $vramGb = [Math]::Round($gpu.AdapterRAM / 1GB)
+            $vram = " (${vramGb}GB VRAM)"
+        }
+        
+        if ($gpu.Name -like "*NVIDIA*") {
+            Write-Host "  GPU:        $($gpu.Name) (CUDA-Enabled)$vram" -ForegroundColor Green
+            $hasCuda = $true
+        } else {
+            Write-Host "  GPU:        $($gpu.Name)$vram"
+        }
+    }
+
+    # 3. Recommendations
+    Write-Host "`n[3/4] Hardware Recommendations:" -ForegroundColor White
+    if ($hasCuda -and $ramGb -ge 16) {
+        Write-Host "  High-end System Detected!" -ForegroundColor Green
+        Write-Host "  - Recommended Local LLM:  llama3.1:8b or deepseek-r1:8b" -ForegroundColor White
+        Write-Host "  - Recommended OCR Model:  llava:7b (Fully accelerated on your GPU)" -ForegroundColor White
+    } elseif ($ramGb -ge 8) {
+        Write-Host "  Mid-range System Detected." -ForegroundColor Yellow
+        Write-Host "  - Recommended Local LLM:  llama3.2:3b (Good speed and capability balance)" -ForegroundColor White
+        Write-Host "  - Recommended Embedding:  nomic-embed-text (Essential for library search)" -ForegroundColor White
+    } else {
+        Write-Host "  Low-spec/CPU System Detected." -ForegroundColor Red
+        Write-Host "  - Recommended Local LLM:  llama3.2:1b or qwen2.5:1.5b" -ForegroundColor White
+        Write-Host "  - Note: Runs on CPU, queries will have noticeable latency." -ForegroundColor White
+    }
+
+    # 4. Ollama Models Library
+    Write-Host "`n[4/4] Ollama Model Library:" -ForegroundColor White
+    $ollamaPortActive = Get-ProcessByPort 11434
+    if ($ollamaPortActive) {
+        Write-Host "  Ollama Service: Online & Listening on port 11434" -ForegroundColor Green
+        Write-Host "  Installed Models:"
+        if ($ollamaCheck) {
+            ollama list | Select-Object -Skip 1 | ForEach-Object {
+                $parts = $_.Split(' ', [System.StringSplitOptions]::RemoveEmptyEntries)
+                Write-Host "    - $($parts[0])"
+            }
+        }
+    } else {
+        Write-Host "  Ollama Service: Offline (Select Option 4 to start it or check installation)" -ForegroundColor Red
+    }
+    Write-Host "==========================================================" -ForegroundColor Cyan
+}
+
+function Install-Dependencies {
+    Write-Host "`n--- SETTING UP APPLICATION DEPENDENCIES ---" -ForegroundColor Cyan
+    Write-Log "Running setup dependency check"
+    
+    # 1. Check & Install Node.js if missing
+    if (!(Get-Command node -ErrorAction SilentlyContinue)) {
+        Write-Host "Node.js not found. Downloading Node.js installer..." -ForegroundColor Yellow
+        $tempMsi = Join-Path $env:TEMP "node.msi"
+        Invoke-WebRequest -Uri "https://nodejs.org/dist/v20.11.1/node-v20.11.1-x64.msi" -OutFile $tempMsi
+        Write-Host "Running Node.js installer... Please follow the prompts." -ForegroundColor White
+        Start-Process msiexec.exe -ArgumentList "/i `"$tempMsi`"" -Wait
+        Write-Host "✔ Node.js installation completed." -ForegroundColor Green
+    }
+    
+    # 2. Check & Install Ollama if missing
+    if (!(Get-Command ollama -ErrorAction SilentlyContinue)) {
+        Write-Host "Ollama not found. Downloading Ollama installer..." -ForegroundColor Yellow
+        $tempExe = Join-Path $env:TEMP "OllamaSetup.exe"
+        Invoke-WebRequest -Uri "https://ollama.com/download/OllamaSetup.exe" -OutFile $tempExe
+        Write-Host "Running Ollama installer... Please follow the prompts." -ForegroundColor White
+        Start-Process $tempExe -Wait
+        Write-Host "✔ Ollama installation completed." -ForegroundColor Green
+    }
+
+    # 3. NPM package installs
+    Write-Host "Installing packages for Backend (sos-server)..." -ForegroundColor White
+    Start-Process cmd.exe -ArgumentList "/c npm install" -WorkingDirectory $serverPath -NoNewWindow -Wait
+    
+    Write-Host "Installing packages for Frontend (sos-app)..." -ForegroundColor White
+    Start-Process cmd.exe -ArgumentList "/c npm install" -WorkingDirectory $appPath -NoNewWindow -Wait
+
+    Write-Host "✔ Dependencies installed successfully!" -ForegroundColor Green
+}
+
 function Start-ProductionMode {
     Write-Host "`n--- STARTING SURVIVALOS (PRODUCTION MODE) ---" -ForegroundColor Cyan
-    Write-Log "Starting production mode launcher check"
+    Write-Log "Starting production mode"
     
-    # Check if frontend build exists
     $distPath = Join-Path $appPath "dist"
     if (!(Test-Path $distPath)) {
         Write-Host "Production build folder 'sos-app/dist' is missing!" -ForegroundColor Yellow
@@ -98,47 +238,40 @@ function Start-ProductionMode {
         }
     }
     
-    # Stop existing port 3001 process if any
     $existing = Get-ProcessByPort 3001
     if ($existing) {
         Write-Host "Port 3001 is already in use by PID $($existing.PID)." -ForegroundColor Yellow
         Stop-PortProcess 3001 "SurvivalOS local server"
-        # Check again
         if (Get-ProcessByPort 3001) {
             Write-Host "Port 3001 is still blocked. Aborting start." -ForegroundColor Red
             return
         }
     }
     
-    # Start Backend in production mode (will host frontend assets statically)
     Write-Host "Launching backend Node server on port 3001..." -ForegroundColor White
     Write-Log "Spawning backend process in production mode"
     
     $env:NODE_ENV = "production"
     $env:PORT = "3001"
-    
     Start-Process cmd.exe -ArgumentList "/c node index.js > `"$serverLog`" 2>&1" -WorkingDirectory $serverPath -NoNewWindow
     
-    # Wait for startup
     Start-Sleep -Seconds 3
     
-    # Check health status
-    $health = Check-HealthSilent
+    $health = try { Invoke-RestMethod -Uri "http://localhost:3001/api/health" -Method Get -TimeoutSec 2 -ErrorAction SilentlyContinue } catch { $null }
     if ($health -and $health.ok) {
         Write-Host "SurvivalOS backend started successfully." -ForegroundColor Green
         Write-Host "Serving app on http://localhost:3001" -ForegroundColor Green
-        Open-BrowserPort 3001
+        Start-Process "http://localhost:3001"
     } else {
-        Write-Host "Backend server failed to respond to health check. Inspect logs/sos-server.log for details." -ForegroundColor Red
+        Write-Host "Backend server failed to respond. Check logs/sos-server.log." -ForegroundColor Red
         Write-Log "Health check failed after production boot spawn"
     }
 }
 
 function Start-DevelopmentMode {
     Write-Host "`n--- STARTING SURVIVALOS (DEVELOPMENT MODE) ---" -ForegroundColor Cyan
-    Write-Log "Starting development mode launcher check"
+    Write-Log "Starting development mode"
     
-    # Stop existing server processes
     $existingServer = Get-ProcessByPort 3001
     if ($existingServer) {
         Write-Host "Port 3001 is in use by PID $($existingServer.PID)." -ForegroundColor Yellow
@@ -155,28 +288,24 @@ function Start-DevelopmentMode {
         return
     }
     
-    # Start Backend on 3001
     Write-Host "Launching backend Node server on port 3001..." -ForegroundColor White
     $env:NODE_ENV = "development"
     $env:PORT = "3001"
     Start-Process cmd.exe -ArgumentList "/c node index.js > `"$serverLog`" 2>&1" -WorkingDirectory $serverPath -NoNewWindow
     
-    # Start Frontend Dev Server on 3000
     Write-Host "Launching Vite dev server on port 3000..." -ForegroundColor White
     $appLog = Join-Path $logsPath "sos-app-dev.log"
     Start-Process cmd.exe -ArgumentList "/c npm run dev > `"$appLog`" 2>&1" -WorkingDirectory $appPath -NoNewWindow
     
-    # Wait for startup
     Start-Sleep -Seconds 4
     
-    # Check health status
-    $health = Check-HealthSilent
+    $health = try { Invoke-RestMethod -Uri "http://localhost:3001/api/health" -Method Get -TimeoutSec 2 -ErrorAction SilentlyContinue } catch { $null }
     if ($health -and $health.ok) {
         Write-Host "SurvivalOS backend started successfully on port 3001." -ForegroundColor Green
         Write-Host "Vite dev server running on port 3000." -ForegroundColor Green
-        Open-BrowserPort 3000
+        Start-Process "http://localhost:3000"
     } else {
-        Write-Host "Startup check timed out or encountered errors. Verify logs/sos-server.log." -ForegroundColor Red
+        Write-Host "Startup check timed out or failed. Verify logs/sos-server.log." -ForegroundColor Red
     }
 }
 
@@ -184,7 +313,6 @@ function Build-Frontend {
     Write-Host "`n--- BUILDING FRONTEND PRODUCTION ASSETS ---" -ForegroundColor Cyan
     Write-Log "Starting frontend compile build run"
     Write-Host "Executing npm run build inside sos-app..." -ForegroundColor White
-    
     $proc = Start-Process npm -ArgumentList "run build" -WorkingDirectory $appPath -NoNewWindow -PassThru -Wait
     if ($proc.ExitCode -eq 0) {
         Write-Host "Frontend build completed successfully." -ForegroundColor Green
@@ -195,114 +323,60 @@ function Build-Frontend {
     }
 }
 
-function Check-HealthSilent {
-    try {
-        $response = Invoke-RestMethod -Uri "http://localhost:3001/api/health" -Method Get -TimeoutSec 2 -ErrorAction SilentlyContinue
-        return $response
-    } catch {
-        return $null
-    }
-}
-
-function Check-Status {
-    Write-Host "`n--- SURVIVALOS STATUS & DIAGNOSTICS ---" -ForegroundColor Cyan
-    $health = Check-HealthSilent
-    if ($health) {
-        Write-Host "Status: healthy (Local Core is Online)" -ForegroundColor Green
-        Write-Host "App Version: v$($health.release.appVersion) ($($health.release.releaseCandidate))" -ForegroundColor Green
-        Write-Host "Schema Version: $($health.release.schemaVersion)" -ForegroundColor White
-        Write-Host "Backup Schema: $($health.release.backupSchemaVersion)" -ForegroundColor White
-        Write-Host "Materials Directory overrides: $(if ($health.materialRootConfigured) { 'Configured' } else { 'Default (Application Root)' })" -ForegroundColor White
-        Write-Host "Auto-Crawl Status: $(if ($health.autoCrawlEnabled) { 'Enabled' } else { 'Disabled' })" -ForegroundColor White
-        Write-Host "Ollama Connection: $($health.ollama.toUpperCase())" -ForegroundColor White
-        Write-Host "Total Indexed Documents: $($health.indexedDocumentCount)" -ForegroundColor White
-    } else {
-        Write-Host "Status: blocked (Local Core Offline)" -ForegroundColor Red
-        Write-Host "Backend Connection: UNREACHABLE" -ForegroundColor Red
-        Write-Host "Please start the local server using launcher options." -ForegroundColor Yellow
-    }
-}
-
-function Open-BrowserPort($port) {
-    Write-Host "Opening browser window to http://localhost:$port..." -ForegroundColor Gray
-    Start-Process "http://localhost:$port"
-}
-
-function View-Logs {
-    Write-Host "`n--- RECENT SERVER LOG ENTRIES (logs/sos-server.log) ---" -ForegroundColor Cyan
-    if (Test-Path $serverLog) {
-        Get-Content $serverLog -Tail 30
-    } else {
-        Write-Host "No backend server log file found." -ForegroundColor Gray
+function Pull-OllamaModels {
+    Write-Host "`n--- SETUP & PULL OLLAMA MODELS ---" -ForegroundColor Cyan
+    
+    $ollamaActive = Get-ProcessByPort 11434
+    if (!$ollamaActive) {
+        Write-Host "Ollama service is offline. Starting Ollama in the background..." -ForegroundColor Yellow
+        Start-Process ollama -ArgumentList "serve" -NoNewWindow
+        Start-Sleep -Seconds 4
     }
     
-    Write-Host "`n--- RECENT LAUNCHER LOG ENTRIES (logs/sos-launcher.log) ---" -ForegroundColor Cyan
-    if (Test-Path $launcherLog) {
-        Get-Content $launcherLog -Tail 20
-    } else {
-        Write-Host "No launcher log file found." -ForegroundColor Gray
+    Write-Host "Pulling text embedding model: nomic-embed-text..." -ForegroundColor White
+    ollama pull nomic-embed-text
+    
+    $pullLlm = Read-Host "Pull recommended 3B chat model (llama3.2:latest)? (y/n)"
+    if ($pullLlm -eq 'y') {
+        ollama pull llama3.2:latest
     }
-}
 
-function Run-BookCompiler {
-    Write-Host "`n--- RUNNING BOOK IMAGE COMPILER & ORGANIZER ---" -ForegroundColor Cyan
-    python "$root\scripts\compile_book_images.py"
-}
+    $pullOcr = Read-Host "Pull vision model for OCR (llava:7b)? (y/n)"
+    if ($pullOcr -eq 'y') {
+        ollama pull llava:7b
+    }
 
-function Run-OcrPipeline {
-    Write-Host "`n--- RUNNING LOCAL OCR PIPELINE (llava:7b) ---" -ForegroundColor Cyan
-    python "$root\scripts\ocr_library.py"
-}
-
-function Run-IsoExtractor {
-    Write-Host "`n--- RUNNING CD3WD DVD MANUAL EXTRACTION ---" -ForegroundColor Cyan
-    powershell -NoProfile -ExecutionPolicy Bypass -File "$root\scripts\extract_isos.ps1"
+    Write-Host "✔ Ollama model pull operations completed." -ForegroundColor Green
 }
 
 # Menu Loop
 do {
-    Write-Host "`n=========================================" -ForegroundColor Cyan
-    Write-Host "       SURVIVALOS LOCAL OPERATOR MENU    " -ForegroundColor Cyan
-    Write-Host "=========================================" -ForegroundColor Cyan
-    Write-Host "1. Start SurvivalOS (Production Mode)"
-    Write-Host "2. Start SurvivalOS (Development Mode)"
-    Write-Host "3. Stop SurvivalOS Services"
-    Write-Host "4. Restart Production Server"
-    Write-Host "5. Check System Health & Status"
-    Write-Host "6. Open Browser Window"
-    Write-Host "7. View Local Server Logs"
-    Write-Host "8. Run Book Image Compiler"
-    Write-Host "9. Run local OCR Pipeline"
-    Write-Host "10. Extract CD3WD ISO Manuals"
-    Write-Host "11. Run Frontend Build Compiler"
-    Write-Host "12. Exit Launcher"
-    Write-Host "=========================================" -ForegroundColor Cyan
+    Write-Host "`n==========================================================" -ForegroundColor Cyan
+    Write-Host "             SURVIVALOS UNIFIED OPERATOR MENU             " -ForegroundColor Cyan
+    Write-Host "==========================================================" -ForegroundColor Cyan
+    Write-Host "  1. Start SurvivalOS (Production Mode)"
+    Write-Host "  2. Start SurvivalOS (Development Mode)"
+    Write-Host "  3. Install / Verify System Dependencies"
+    Write-Host "  4. Setup & Pull Ollama LLM Models"
+    Write-Host "  5. Run Hardware Diagnostics & Check Health"
+    Write-Host "  6. Build / Recompile Frontend Assets"
+    Write-Host "  7. Stop Running Services"
+    Write-Host "  8. Exit"
+    Write-Host "==========================================================" -ForegroundColor Cyan
     
-    $choice = Read-Host "Select an option (1-12)"
+    $choice = Read-Host "Select an option (1-8)"
     switch ($choice) {
         '1' { Start-ProductionMode }
         '2' { Start-DevelopmentMode }
-        '3' { 
-            Stop-PortProcess 3001 "SurvivalOS local server"
-            Stop-PortProcess 3000 "frontend dev server"
+        '3' { Install-Dependencies }
+        '4' { Pull-OllamaModels }
+        '5' { Run-Diagnostics }
+        '6' { Build-Frontend }
+        '7' { 
+            Stop-PortProcess 3001 "SurvivalOS Backend Server"
+            Stop-PortProcess 3000 "Frontend Dev Server"
         }
-        '4' {
-            Stop-PortProcess 3001 "SurvivalOS local server"
-            Start-ProductionMode
-        }
-        '5' { Check-Status }
-        '6' {
-            $h = Check-HealthSilent
-            if (Get-ProcessByPort 3000) { Open-BrowserPort 3000 }
-            elseif (Get-ProcessByPort 3001) { Open-BrowserPort 3001 }
-            else { Write-Host "No service is running. Start mode first." -ForegroundColor Yellow }
-        }
-        '7' { View-Logs }
-        '8' { Run-BookCompiler }
-        '9' { Run-OcrPipeline }
-        '10' { Run-IsoExtractor }
-        '11' { Build-Frontend }
-        '12' { Write-Host "Exiting launcher. Standby." -ForegroundColor Yellow }
-        Default { Write-Host "Invalid option. Select 1 to 12." -ForegroundColor Red }
+        '8' { Write-Host "Exiting launcher. Good luck, Operator." -ForegroundColor Yellow }
+        Default { Write-Host "Invalid option. Select 1 to 8." -ForegroundColor Red }
     }
-} while ($choice -ne '12')
+} while ($choice -ne '8')

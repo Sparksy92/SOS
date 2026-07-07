@@ -37,8 +37,12 @@ Inside `.env`, you can optionally configure `SOS_MATERIALS_DIR` to point to your
 ### 3. Start the Server and App
 Use the pre-configured script from the root folder:
 ```bash
-# On Windows, run the batch script:
-start.bat
+# On Windows, run the launcher batch script:
+launcher.bat
+
+# On Linux, run the launcher bash script:
+chmod +x launcher.sh
+./launcher.sh
 ```
 Alternatively, start the backend and frontend separately:
 ```bash

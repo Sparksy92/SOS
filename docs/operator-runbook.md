@@ -27,7 +27,7 @@ SurvivalOS is a local-only database, briefing, and checklist manager that runs e
 3.  **Launch the Browser**:
     *   Navigate to `http://localhost:3000`.
 
-*On Windows, you can double-click `start.bat` in the root folder to automate these three steps.*
+*On Windows, you can double-click `launcher.bat` in the root folder to automate these steps. On Linux, you can run `./launcher.sh`.*
 
 ---
 

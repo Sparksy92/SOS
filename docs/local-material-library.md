@@ -8,8 +8,8 @@ All survival books, appropriate technology manuals, and video courses must be pl
 survival/
 ├── sos-app/                 # React UI code (tracked in Git)
 ├── sos-server/              # Node.js API backend (tracked in Git)
-├── install.bat              # Setup script
-├── start.bat                # Tactical dashboard launcher
+├── launcher.bat             # Windows tactical launcher
+├── launcher.sh              # Linux tactical launcher
 ├── ATL/                     # [Local Library] Applied Tech & Agriculture (500GB+ outside Git)
 ├── ENCYCLOPEDIAS.../        # [Local Library] Encyclopedias & Reference
 ├── CD3WD Extracted Manuals/ # [Local Library] Extracted CD3WD books
