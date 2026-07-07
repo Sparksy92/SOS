@@ -281,7 +281,8 @@ function Start-ProductionMode {
     
     $env:NODE_ENV = "production"
     $env:PORT = "3001"
-    Start-Process node -ArgumentList "index.js" -WorkingDirectory $serverPath -NoNewWindow -RedirectStandardOutput $serverLog -RedirectStandardError $serverLog
+    $serverErrorLog = Join-Path $logsPath "sos-server-error.log"
+    Start-Process node -ArgumentList "index.js" -WorkingDirectory $serverPath -NoNewWindow -RedirectStandardOutput $serverLog -RedirectStandardError $serverErrorLog
     
     Start-Sleep -Seconds 3
     
@@ -320,11 +321,13 @@ function Start-DevelopmentMode {
     Write-Host "Launching backend Node server on port 3001..." -ForegroundColor White
     $env:NODE_ENV = "development"
     $env:PORT = "3001"
-    Start-Process node -ArgumentList "index.js" -WorkingDirectory $serverPath -NoNewWindow -RedirectStandardOutput $serverLog -RedirectStandardError $serverLog
+    $serverErrorLog = Join-Path $logsPath "sos-server-error.log"
+    Start-Process node -ArgumentList "index.js" -WorkingDirectory $serverPath -NoNewWindow -RedirectStandardOutput $serverLog -RedirectStandardError $serverErrorLog
     
     Write-Host "Launching Vite dev server on port 3000..." -ForegroundColor White
     $appLog = Join-Path $logsPath "sos-app-dev.log"
-    Start-Process npm -ArgumentList "run dev" -WorkingDirectory $appPath -NoNewWindow -RedirectStandardOutput $appLog -RedirectStandardError $appLog
+    $appErrorLog = Join-Path $logsPath "sos-app-dev-error.log"
+    Start-Process npm -ArgumentList "run dev" -WorkingDirectory $appPath -NoNewWindow -RedirectStandardOutput $appLog -RedirectStandardError $appErrorLog
     
     Start-Sleep -Seconds 4
     
@@ -434,17 +437,19 @@ if ($cli) {
         }
     }
 
-    # 2. Check if port 3001 is already in use
-    $existing = Get-ProcessByPort 3001
-    if ($existing) {
-        Write-Host "Launcher server is already active on port 3001." -ForegroundColor Green
-    } else {
-        # Start the backend node server in the background
-        Write-Host "Starting server daemon on port 3001..." -ForegroundColor White
-        $env:NODE_ENV = "production"
-        $env:PORT = "3001"
-        Start-Process node -ArgumentList "index.js" -WorkingDirectory $serverPath -NoNewWindow -RedirectStandardOutput $serverLog -RedirectStandardError $serverLog
-    }
+    # 2. Ensure a clean boot by terminating any existing port 3000/3001 instances
+    Write-Host "Cleaning up stale port 3000/3001 services..." -ForegroundColor White
+    $p3000 = Get-ProcessByPort 3000
+    if ($p3000) { Stop-Process -Id $p3000.PID -Force -ErrorAction SilentlyContinue }
+    $p3001 = Get-ProcessByPort 3001
+    if ($p3001) { Stop-Process -Id $p3001.PID -Force -ErrorAction SilentlyContinue }
+
+    # Start the backend node server in the background
+    Write-Host "Starting server daemon on port 3001..." -ForegroundColor White
+    $env:NODE_ENV = "production"
+    $env:PORT = "3001"
+    $serverErrorLog = Join-Path $logsPath "sos-server-error.log"
+    Start-Process node -ArgumentList "index.js" -WorkingDirectory $serverPath -NoNewWindow -RedirectStandardOutput $serverLog -RedirectStandardError $serverErrorLog
 
     # 3. Wait for the server to bind
     Write-Host "Waiting for service to bind..." -ForegroundColor White
