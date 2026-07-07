@@ -155,6 +155,46 @@ def normalize_title(name):
     normalized = re.sub(r'[^a-zA-Z0-9]', '', base).lower()
     return normalized
 
+def check_duplicate(candidate_filename, local_files):
+    cand_norm = normalize_title(candidate_filename)
+    if not cand_norm:
+        return False, ""
+        
+    for f in local_files:
+        local_name = f.get("name")
+        if not local_name:
+            continue
+        local_norm = normalize_title(local_name)
+        
+        # 1. Exact match
+        if cand_norm == local_norm:
+            return True, "Exact title normalized match"
+            
+        # 2. Substring match
+        if cand_norm in local_norm:
+            return True, f"Candidate substring matched local file: {local_name}"
+            
+        # 3. Reverse substring match for cleaned names
+        if len(local_norm) > 6 and local_norm in cand_norm:
+            return True, f"Local file substring matched candidate: {local_name}"
+            
+        # 4. Token-based word match
+        cand_words = set(re.findall(r'[a-z0-9]+', candidate_filename.lower()))
+        local_words = set(re.findall(r'[a-z0-9]+', local_name.lower()))
+        stopwords = {'pdf', 'en', 'lp', 'jf', 'co', 'ag', 'mc', 'em', 'ec', 'and', 'the', 'for', 'with', 'of', 'in', 'on', 'at', 'by', 'an', 'a', 'to', 'is'}
+        cand_sig_words = {w for w in cand_words if w not in stopwords and not w.isdigit()}
+        local_sig_words = {w for w in local_words if w not in stopwords and not w.isdigit()}
+        
+        if cand_sig_words and cand_sig_words.issubset(local_sig_words):
+            return True, f"Significant keywords matched local file: {local_name}"
+            
+        # 5. FM specific match
+        if "21" in cand_words and "76" in cand_words:
+            if "21" in local_words and "76" in local_words:
+                return True, f"FM 21-76 keyword match: {local_name}"
+                
+    return False, ""
+
 def query_network_metadata(url, max_depth, max_pages, fetch_state, current_depth=1):
     """
     Crawls HTML directory indexes only.
@@ -357,8 +397,7 @@ def main():
         license_status = item.get("licenseStatus", "unknown")
         
         # Check duplicate presence
-        norm_title = normalize_title(filename)
-        already_present = norm_title in normalized_local
+        already_present, match_reason = check_duplicate(filename, local_files)
 
         # Sanitize absolute URLs or local staging paths
         sanitized_official = sanitize_path(item.get("officialSourceUrl", ""), args.materials_root)
@@ -375,7 +414,7 @@ def main():
             "licenseEvidence": item.get("licenseEvidence", "No verifiable licensing evidence."),
             "verificationStatus": item.get("verificationStatus", "unverified"),
             "alreadyPresent": already_present,
-            "matchReason": "Exact title normalized duplication match" if already_present else "",
+            "matchReason": match_reason,
             "recommendedAction": "manual_review" if license_status in ["unknown", "restricted"] else "approved_download",
             "notes": "Requires safety-gate validation" if item_risk else "Standard off-grid reference"
         }

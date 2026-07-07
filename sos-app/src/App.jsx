@@ -123,6 +123,11 @@ import { createOfflineToolkitBackup, runOfflineToolkitIntegrityAudit } from './m
 
 const API_BASE = window.location.port === '3001' ? '' : `http://${window.location.hostname}:3001`;
 
+const encodePath = (pathString) => {
+  if (!pathString) return '';
+  return pathString.split('/').map(segment => encodeURIComponent(segment)).join('/');
+};
+
 function App() {
   const [categories, setCategories] = useState({});
   const [metadata, setMetadata] = useState({});
@@ -3019,7 +3024,7 @@ function App() {
                )}
                <button 
                  className="btn-tactical"
-                 onClick={() => window.open(`${API_BASE}${selectedDocument.path}`, '_blank')}
+                 onClick={() => window.open(`${API_BASE}${encodePath(selectedDocument.path)}`, '_blank')}
                >
                  <ExternalLink size={16} /> OPEN IN BROWSER
                </button>
@@ -3083,7 +3088,7 @@ function App() {
               <div className="glass-panel" style={{ flex: showAudioHUD ? 0.6 : 1, overflow: 'hidden', position: 'relative', borderRadius: '8px', transition: 'all 0.3s ease' }}>
                 {['.mp4', '.webm'].includes(selectedDocument.extension?.toLowerCase()) ? (
                   <video 
-                    src={`${API_BASE}${selectedDocument.path}`} 
+                    src={`${API_BASE}${encodePath(selectedDocument.path)}`} 
                     controls 
                     autoPlay
                     style={{ width: '100%', height: '100%', backgroundColor: 'black', borderRadius: '8px' }} 
@@ -3130,7 +3135,7 @@ function App() {
                     </div>
                     <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', justifyContent: 'center' }}>
                       <a 
-                        href={`${API_BASE}${selectedDocument.path}`} 
+                        href={`${API_BASE}${encodePath(selectedDocument.path)}`} 
                         download
                         className="btn-tactical"
                         style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '12px 24px', fontSize: '1rem', textDecoration: 'none', backgroundColor: 'var(--brand-primary)', color: 'black' }}
@@ -3153,14 +3158,14 @@ function App() {
                 ) : ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp'].includes(selectedDocument.extension?.toLowerCase()) ? (
                   <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', height: '100%', backgroundColor: '#0a0a0a', borderRadius: '8px', overflow: 'auto', padding: '16px' }}>
                     <img 
-                      src={`${API_BASE}${selectedDocument.path}`} 
+                      src={`${API_BASE}${encodePath(selectedDocument.path)}`} 
                       alt={selectedDocument.name} 
                       style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', borderRadius: '4px', border: '1px solid var(--border-subtle)', boxShadow: 'var(--glow-primary)' }} 
                     />
                   </div>
                 ) : (
                   <iframe 
-                    src={`${API_BASE}${selectedDocument.path}`}
+                    src={`${API_BASE}${encodePath(selectedDocument.path)}`}
                     title="Document Viewer"
                     style={{ width: '100%', height: '100%', border: 'none', backgroundColor: '#e2e8f0' }}
                   />

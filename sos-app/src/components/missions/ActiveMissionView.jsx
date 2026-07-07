@@ -121,8 +121,13 @@ const ActiveMissionView = ({ mission, onSendSuggestedPrompt, onUpdateState }) =>
   };
 
   // Recommendations Finder actions
-  const handleOpenDocument = (path) => {
-    const url = `http://${window.location.hostname}:3001${path.startsWith('/') ? path : '/' + path}`;
+  const handleOpenDocument = (pathVal) => {
+    const encodePath = (pathString) => {
+      if (!pathString) return '';
+      return pathString.split('/').map(segment => encodeURIComponent(segment)).join('/');
+    };
+    const encoded = encodePath(pathVal);
+    const url = `http://${window.location.hostname}:3001${encoded.startsWith('/') ? encoded : '/' + encoded}`;
     window.open(url, '_blank');
   };
 

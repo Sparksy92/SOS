@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-04T04:17:14.700752+00:00",
+  "generatedAt": "2026-07-07T01:35:59.725787+00:00",
   "sourcesAudited": [
     {
       "name": "WROLPi",
@@ -44,7 +44,7 @@
   ],
   "localMaterialSummary": {
     "inventoryAvailable": true,
-    "totalFilesKnown": 0,
+    "totalFilesKnown": 15756,
     "categoriesKnown": [
       "homesteading",
       "farming",
@@ -72,10 +72,10 @@
     },
     {
       "category": "general_survival",
-      "localCount": 0,
+      "localCount": 1,
       "externalCandidateCount": 2,
-      "coverage": "missing",
-      "notes": "Operator has 0 of 2 items cataloged."
+      "coverage": "adequate",
+      "notes": "Operator has 1 of 2 items cataloged."
     },
     {
       "category": "water",
@@ -100,10 +100,10 @@
     },
     {
       "category": "medical_reference",
-      "localCount": 0,
+      "localCount": 2,
       "externalCandidateCount": 3,
-      "coverage": "missing",
-      "notes": "Operator has 0 of 3 items cataloged."
+      "coverage": "adequate",
+      "notes": "Operator has 2 of 3 items cataloged."
     }
   ],
   "candidateItems": [
@@ -162,8 +162,8 @@
       "licenseStatus": "official_free",
       "licenseEvidence": "Official US Department of the Army field manual. Public distribution.",
       "verificationStatus": "verified",
-      "alreadyPresent": false,
-      "matchReason": "",
+      "alreadyPresent": true,
+      "matchReason": "FM 21-76 keyword match: united_states_army_fm_21-76 - 5_june_1992.pdf",
       "recommendedAction": "approved_download",
       "notes": "Standard off-grid reference"
     },
@@ -237,8 +237,8 @@
       "licenseStatus": "official_free",
       "licenseEvidence": "Hesperian Foundation. Open-access health book for non-commercial distribution.",
       "verificationStatus": "verified",
-      "alreadyPresent": false,
-      "matchReason": "",
+      "alreadyPresent": true,
+      "matchReason": "Candidate substring matched local file: _mc_where_there_is_no_doctor_10_hesperian_en_lp_138780_.pdf",
       "recommendedAction": "approved_download",
       "notes": "Requires safety-gate validation"
     },
@@ -252,8 +252,8 @@
       "licenseStatus": "official_free",
       "licenseEvidence": "Hesperian Foundation. Open-access health book for non-commercial distribution.",
       "verificationStatus": "verified",
-      "alreadyPresent": false,
-      "matchReason": "",
+      "alreadyPresent": true,
+      "matchReason": "Candidate substring matched local file: _mc_437_Where_There_Is_No_Dentist27_719_jf_en_136650_.pdf",
       "recommendedAction": "approved_download",
       "notes": "Requires safety-gate validation"
     },

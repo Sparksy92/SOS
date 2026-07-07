@@ -244,6 +244,21 @@ function View-Logs {
     }
 }
 
+function Run-BookCompiler {
+    Write-Host "`n--- RUNNING BOOK IMAGE COMPILER & ORGANIZER ---" -ForegroundColor Cyan
+    python "$root\scripts\compile_book_images.py"
+}
+
+function Run-OcrPipeline {
+    Write-Host "`n--- RUNNING LOCAL OCR PIPELINE (llava:7b) ---" -ForegroundColor Cyan
+    python "$root\scripts\ocr_library.py"
+}
+
+function Run-IsoExtractor {
+    Write-Host "`n--- RUNNING CD3WD DVD MANUAL EXTRACTION ---" -ForegroundColor Cyan
+    powershell -NoProfile -ExecutionPolicy Bypass -File "$root\scripts\extract_isos.ps1"
+}
+
 # Menu Loop
 do {
     Write-Host "`n=========================================" -ForegroundColor Cyan
@@ -256,11 +271,14 @@ do {
     Write-Host "5. Check System Health & Status"
     Write-Host "6. Open Browser Window"
     Write-Host "7. View Local Server Logs"
-    Write-Host "8. Run Frontend Build Compiler"
-    Write-Host "9. Exit Launcher"
+    Write-Host "8. Run Book Image Compiler"
+    Write-Host "9. Run local OCR Pipeline"
+    Write-Host "10. Extract CD3WD ISO Manuals"
+    Write-Host "11. Run Frontend Build Compiler"
+    Write-Host "12. Exit Launcher"
     Write-Host "=========================================" -ForegroundColor Cyan
     
-    $choice = Read-Host "Select an option (1-9)"
+    $choice = Read-Host "Select an option (1-12)"
     switch ($choice) {
         '1' { Start-ProductionMode }
         '2' { Start-DevelopmentMode }
@@ -280,8 +298,11 @@ do {
             else { Write-Host "No service is running. Start mode first." -ForegroundColor Yellow }
         }
         '7' { View-Logs }
-        '8' { Build-Frontend }
-        '9' { Write-Host "Exiting launcher. Standby." -ForegroundColor Yellow }
-        Default { Write-Host "Invalid option. Select 1 to 9." -ForegroundColor Red }
+        '8' { Run-BookCompiler }
+        '9' { Run-OcrPipeline }
+        '10' { Run-IsoExtractor }
+        '11' { Build-Frontend }
+        '12' { Write-Host "Exiting launcher. Standby." -ForegroundColor Yellow }
+        Default { Write-Host "Invalid option. Select 1 to 12." -ForegroundColor Red }
     }
-} while ($choice -ne '9')
+} while ($choice -ne '12')

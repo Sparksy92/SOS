@@ -16,7 +16,7 @@ Candidate items that may be suitable for acquisition after license verification.
 * **License Status:** OFFICIAL_FREE
 * **License Evidence:** Official US Department of the Army field manual. Public distribution.
 * **Risk Category:** None
-* **Already Present:** False
+* **Already Present:** True
 * **Official Source Link:** `https://archive.org/details/FM21-76SurvivalManual`
 * **Third-Party Mirror Link:** `https://theswissbay.ch/pdf/Books/Survival/Survival/FM%2021-76%20Survival%20Manual.pdf`
 
@@ -43,7 +43,7 @@ Candidate items that may be suitable for acquisition after license verification.
 * **License Status:** OFFICIAL_FREE
 * **License Evidence:** Hesperian Foundation. Open-access health book for non-commercial distribution.
 * **Risk Category:** medical
-* **Already Present:** False
+* **Already Present:** True
 * **Official Source Link:** `https://hesperian.org/books-and-resources/`
 * **Third-Party Mirror Link:** `https://theswissbay.ch/pdf/Books/Survival/Bush%20Medicine/Where%20There%20Is%20No%20Doctor.pdf`
 
@@ -52,7 +52,7 @@ Candidate items that may be suitable for acquisition after license verification.
 * **License Status:** OFFICIAL_FREE
 * **License Evidence:** Hesperian Foundation. Open-access health book for non-commercial distribution.
 * **Risk Category:** medical
-* **Already Present:** False
+* **Already Present:** True
 * **Official Source Link:** `https://hesperian.org/books-and-resources/`
 * **Third-Party Mirror Link:** `https://theswissbay.ch/pdf/Books/Survival/Bush%20Medicine/Where%20There%20Is%20No%20Dentist.pdf`
 

@@ -139,7 +139,7 @@ def run_ocr(root_path):
                         print(f"Failed to process {file}: {e}")
 
 if __name__ == "__main__":
-    # Root folder is the directory containing this script
-    script_dir = os.path.dirname(os.path.abspath(__file__))
+    # Root folder is the parent of the scripts directory (project root)
+    script_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     print(f"Initializing OCR Pipeline on: {script_dir}")
     run_ocr(script_dir)
