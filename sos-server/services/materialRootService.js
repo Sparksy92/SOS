@@ -75,6 +75,10 @@ function resolveMaterialPath(webPath) {
     throw new Error('filePath is required');
   }
 
+  if (webPath.includes('\0')) {
+    throw new Error('Invalid path: Null byte detected');
+  }
+
   // Allow either absolute webPath "/materials/..." or relative "/..."
   let relPath = webPath;
   if (webPath.startsWith('/materials/')) {
