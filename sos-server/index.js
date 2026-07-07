@@ -34,6 +34,48 @@ app.get(/^\/materials\/(.+)$/, (req, res) => {
       return res.status(403).send("Access denied: Directory listing not allowed.");
     }
     
+    // On-the-fly DOCX to HTML conversion for browser viewing
+    const ext = path.extname(absolutePath).toLowerCase();
+    if (ext === '.docx') {
+      const mammoth = require("mammoth");
+      return mammoth.convertToHtml({ path: absolutePath })
+        .then(result => {
+          const html = `
+            <!DOCTYPE html>
+            <html>
+              <head>
+                <meta charset="utf-8">
+                <style>
+                  body {
+                    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+                    line-height: 1.6;
+                    color: #e2e8f0;
+                    max-width: 800px;
+                    margin: 40px auto;
+                    padding: 0 20px;
+                    background-color: #0f172a;
+                  }
+                  p { margin-bottom: 1.2em; }
+                  h1, h2, h3, h4 { margin-top: 1.5em; margin-bottom: 0.5em; color: #38bdf8; border-bottom: 1px solid #334155; padding-bottom: 4px; }
+                  table { border-collapse: collapse; width: 100%; margin: 20px 0; background-color: #1e293b; }
+                  th, td { border: 1px solid #475569; padding: 8px 12px; text-align: left; }
+                  th { background-color: #334155; color: #38bdf8; }
+                  a { color: #38bdf8; }
+                </style>
+              </head>
+              <body>
+                ${result.value}
+              </body>
+            </html>
+          `;
+          res.setHeader('Content-Type', 'text/html');
+          res.send(html);
+        })
+        .catch(err => {
+          res.status(500).send(`Error converting docx: ${err.message}`);
+        });
+    }
+    
     res.sendFile(absolutePath);
   } catch (err) {
     res.status(403).send(`Access denied: ${err.message}`);
@@ -172,7 +214,14 @@ app.get('/api/document/text', async (req, res) => {
       return res.json({ text, type: 'text' });
     }
 
-    // 3. Parse PDF
+    // 3. Parse DOCX
+    if (ext === '.docx') {
+      const mammoth = require("mammoth");
+      const result = await mammoth.extractRawText({ path: absolutePath });
+      return res.json({ text: result.value, type: 'docx' });
+    }
+
+    // 4. Parse PDF
     if (ext === '.pdf') {
       const { PDFLoader } = require("@langchain/community/document_loaders/fs/pdf");
       const loader = new PDFLoader(absolutePath);
@@ -205,6 +254,8 @@ if (process.env.NODE_ENV === 'production') {
   });
 }
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`SOS Server running on http://localhost:${PORT}`);
 });
+
+module.exports = server;

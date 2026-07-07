@@ -1,11 +1,22 @@
 const fs = require('fs');
 const path = require('path');
-const { spawn } = require('child_process');
+const { spawn, execSync } = require('child_process');
+
+function isNativeCodec(absolutePath) {
+  try {
+    const codec = execSync(`ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of csv=p=0 "${absolutePath}"`, { encoding: 'utf8' }).trim();
+    // Native codecs universally supported by web browsers
+    return ['h264', 'vp9', 'av1', 'vp8'].includes(codec.toLowerCase());
+  } catch (e) {
+    // If query fails, safely fallback to transcoding to guarantee playback
+    return false;
+  }
+}
 
 function streamVideo(req, res, absolutePath) {
   const ext = path.extname(absolutePath).toLowerCase();
   
-  if (['.mp4', '.webm'].includes(ext)) {
+  if (['.mp4', '.webm'].includes(ext) && isNativeCodec(absolutePath)) {
     console.log(`[STREAM] Serving native video via sendFile: ${absolutePath}`);
     return res.sendFile(absolutePath);
   }
@@ -25,7 +36,7 @@ function streamVideo(req, res, absolutePath) {
     '-preset', 'ultrafast',
     '-tune', 'zerolatency',
     '-pix_fmt', 'yuv420p',
-    '-movflags', 'fragmented+empty_moov+default_base_moof',
+    '-movflags', 'empty_moov+default_base_moof+frag_keyframe',
     '-c:a', 'aac',
     '-b:a', '128k',
     '-f', 'mp4',

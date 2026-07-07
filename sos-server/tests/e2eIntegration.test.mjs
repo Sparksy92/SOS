@@ -17,6 +17,12 @@ test('SOS End-to-End API Integration Suite', async (t) => {
     server = require('../index.js');
   });
 
+  t.after(() => {
+    if (server && typeof server.close === 'function') {
+      server.close();
+    }
+  });
+
   await t.test('1. API Health Check endpoint roundtrip', async () => {
     const res = await fetch(`http://localhost:${testPort}/api/health`);
     assert.strictEqual(res.status, 200);
