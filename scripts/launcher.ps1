@@ -22,17 +22,17 @@ function Get-ProcessByPort($port) {
     $netstat = netstat -ano | Select-String "LISTENING" | Select-String ":$port\s"
     if ($netstat) {
         $parts = $netstat[0].ToString().Split(' ', [System.StringSplitOptions]::RemoveEmptyEntries)
-        $pid = $parts[-1]
+        $targetPid = $parts[-1]
         try {
-            $proc = Get-Process -Id $pid -ErrorAction SilentlyContinue
+            $proc = Get-Process -Id $targetPid -ErrorAction SilentlyContinue
             if ($proc) {
                 $cmdLine = "Unknown"
                 try {
-                    $cmdLine = (Get-CimInstance Win32_Process -Filter "ProcessId = $pid").CommandLine
+                    $cmdLine = (Get-CimInstance Win32_Process -Filter "ProcessId = $targetPid").CommandLine
                 } catch {}
                 
                 return [PSCustomObject]@{
-                    PID = $pid
+                    PID = $targetPid
                     Name = $proc.Name
                     CommandLine = $cmdLine
                     Process = $proc
@@ -171,7 +171,8 @@ function Run-Diagnostics {
     }
 
     # 4. Ollama Models Library
-    Write-Host "`n[4/4] Ollama Model Library:" -ForegroundColor White
+    Write-Host ""
+    Write-Host '[4/4] Ollama Model Library:' -ForegroundColor White
     $ollamaPortActive = Get-ProcessByPort 11434
     if ($ollamaPortActive) {
         Write-Host "  Ollama Service: Online AND Listening on port 11434" -ForegroundColor Green
@@ -189,7 +190,8 @@ function Run-Diagnostics {
 }
 
 function Install-Dependencies {
-    Write-Host "`n--- SETTING UP APPLICATION DEPENDENCIES ---" -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host '--- SETTING UP APPLICATION DEPENDENCIES ---' -ForegroundColor Cyan
     Write-Log "Running setup dependency check"
     
     # 1. Check & Install Node.js if missing
@@ -223,7 +225,8 @@ function Install-Dependencies {
 }
 
 function Start-ProductionMode {
-    Write-Host "`n--- STARTING SURVIVALOS (PRODUCTION MODE) ---" -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host '--- STARTING SURVIVALOS (PRODUCTION MODE) ---' -ForegroundColor Cyan
     Write-Log "Starting production mode"
     
     $distPath = Join-Path $appPath "dist"
@@ -269,7 +272,8 @@ function Start-ProductionMode {
 }
 
 function Start-DevelopmentMode {
-    Write-Host "`n--- STARTING SURVIVALOS (DEVELOPMENT MODE) ---" -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host '--- STARTING SURVIVALOS (DEVELOPMENT MODE) ---' -ForegroundColor Cyan
     Write-Log "Starting development mode"
     
     $existingServer = Get-ProcessByPort 3001
@@ -310,7 +314,8 @@ function Start-DevelopmentMode {
 }
 
 function Build-Frontend {
-    Write-Host "`n--- BUILDING FRONTEND PRODUCTION ASSETS ---" -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host '--- BUILDING FRONTEND PRODUCTION ASSETS ---' -ForegroundColor Cyan
     Write-Log "Starting frontend compile build run"
     Write-Host "Executing npm run build inside sos-app..." -ForegroundColor White
     $proc = Start-Process npm -ArgumentList "run build" -WorkingDirectory $appPath -NoNewWindow -PassThru -Wait
@@ -324,7 +329,8 @@ function Build-Frontend {
 }
 
 function Pull-OllamaModels {
-    Write-Host "`n--- SETUP AND PULL OLLAMA MODELS ---" -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host '--- SETUP AND PULL OLLAMA MODELS ---' -ForegroundColor Cyan
     
     $ollamaActive = Get-ProcessByPort 11434
     if (!$ollamaActive) {
@@ -351,7 +357,8 @@ function Pull-OllamaModels {
 
 # Menu Loop
 do {
-    Write-Host "`n==========================================================" -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host '==========================================================' -ForegroundColor Cyan
     Write-Host "             SURVIVALOS UNIFIED OPERATOR MENU             " -ForegroundColor Cyan
     Write-Host "==========================================================" -ForegroundColor Cyan
     Write-Host "  1. Start SurvivalOS (Production Mode)"
