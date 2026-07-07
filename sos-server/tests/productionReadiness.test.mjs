@@ -15,7 +15,7 @@ test('Production Readiness Diagnostics & Launcher Files', () => {
 
   // 2. Launcher script existence checks
   const batPath = path.resolve('launcher.bat');
-  const psPath = path.resolve('launcher.ps1');
+  const psPath = path.resolve('scripts', 'launcher.ps1');
   assert.ok(fs.existsSync(batPath), "launcher.bat must exist");
   assert.ok(fs.existsSync(psPath), "launcher.ps1 must exist");
 

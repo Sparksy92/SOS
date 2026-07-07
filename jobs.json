@@ -1,0 +1,121 @@
+{
+  "total_count": 1,
+  "jobs": [
+    {
+      "id": 85743415707,
+      "run_id": 28902851181,
+      "workflow_name": "SOS App CI Pipeline",
+      "head_branch": "main",
+      "run_url": "https://api.github.com/repos/Sparksy92/SOS/actions/runs/28902851181",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOTMD04s8AAAAT9rSxmw",
+      "head_sha": "a1d962e76f7ad4cd3c2dda630cef2f62611eb43f",
+      "url": "https://api.github.com/repos/Sparksy92/SOS/actions/jobs/85743415707",
+      "html_url": "https://github.com/Sparksy92/SOS/actions/runs/28902851181/job/85743415707",
+      "status": "completed",
+      "conclusion": "failure",
+      "created_at": "2026-07-07T22:23:54Z",
+      "started_at": "2026-07-07T22:23:56Z",
+      "completed_at": "2026-07-07T22:24:28Z",
+      "name": "build_and_test",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-07-07T22:23:57Z",
+          "completed_at": "2026-07-07T22:23:58Z"
+        },
+        {
+          "name": "Checkout repository",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-07-07T22:23:58Z",
+          "completed_at": "2026-07-07T22:23:59Z"
+        },
+        {
+          "name": "Setup Node.js",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-07-07T22:23:59Z",
+          "completed_at": "2026-07-07T22:24:00Z"
+        },
+        {
+          "name": "Install dependencies & Build Frontend (sos-app)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-07-07T22:24:00Z",
+          "completed_at": "2026-07-07T22:24:05Z"
+        },
+        {
+          "name": "Install Backend dependencies",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-07-07T22:24:05Z",
+          "completed_at": "2026-07-07T22:24:23Z"
+        },
+        {
+          "name": "Run Backend Logic Tests",
+          "status": "completed",
+          "conclusion": "failure",
+          "number": 6,
+          "started_at": "2026-07-07T22:24:23Z",
+          "completed_at": "2026-07-07T22:24:27Z"
+        },
+        {
+          "name": "Clean up test artifacts",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 7,
+          "started_at": "2026-07-07T22:24:27Z",
+          "completed_at": "2026-07-07T22:24:27Z"
+        },
+        {
+          "name": "Scan for forbidden tracked files",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 8,
+          "started_at": "2026-07-07T22:24:27Z",
+          "completed_at": "2026-07-07T22:24:27Z"
+        },
+        {
+          "name": "Post Setup Node.js",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 15,
+          "started_at": "2026-07-07T22:24:27Z",
+          "completed_at": "2026-07-07T22:24:27Z"
+        },
+        {
+          "name": "Post Checkout repository",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 16,
+          "started_at": "2026-07-07T22:24:27Z",
+          "completed_at": "2026-07-07T22:24:27Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 17,
+          "started_at": "2026-07-07T22:24:27Z",
+          "completed_at": "2026-07-07T22:24:27Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/Sparksy92/SOS/check-runs/85743415707",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "runner_id": 1000000185,
+      "runner_name": "GitHub Actions 1000000185",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    }
+  ]
+}
