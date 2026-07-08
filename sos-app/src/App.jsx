@@ -3068,18 +3068,18 @@ function App() {
                     Tool Guides
                   </button>
                   <button 
-                    onClick={() => setToolkitSubTab('providers')}
-                    className={`btn-tactical${toolkitSubTab === 'providers' ? '' : '-outline'}`}
-                    style={{ padding: '8px 16px', borderRadius: '4px 4px 0 0', borderBottom: 'none', marginBottom: '4px' }}
-                  >
-                    Content Providers
-                  </button>
-                  <button 
                     onClick={() => setToolkitSubTab('gap')}
                     className={`btn-tactical${toolkitSubTab === 'gap' ? '' : '-outline'}`}
                     style={{ padding: '8px 16px', borderRadius: '4px 4px 0 0', borderBottom: 'none', marginBottom: '4px' }}
                   >
                     Gap Analyzer
+                  </button>
+                  <button 
+                    onClick={() => setToolkitSubTab('lifecycle')}
+                    className={`btn-tactical${toolkitSubTab === 'lifecycle' ? '' : '-outline'}`}
+                    style={{ padding: '8px 16px', borderRadius: '4px 4px 0 0', borderBottom: 'none', marginBottom: '4px' }}
+                  >
+                    Library Index
                   </button>
                   <button 
                     onClick={() => setToolkitSubTab('zim')}
@@ -3089,39 +3089,18 @@ function App() {
                     ZIM Catalog
                   </button>
                   <button 
-                    onClick={() => setToolkitSubTab('import')}
-                    className={`btn-tactical${toolkitSubTab === 'import' ? '' : '-outline'}`}
-                    style={{ padding: '8px 16px', borderRadius: '4px 4px 0 0', borderBottom: 'none', marginBottom: '4px' }}
-                  >
-                    Manual Import
-                  </button>
-                  <button 
-                    onClick={() => setToolkitSubTab('ledger')}
-                    className={`btn-tactical${toolkitSubTab === 'ledger' ? '' : '-outline'}`}
-                    style={{ padding: '8px 16px', borderRadius: '4px 4px 0 0', borderBottom: 'none', marginBottom: '4px' }}
-                  >
-                    Approval Ledger
-                  </button>
-                  <button 
                     onClick={() => setToolkitSubTab('acq')}
                     className={`btn-tactical${toolkitSubTab === 'acq' ? '' : '-outline'}`}
                     style={{ padding: '8px 16px', borderRadius: '4px 4px 0 0', borderBottom: 'none', marginBottom: '4px' }}
                   >
-                    Acquisition Queue
+                    Librarian Wishlist
                   </button>
                   <button 
-                    onClick={() => setToolkitSubTab('allowlist')}
-                    className={`btn-tactical${toolkitSubTab === 'allowlist' ? '' : '-outline'}`}
+                    onClick={() => setToolkitSubTab('providers')}
+                    className={`btn-tactical${toolkitSubTab === 'providers' ? '' : '-outline'}`}
                     style={{ padding: '8px 16px', borderRadius: '4px 4px 0 0', borderBottom: 'none', marginBottom: '4px' }}
                   >
-                    Source Allowlist
-                  </button>
-                  <button 
-                    onClick={() => setToolkitSubTab('lifecycle')}
-                    className={`btn-tactical${toolkitSubTab === 'lifecycle' ? '' : '-outline'}`}
-                    style={{ padding: '8px 16px', borderRadius: '4px 4px 0 0', borderBottom: 'none', marginBottom: '4px' }}
-                  >
-                    Lifecycle
+                    Download Directories
                   </button>
                   <button 
                     onClick={() => setToolkitSubTab('backup')}
@@ -3160,29 +3139,14 @@ function App() {
                     <ZimCatalogPanel />
                   </PanelErrorBoundary>
                 )}
-                {toolkitSubTab === 'import' && (
-                  <PanelErrorBoundary name="Manual Import">
-                    <ManualImportQueuePanel setViewMode={setViewMode} setToolkitSubTab={setToolkitSubTab} />
-                  </PanelErrorBoundary>
-                )}
-                {toolkitSubTab === 'ledger' && (
-                  <PanelErrorBoundary name="Approval Ledger">
-                    <ImportApprovalLedgerPanel setToolkitSubTab={setToolkitSubTab} />
-                  </PanelErrorBoundary>
-                )}
                 {toolkitSubTab === 'acq' && (
                   <PanelErrorBoundary name="Acquisition Queue">
-                    <AcquisitionQueuePanel setToolkitSubTab={setToolkitSubTab} />
-                  </PanelErrorBoundary>
-                )}
-                {toolkitSubTab === 'allowlist' && (
-                  <PanelErrorBoundary name="Source Allowlist">
-                    <SourceAllowlistPanel />
+                    <AcquisitionQueuePanel />
                   </PanelErrorBoundary>
                 )}
                 {toolkitSubTab === 'lifecycle' && (
-                  <PanelErrorBoundary name="Library Lifecycle">
-                    <LibraryLifecyclePanel setToolkitSubTab={setToolkitSubTab} setViewMode={setViewMode} />
+                  <PanelErrorBoundary name="Library Index">
+                    <LibraryLifecyclePanel />
                   </PanelErrorBoundary>
                 )}
                 {toolkitSubTab === 'backup' && (

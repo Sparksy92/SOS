@@ -1,469 +1,207 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  loadQueue, 
-  saveQueueItem, 
-  deleteQueueItem, 
-  validateAndImportQueue, 
-  generateQueueMarkdownChecklist, 
-  ACQ_STATUSES 
-} from '../../modules/toolkit/acquisitionQueueStore.js';
-import { loadLedger } from '../../modules/toolkit/importApprovalLedgerStore.js';
-import { loadAllowlist } from '../../modules/toolkit/sourceAllowlistStore.js';
-import { computeLifecycleRecords } from '../../modules/toolkit/libraryLifecycleAnalyzer.js';
-import { GAP_ANALYSIS_DATA } from '../../modules/toolkit/gapAnalysisData.js';
-import { ShieldAlert, Download, Upload, Clipboard, Trash2, Edit2, CheckCircle, Plus } from 'lucide-react';
+import { loadQueue, saveQueueItem, deleteQueueItem } from '../../modules/toolkit/acquisitionQueueStore.js';
+import { Trash2, Plus, CheckCircle, Circle, Clipboard } from 'lucide-react';
 
-export default function AcquisitionQueuePanel({ setToolkitSubTab }) {
-  const [queue, setQueue] = useState([]);
-  const [lifeRecords, setLifeRecords] = useState([]);
-  const [filterStatus, setFilterStatus] = useState('all');
-  const [filterCategory, setFilterCategory] = useState('all');
-  const [editingItem, setEditingItem] = useState(null);
-  const [importJson, setImportJson] = useState('');
-  const [showImportArea, setShowImportArea] = useState(false);
-  const [newItem, setNewItem] = useState({
-    title: '',
-    filenameHint: '',
-    category: 'general_survival',
-    sourceType: 'operator_entered',
-    officialSourceUrl: '',
-    sourceEvidence: '',
-    operatorNotes: '',
-    acquisitionStatus: 'planned'
-  });
+export default function AcquisitionQueuePanel() {
+  const [wishlist, setWishlist] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [newTitle, setNewTitle] = useState('');
+  const [newCategory, setNewCategory] = useState('general_survival');
+  const [newNotes, setNewNotes] = useState('');
 
-  const reloadAll = () => {
+  const reloadWishlist = () => {
     const q = loadQueue();
-    setQueue(q);
-    const ledger = loadLedger();
-    const allowlist = loadAllowlist();
-    const life = computeLifecycleRecords(GAP_ANALYSIS_DATA, ledger, q, allowlist, [], {});
-    setLifeRecords(life);
+    setWishlist(q);
   };
 
   useEffect(() => {
-    reloadAll();
+    reloadWishlist();
   }, []);
 
-  const handleSaveItem = (item) => {
+  const handleAddWish = (e) => {
+    e.preventDefault();
+    if (!newTitle.trim()) return;
+
     try {
-      const updated = saveQueueItem(item);
-      reloadAll();
-      setEditingItem(null);
-      if (showAddForm) {
-        setShowAddForm(false);
-        setNewItem({
-          title: '',
-          filenameHint: '',
-          category: 'general_survival',
-          sourceType: 'operator_entered',
-          officialSourceUrl: '',
-          sourceEvidence: '',
-          operatorNotes: '',
-          acquisitionStatus: 'planned'
-        });
-      }
+      saveQueueItem({
+        title: newTitle.trim(),
+        category: newCategory,
+        operatorNotes: newNotes.trim(),
+        acquisitionStatus: 'planned',
+        sourceType: 'operator_entered'
+      });
+      reloadWishlist();
+      setNewTitle('');
+      setNewNotes('');
+      setShowAddForm(false);
     } catch (e) {
       alert(e.message);
     }
   };
 
-  const handleDeleteItem = (id) => {
-    if (confirm("Are you sure you want to remove this item from the acquisition queue?")) {
+  const handleToggleAcquired = (item) => {
+    try {
+      saveQueueItem({
+        ...item,
+        acquisitionStatus: item.acquisitionStatus === 'manually_acquired' ? 'planned' : 'manually_acquired'
+      });
+      reloadWishlist();
+    } catch (e) {
+      alert(e.message);
+    }
+  };
+
+  const handleDeleteWish = (id) => {
+    if (confirm("Are you sure you want to remove this item from your wishlist?")) {
       deleteQueueItem(id);
-      reloadAll();
+      reloadWishlist();
     }
   };
 
-  const handleClearAll = () => {
-    if (confirm("CRITICAL: Clear your entire local acquisition queue? This action is local and cannot be undone.")) {
-      localStorage.removeItem('sos_acquisition_queue');
-      reloadAll();
-    }
-  };
+  const triggerExportMarkdown = () => {
+    let md = `# SurvivalOS — Librarian Content Wishlist\n\n`;
+    md += `| [ ] | Title | Category | Notes |\n`;
+    md += `| --- | --- | --- | --- |\n`;
+    wishlist.forEach(w => {
+      const checked = w.acquisitionStatus === 'manually_acquired' ? '[x]' : '[ ]';
+      md += `| ${checked} | **${w.title}** | ${w.category.replace(/_/g, ' ')} | ${w.operatorNotes || 'None'} |\n`;
+    });
 
-  const handleCopyUrl = (url) => {
-    if (!url) return;
-    navigator.clipboard.writeText(url)
-      .then(() => alert("Official Source URL copied to clipboard!"))
-      .catch(() => alert("Failed to copy URL."));
-  };
-
-  const handleExportJson = () => {
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(queue, null, 2));
-    const dlAnchorElem = document.createElement('a');
-    dlAnchorElem.setAttribute("href", dataStr);
-    dlAnchorElem.setAttribute("download", `sos_acquisition_queue_${Date.now()}.json`);
-    dlAnchorElem.click();
-  };
-
-  const handleExportMarkdown = () => {
-    const md = generateQueueMarkdownChecklist(queue);
     const dataStr = "data:text/markdown;charset=utf-8," + encodeURIComponent(md);
     const dlAnchorElem = document.createElement('a');
     dlAnchorElem.setAttribute("href", dataStr);
-    dlAnchorElem.setAttribute("download", `sos_acquisition_checklist_${Date.now()}.md`);
+    dlAnchorElem.setAttribute("download", `sos_librarian_wishlist_${Date.now()}.md`);
     dlAnchorElem.click();
   };
 
-  const handleImportJson = () => {
-    try {
-      const updated = validateAndImportQueue(importJson);
-      setQueue(updated);
-      setImportJson('');
-      setShowImportArea(false);
-      alert("Acquisition Queue imported successfully!");
-    } catch (e) {
-      alert(e.message);
-    }
-  };
-
-  const filteredQueue = queue.filter(item => {
-    const matchStatus = filterStatus === 'all' || item.acquisitionStatus === filterStatus;
-    const matchCategory = filterCategory === 'all' || item.category === filterCategory;
-    return matchStatus && matchCategory;
-  });
-
   return (
-    <div style={{ color: '#e0e0e0', maxWidth: '1000px', margin: '0 auto', padding: '0 12px' }}>
-      <div style={{ marginBottom: '24px', borderBottom: '1px solid rgba(0, 242, 254, 0.2)', paddingBottom: '16px' }}>
-        <h3 style={{ margin: '0 0 6px 0', fontSize: '1.4rem', color: 'var(--brand-primary)', textTransform: 'uppercase', letterSpacing: '1px' }}>
-          Acquisition Queue
-        </h3>
-        <p style={{ margin: 0, fontSize: '0.88rem', color: '#a0a0a0' }}>
-          Manage local planning checklists for manually gathering reference library documents. SurvivalOS does not automate downloads.
-        </p>
-      </div>
-
-      {/* Security Boundaries Alert */}
-      <div style={{ backgroundColor: 'rgba(255, 69, 0, 0.04)', border: '1px solid rgba(255, 69, 0, 0.25)', borderRadius: '6px', padding: '14px', marginBottom: '20px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#ff4500', fontWeight: 'bold', fontSize: '0.88rem', marginBottom: '6px' }}>
-          <ShieldAlert size={16} />
-          <span>Local Planning Layer Only</span>
-        </div>
-        <p style={{ margin: 0, fontSize: '0.78rem', color: '#b0b0b0', lineHeight: '1.4' }}>
-          This checklist tracks candidate references and operator staging notes. It does NOT verify legal copyright clearance, perform downloads, or copy/move actual files on your storage drive.
-        </p>
-      </div>
-
-      {/* Buttons controls */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px', marginBottom: '20px' }}>
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <button className="btn-tactical" onClick={() => setShowAddForm(!showAddForm)} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '8px 14px' }}>
-            <Plus size={14} /> Add Planned Item
-          </button>
-          <button className="btn-tactical-outline" onClick={() => setShowImportArea(!showImportArea)} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '8px 14px' }}>
-            <Upload size={14} /> Import Backup
-          </button>
-          <button className="btn-tactical-outline" onClick={handleExportJson} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '8px 14px' }}>
-            <Download size={14} /> Export JSON
-          </button>
-          <button className="btn-tactical-outline" onClick={handleExportMarkdown} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '8px 14px' }}>
-            <Clipboard size={14} /> Export Checklist
-          </button>
-        </div>
+    <div style={{ color: '#e0e0e0', maxWidth: '800px', margin: '0 auto', padding: '0 12px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', borderBottom: '1px solid rgba(0, 242, 254, 0.2)', paddingBottom: '16px' }}>
         <div>
-          {queue.length > 0 && (
-            <button className="btn-tactical-outline" onClick={handleClearAll} style={{ color: '#ff4500', borderColor: 'rgba(255, 69, 0, 0.2)' }}>
-              Clear Queue
-            </button>
-          )}
+          <h3 style={{ margin: '0 0 6px 0', fontSize: '1.4rem', color: 'var(--brand-primary)', textTransform: 'uppercase', letterSpacing: '1px' }}>
+            Librarian Wishlist
+          </h3>
+          <p style={{ margin: 0, fontSize: '0.88rem', color: '#a0a0a0' }}>
+            Track reference guides, offline maps, or wikis you want to vet and add to your library next.
+          </p>
+        </div>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button className="btn-tactical" onClick={() => setShowAddForm(!showAddForm)} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '6px 12px', fontSize: '0.8rem' }}>
+            <Plus size={14} /> Add Wishlist Item
+          </button>
+          <button className="btn-tactical-outline" onClick={triggerExportMarkdown} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '6px 12px', fontSize: '0.8rem' }}>
+            <Clipboard size={12} /> Export Markdown Checklist
+          </button>
         </div>
       </div>
 
-      {/* Import Backup Textarea */}
-      {showImportArea && (
-        <div style={{ backgroundColor: '#12151c', border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '6px', padding: '16px', marginBottom: '20px' }}>
-          <label style={{ display: 'block', fontSize: '0.8rem', color: '#aaa', marginBottom: '6px' }}>Paste Acquisition Queue JSON backup:</label>
-          <textarea
-            value={importJson}
-            onChange={(e) => setImportJson(e.target.value)}
-            style={{ width: '100%', height: '100px', backgroundColor: '#0d1017', border: '1px solid #333', color: '#fff', borderRadius: '4px', padding: '8px', fontSize: '0.8rem', fontFamily: 'monospace', resize: 'vertical' }}
-            placeholder='[ { "title": "...", "acquisitionStatus": "planned" } ]'
-          />
-          <div style={{ marginTop: '10px', display: 'flex', gap: '8px' }}>
-            <button className="btn-tactical" onClick={handleImportJson}>Confirm Import</button>
-            <button className="btn-tactical-outline" onClick={() => setShowImportArea(false)}>Cancel</button>
-          </div>
-        </div>
-      )}
-
-      {/* Add Item Form */}
       {showAddForm && (
-        <div style={{ backgroundColor: '#12151c', border: '1px solid rgba(0, 242, 254, 0.2)', borderRadius: '6px', padding: '16px', marginBottom: '20px' }}>
-          <h4 style={{ margin: '0 0 12px 0', fontSize: '1rem', color: 'var(--brand-primary)' }}>Register New Planned Acquisition</h4>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+        <form onSubmit={handleAddWish} style={{ backgroundColor: '#12151c', border: '1px solid rgba(0, 242, 254, 0.3)', borderRadius: '6px', padding: '16px', marginBottom: '24px' }}>
+          <h4 style={{ margin: '0 0 12px 0', color: '#fff', fontSize: '1rem' }}>Add New Book / Resource to Wishlist</h4>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <div>
-              <label style={{ display: 'block', fontSize: '0.78rem', color: '#aaa', marginBottom: '4px' }}>Document Title *</label>
+              <label style={{ display: 'block', fontSize: '0.8rem', color: '#888', marginBottom: '4px' }}>Resource Title / Subject</label>
               <input
                 type="text"
-                value={newItem.title}
-                onChange={(e) => setNewItem({ ...newItem, title: e.target.value })}
-                style={{ width: '100%', backgroundColor: '#0d1017', border: '1px solid #333', color: '#fff', borderRadius: '4px', padding: '6px', fontSize: '0.8rem' }}
-                placeholder="e.g. FM 21-76 Survival Manual"
+                placeholder="e.g. US Army Survival Manual FM 21-76"
+                value={newTitle}
+                onChange={e => setNewTitle(e.target.value)}
+                style={{ width: '100%', padding: '8px', backgroundColor: '#0d1017', border: '1px solid #333', color: '#fff', borderRadius: '4px', boxSizing: 'border-box' }}
+                required
               />
             </div>
             <div>
-              <label style={{ display: 'block', fontSize: '0.78rem', color: '#aaa', marginBottom: '4px' }}>Filename Hint</label>
-              <input
-                type="text"
-                value={newItem.filenameHint}
-                onChange={(e) => setNewItem({ ...newItem, filenameHint: e.target.value })}
-                style={{ width: '100%', backgroundColor: '#0d1017', border: '1px solid #333', color: '#fff', borderRadius: '4px', padding: '6px', fontSize: '0.8rem' }}
-                placeholder="FM_21-76_Survival_Manual.pdf"
-              />
-            </div>
-            <div>
-              <label style={{ display: 'block', fontSize: '0.78rem', color: '#aaa', marginBottom: '4px' }}>Category</label>
+              <label style={{ display: 'block', fontSize: '0.8rem', color: '#888', marginBottom: '4px' }}>Library Category</label>
               <select
-                value={newItem.category}
-                onChange={(e) => setNewItem({ ...newItem, category: e.target.value })}
-                style={{ width: '100%', backgroundColor: '#0d1017', border: '1px solid #333', color: '#fff', borderRadius: '4px', padding: '6px', fontSize: '0.8rem' }}
+                value={newCategory}
+                onChange={e => setNewCategory(e.target.value)}
+                style={{ width: '100%', padding: '8px', backgroundColor: '#0d1017', border: '1px solid #333', color: '#fff', borderRadius: '4px', cursor: 'pointer' }}
               >
                 <option value="general_survival">General Survival</option>
                 <option value="homesteading">Homesteading</option>
                 <option value="farming">Farming</option>
-                <option value="water">Water</option>
-                <option value="bushcraft">Bushcraft</option>
-                <option value="shelter">Shelter</option>
-                <option value="medical_reference">Medical Reference</option>
+                <option value="water">Water & Sanitation</option>
+                <option value="bushcraft">Bushcraft & Wilderness</option>
+                <option value="shelter">Shelter & Construction</option>
+                <option value="medical_reference">Medical & First Aid</option>
               </select>
             </div>
             <div>
-              <label style={{ display: 'block', fontSize: '0.78rem', color: '#aaa', marginBottom: '4px' }}>Official Source URL</label>
-              <input
-                type="text"
-                value={newItem.officialSourceUrl}
-                onChange={(e) => setNewItem({ ...newItem, officialSourceUrl: e.target.value })}
-                style={{ width: '100%', backgroundColor: '#0d1017', border: '1px solid #333', color: '#fff', borderRadius: '4px', padding: '6px', fontSize: '0.8rem' }}
-                placeholder="https://..."
-              />
-            </div>
-            <div style={{ gridColumn: 'span 2' }}>
-              <label style={{ display: 'block', fontSize: '0.78rem', color: '#aaa', marginBottom: '4px' }}>Source Evidence / Authorities</label>
-              <input
-                type="text"
-                value={newItem.sourceEvidence}
-                onChange={(e) => setNewItem({ ...newItem, sourceEvidence: e.target.value })}
-                style={{ width: '100%', backgroundColor: '#0d1017', border: '1px solid #333', color: '#fff', borderRadius: '4px', padding: '6px', fontSize: '0.8rem' }}
-                placeholder="e.g. Public distribution record / Government publication"
-              />
-            </div>
-            <div style={{ gridColumn: 'span 2' }}>
-              <label style={{ display: 'block', fontSize: '0.78rem', color: '#aaa', marginBottom: '4px' }}>Operator Notes</label>
+              <label style={{ display: 'block', fontSize: '0.8rem', color: '#888', marginBottom: '4px' }}>Research Notes</label>
               <textarea
-                value={newItem.operatorNotes}
-                onChange={(e) => setNewItem({ ...newItem, operatorNotes: e.target.value })}
-                style={{ width: '100%', height: '60px', backgroundColor: '#0d1017', border: '1px solid #333', color: '#fff', borderRadius: '4px', padding: '6px', fontSize: '0.8rem', resize: 'vertical' }}
-                placeholder="Manual staging notes, mirror URLs, or local print locations..."
+                placeholder="Where to find it, specific version needed, or priority level..."
+                value={newNotes}
+                onChange={e => setNewNotes(e.target.value)}
+                rows={3}
+                style={{ width: '100%', padding: '8px', backgroundColor: '#0d1017', border: '1px solid #333', color: '#fff', borderRadius: '4px', fontFamily: 'inherit', boxSizing: 'border-box' }}
               />
             </div>
+            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '4px' }}>
+              <button type="button" className="btn-tactical-outline" onClick={() => setShowAddForm(false)} style={{ padding: '6px 12px', fontSize: '0.8rem' }}>Cancel</button>
+              <button type="submit" className="btn-tactical" style={{ padding: '6px 12px', fontSize: '0.8rem' }}>Save to Wishlist</button>
+            </div>
           </div>
-          <div style={{ marginTop: '12px', display: 'flex', gap: '8px' }}>
-            <button className="btn-tactical" onClick={() => handleSaveItem(newItem)}>Save Entry</button>
-            <button className="btn-tactical-outline" onClick={() => setShowAddForm(false)}>Cancel</button>
-          </div>
-        </div>
+        </form>
       )}
 
-      {/* Edit Form Modal */}
-      {editingItem && (
-        <div style={{ backgroundColor: '#12151c', border: '1px solid rgba(0, 242, 254, 0.4)', borderRadius: '6px', padding: '16px', marginBottom: '20px' }}>
-          <h4 style={{ margin: '0 0 12px 0', fontSize: '1rem', color: 'var(--brand-primary)' }}>Edit Queue Item: {editingItem.title}</h4>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-            <div>
-              <label style={{ display: 'block', fontSize: '0.78rem', color: '#aaa', marginBottom: '4px' }}>Acquisition Status</label>
-              <select
-                value={editingItem.acquisitionStatus}
-                onChange={(e) => setEditingItem({ ...editingItem, acquisitionStatus: e.target.value })}
-                style={{ width: '100%', backgroundColor: '#0d1017', border: '1px solid #333', color: '#fff', borderRadius: '4px', padding: '6px', fontSize: '0.8rem' }}
-              >
-                <option value="planned">PLANNED</option>
-                <option value="manually_acquired">MANUALLY ACQUIRED</option>
-                <option value="manually_staged">MANUALLY STAGED</option>
-                <option value="blocked">BLOCKED</option>
-                <option value="skipped">SKIPPED</option>
-              </select>
-            </div>
-            <div>
-              <label style={{ display: 'block', fontSize: '0.78rem', color: '#aaa', marginBottom: '4px' }}>Official Source URL</label>
-              <input
-                type="text"
-                value={editingItem.officialSourceUrl}
-                onChange={(e) => setEditingItem({ ...editingItem, officialSourceUrl: e.target.value })}
-                style={{ width: '100%', backgroundColor: '#0d1017', border: '1px solid #333', color: '#fff', borderRadius: '4px', padding: '6px', fontSize: '0.8rem' }}
-              />
-            </div>
-            <div style={{ gridColumn: 'span 2' }}>
-              <label style={{ display: 'block', fontSize: '0.78rem', color: '#aaa', marginBottom: '4px' }}>Operator Notes</label>
-              <textarea
-                value={editingItem.operatorNotes}
-                onChange={(e) => setEditingItem({ ...editingItem, operatorNotes: e.target.value })}
-                style={{ width: '100%', height: '60px', backgroundColor: '#0d1017', border: '1px solid #333', color: '#fff', borderRadius: '4px', padding: '6px', fontSize: '0.8rem', resize: 'vertical' }}
-              />
-            </div>
-          </div>
-          <div style={{ marginTop: '12px', display: 'flex', gap: '8px' }}>
-            <button className="btn-tactical" onClick={() => handleSaveItem(editingItem)}>Save Changes</button>
-            <button className="btn-tactical-outline" onClick={() => setEditingItem(null)}>Cancel</button>
-          </div>
-        </div>
-      )}
-
-      {/* Filters */}
-      <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', backgroundColor: '#10131a', padding: '12px', borderRadius: '6px', border: '1px solid #222', marginBottom: '20px' }}>
-        <div>
-          <label style={{ fontSize: '0.78rem', color: '#aaa', marginRight: '6px' }}>Status Filter:</label>
-          <select
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-            style={{ backgroundColor: '#0d1017', border: '1px solid #333', color: '#fff', borderRadius: '4px', padding: '4px 8px', fontSize: '0.8rem' }}
-          >
-            <option value="all">ALL STATUSES</option>
-            <option value="planned">PLANNED</option>
-            <option value="manually_acquired">MANUALLY ACQUIRED</option>
-            <option value="manually_staged">MANUALLY STAGED</option>
-            <option value="blocked">BLOCKED</option>
-            <option value="skipped">SKIPPED</option>
-          </select>
-        </div>
-        <div>
-          <label style={{ fontSize: '0.78rem', color: '#aaa', marginRight: '6px' }}>Category Filter:</label>
-          <select
-            value={filterCategory}
-            onChange={(e) => setFilterCategory(e.target.value)}
-            style={{ backgroundColor: '#0d1017', border: '1px solid #333', color: '#fff', borderRadius: '4px', padding: '4px 8px', fontSize: '0.8rem' }}
-          >
-            <option value="all">ALL CATEGORIES</option>
-            <option value="general_survival">General Survival</option>
-            <option value="homesteading">Homesteading</option>
-            <option value="farming">Farming</option>
-            <option value="water">Water</option>
-            <option value="bushcraft">Bushcraft</option>
-            <option value="shelter">Shelter</option>
-            <option value="medical_reference">Medical Reference</option>
-          </select>
-        </div>
-      </div>
-
-      {/* Queue items list */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        {filteredQueue.length === 0 ? (
-          <div style={{ padding: '30px', textAlign: 'center', color: '#666', border: '1px dashed #222', borderRadius: '6px' }}>
-            No planned items found matching active filters.
+      {/* Wishlist Render */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        {wishlist.length === 0 ? (
+          <div style={{ backgroundColor: '#10131a', border: '1px solid rgba(255,255,255,0.03)', borderRadius: '6px', padding: '40px', textAlign: 'center', color: '#666' }}>
+            No items in your wishlist. Click "Add Wishlist Item" to start planning your offline library collections!
           </div>
         ) : (
-          filteredQueue.map(item => {
-            let statusColor = '#a0a0a0';
-            if (item.acquisitionStatus === 'manually_acquired') statusColor = '#00ff7f';
-            if (item.acquisitionStatus === 'manually_staged') statusColor = '#00f2fe';
-            if (item.acquisitionStatus === 'blocked') statusColor = '#ff4500';
-            if (item.acquisitionStatus === 'skipped') statusColor = '#ff7f50';
-
+          wishlist.map(item => {
+            const isAcquired = item.acquisitionStatus === 'manually_acquired';
             return (
               <div 
                 key={item.id} 
                 style={{ 
                   backgroundColor: '#12151c', 
-                  border: '1px solid rgba(255, 255, 255, 0.05)', 
+                  padding: '14px', 
                   borderRadius: '6px', 
-                  padding: '16px',
-                  borderLeft: `4px solid ${statusColor}`
+                  borderLeft: isAcquired ? '3px solid #00ff7f' : '3px solid #ffd700',
+                  opacity: isAcquired ? 0.6 : 1,
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  transition: 'opacity 0.2s'
                 }}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '10px' }}>
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', flex: 1 }}>
+                  <button 
+                    onClick={() => handleToggleAcquired(item)}
+                    style={{ backgroundColor: 'transparent', border: 'none', color: isAcquired ? '#00ff7f' : '#888', cursor: 'pointer', padding: 0, marginTop: '2px' }}
+                    title={isAcquired ? "Mark as Active Hunt" : "Mark as Acquired"}
+                  >
+                    {isAcquired ? <CheckCircle size={20} /> : <Circle size={20} />}
+                  </button>
                   <div>
-                    <strong style={{ color: '#fff', fontSize: '1rem' }}>{item.title}</strong>
-                    <div style={{ fontSize: '0.78rem', color: '#888', marginTop: '4px' }}>
-                      Category: <span style={{ color: '#ccc' }}>{item.category.replace(/_/g, ' ')}</span>
-                      {item.filenameHint && <span> | File Hint: <code style={{ color: '#00f2fe' }}>{item.filenameHint}</code></span>}
-                    </div>
-                    {(() => {
-                      const matched = lifeRecords.find(r => r.id === item.id || (item.filenameHint && r.filenameHint.toLowerCase() === item.filenameHint.toLowerCase()));
-                      const stage = matched ? matched.lifecycleStage : 'unknown';
-                      const evidence = matched ? matched.evidenceStatus : 'unknown';
-                      const idxStatus = matched ? matched.indexStatus : 'unknown';
-                      return (
-                        <div style={{ fontSize: '0.75rem', color: '#00f2fe', marginTop: '6px', display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-                          <span>Lifecycle: <strong>{stage.replace(/_/g, ' ').toUpperCase()}</strong></span>
-                          <span>|</span>
-                          <span>Evidence: <strong>{evidence.toUpperCase()}</strong></span>
-                          <span>|</span>
-                          <span>Index: <strong>{idxStatus.toUpperCase()}</strong></span>
-                          <button 
-                            className="btn-tactical-outline" 
-                            onClick={() => setToolkitSubTab('lifecycle')} 
-                            style={{ padding: '1px 5px', fontSize: '0.65rem', marginLeft: '6px', display: 'inline-flex', alignItems: 'center' }}
-                          >
-                            Open Lifecycle
-                          </button>
-                        </div>
-                      );
-                    })()}
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span 
-                      style={{ 
-                        fontSize: '0.72rem', 
-                        padding: '2px 8px', 
-                        borderRadius: '4px', 
-                        backgroundColor: 'rgba(255,255,255,0.05)', 
-                        color: statusColor, 
-                        fontWeight: 'bold',
-                        textTransform: 'uppercase'
-                      }}
-                    >
-                      {item.acquisitionStatus.replace(/_/g, ' ')}
+                    <span style={{ 
+                      fontWeight: 'bold', 
+                      color: isAcquired ? '#aaa' : '#fff', 
+                      fontSize: '0.95rem',
+                      textDecoration: isAcquired ? 'line-through' : 'none'
+                    }}>
+                      {item.title}
                     </span>
-                    <button 
-                      className="btn-tactical-outline" 
-                      onClick={() => setEditingItem(item)}
-                      style={{ padding: '4px 8px', fontSize: '0.75rem', border: '1px solid #333' }}
-                    >
-                      <Edit2 size={12} />
-                    </button>
-                    <button 
-                      className="btn-tactical-outline" 
-                      onClick={() => handleDeleteItem(item.id)}
-                      style={{ padding: '4px 8px', fontSize: '0.75rem', border: '1px solid rgba(255,69,0,0.1)', color: '#ff4500' }}
-                    >
-                      <Trash2 size={12} />
-                    </button>
+                    <div style={{ fontSize: '0.78rem', color: '#888', marginTop: '3px' }}>
+                      Category: <span style={{ color: '#ccc' }}>{item.category.replace(/_/g, ' ')}</span>
+                    </div>
+                    {item.operatorNotes && (
+                      <p style={{ margin: '6px 0 0 0', fontSize: '0.82rem', color: '#bbb', lineHeight: '1.3' }}>
+                        {item.operatorNotes}
+                      </p>
+                    )}
                   </div>
                 </div>
-
-                <div style={{ marginTop: '10px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '0.8rem', color: '#ccc' }}>
-                  <div>
-                    <strong>Evidence Notes:</strong> {item.sourceEvidence || 'None registered'}
-                  </div>
-                  <div>
-                    <strong>Ledger status:</strong> <span style={{ color: item.ledgerDecision === 'approved' ? '#00ff7f' : '#ff4500', fontWeight: 'bold' }}>{item.ledgerDecision.toUpperCase()}</span>
-                  </div>
-                  {item.riskCategory && (
-                    <div style={{ gridColumn: 'span 2', color: '#ffd700', fontSize: '0.75rem', backgroundColor: 'rgba(255,215,0,0.03)', padding: '4px 8px', borderRadius: '4px' }}>
-                      ⚠️ Warning: Content involves {item.riskCategory.replace(/_/g, ' ')}. Requires manual review.
-                    </div>
-                  )}
-                  {item.officialSourceUrl && (
-                    <div style={{ gridColumn: 'span 2', display: 'flex', gap: '8px', alignItems: 'center' }}>
-                      <span style={{ color: '#888' }}>Source:</span>
-                      <code style={{ fontSize: '0.78rem', color: 'var(--brand-primary)' }}>{item.officialSourceUrl}</code>
-                      <button 
-                        onClick={() => handleCopyUrl(item.officialSourceUrl)}
-                        style={{ background: 'none', border: 'none', color: '#aaa', cursor: 'pointer', display: 'inline-flex', padding: 0 }}
-                        title="Copy URL"
-                      >
-                        <Clipboard size={12} />
-                      </button>
-                    </div>
-                  )}
-                  {item.operatorNotes && (
-                    <div style={{ gridColumn: 'span 2', fontSize: '0.78rem', borderTop: '1px solid rgba(255,255,255,0.03)', paddingTop: '6px', color: '#aaa' }}>
-                      <strong>Operator notes:</strong> {item.operatorNotes}
-                    </div>
-                  )}
-                </div>
+                <button 
+                  onClick={() => handleDeleteWish(item.id)}
+                  style={{ backgroundColor: 'transparent', border: 'none', color: '#ff4500', cursor: 'pointer', padding: '4px' }}
+                  title="Delete from Wishlist"
+                >
+                  <Trash2 size={16} />
+                </button>
               </div>
             );
           })
