@@ -14,6 +14,7 @@ const { rebuildManifest, loadManifest, setMaterialsDir } = require('../services/
 
 test('SOS Quality & Data Format Validation Test Suite', async (t) => {
   const tempRootDir = path.join(__dirname, 'quality_temp_fixture');
+  const testManifestFile = path.join(__dirname, 'quality_manifest_test.json');
 
   t.before(() => {
     // Setup mock materials root structure
@@ -29,13 +30,20 @@ test('SOS Quality & Data Format Validation Test Suite', async (t) => {
     fs.writeFileSync(path.join(tempRootDir, 'The Ark', 'manual.pdf'), 'Mock PDF content');
     fs.writeFileSync(path.join(tempRootDir, 'Great Science Textbooks DVD Library (Entire Collection 88.9 GB)', 'physics.txt'), 'Mock Physics text');
     
-    // Apply path override
+    // Apply path override and isolate manifest path
     setMaterialsDir(tempRootDir);
+    process.env.SOS_MANIFEST_PATH = testManifestFile;
   });
 
   t.after(() => {
     // Restore default
     setMaterialsDir(null);
+    delete process.env.SOS_MANIFEST_PATH;
+    try {
+      if (fs.existsSync(testManifestFile)) {
+        fs.unlinkSync(testManifestFile);
+      }
+    } catch (e) {}
     try {
       if (fs.existsSync(tempRootDir)) {
         fs.rmSync(tempRootDir, { recursive: true, force: true });
