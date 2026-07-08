@@ -445,7 +445,12 @@ TEXT:
     return { title, summary };
   } catch (err) {
     console.error("Metadata extraction error:", err);
-    return { title: "Error decoding", summary: err.message };
+    const filename = path.basename(filePath);
+    const cleanTitle = filename.replace(/\.[^/.]+$/, "").replace(/_/g, " ");
+    return { 
+      title: cleanTitle,
+      summary: "Scanned document or image-only PDF. Run OCR to transcribe." 
+    };
   }
 };
 

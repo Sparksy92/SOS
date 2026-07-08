@@ -786,7 +786,13 @@ function App() {
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       // Skip if we already have metadata
-      if (metadata[file.path] && metadata[file.path].title !== "Unknown Document" && !metadata[file.path].summary?.startsWith("Error")) {
+      if (
+        metadata[file.path] && 
+        metadata[file.path].title !== "Unknown Document" && 
+        metadata[file.path].title !== "Error decoding" && 
+        !metadata[file.path].summary?.startsWith("Error") &&
+        !metadata[file.path].summary?.startsWith("No text")
+      ) {
         setDecodeProgress(i + 1);
         continue;
       }
@@ -2127,8 +2133,8 @@ function App() {
                   <div className="file-grid">
                     {getFilteredFiles().map((file, idx) => {
                       const meta = metadata[file.path];
-                      const displayTitle = meta && meta.title && meta.title !== 'Unknown Document' ? meta.title : file.name;
-                      const displaySummary = meta && meta.summary ? meta.summary : `ORIGINAL FILE: ${file.name}`;
+                      const displayTitle = meta && meta.title && meta.title !== 'Unknown Document' && meta.title !== 'Error decoding' ? meta.title : file.name;
+                      const displaySummary = meta && meta.summary && meta.title !== 'Error decoding' ? meta.summary : `ORIGINAL FILE: ${file.name}`;
                       
                       return (
                         <div className="file-card glass-panel" key={idx} onClick={() => openFile(file)}>
@@ -2244,8 +2250,8 @@ function App() {
                               <div className="file-grid">
                                 {files.map((file, idx) => {
                                   const meta = metadata[file.path];
-                                  const displayTitle = meta && meta.title && meta.title !== 'Unknown Document' ? meta.title : file.name;
-                                  const displaySummary = meta && meta.summary ? meta.summary : `ORIGINAL FILE: ${file.name}`;
+                                  const displayTitle = meta && meta.title && meta.title !== 'Unknown Document' && meta.title !== 'Error decoding' ? meta.title : file.name;
+                                  const displaySummary = meta && meta.summary && meta.title !== 'Error decoding' ? meta.summary : `ORIGINAL FILE: ${file.name}`;
                                   
                                   // Risk indicator badge
                                   const riskBadge = file.riskCategory ? (
