@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { GAP_ANALYSIS_DATA } from '../../modules/toolkit/gapAnalysisData.js';
-import { loadLedger } from '../../modules/toolkit/importApprovalLedgerStore.js';
+import { loadLedger, saveRecord } from '../../modules/toolkit/importApprovalLedgerStore.js';
 import { loadQueue, saveQueueItem } from '../../modules/toolkit/acquisitionQueueStore.js';
 import { loadAllowlist, saveAllowlistEntry } from '../../modules/toolkit/sourceAllowlistStore.js';
 import { ShieldAlert, BookOpen, AlertTriangle, CheckCircle, ExternalLink, Plus, Check, Clipboard } from 'lucide-react';
@@ -20,6 +20,46 @@ export default function ContentGapAnalyzerPanel({
     setQueue(loadQueue());
     setAllowlist(loadAllowlist());
   }, []);
+
+  const handleQuickApprove = (item) => {
+    const itemTitleLower = item.title.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const matchedFile = allFiles.find(file => {
+      const fileNameLower = file.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+      if (fileNameLower.includes(itemTitleLower) || itemTitleLower.includes(fileNameLower)) {
+        return true;
+      }
+      
+      const fileMeta = metadata[file.path];
+      if (fileMeta && fileMeta.title && fileMeta.title !== 'Unknown Document') {
+        const metaTitleLower = fileMeta.title.toLowerCase().replace(/[^a-z0-9]/g, '');
+        if (metaTitleLower.includes(itemTitleLower) || itemTitleLower.includes(metaTitleLower)) {
+          return true;
+        }
+      }
+      return false;
+    });
+
+    const filename = matchedFile ? matchedFile.name : `${item.title}.pdf`;
+
+    try {
+      const updated = saveRecord({
+        filename: filename,
+        operatorDecision: 'approved',
+        reviewNotes: 'Operator verified local ownership & safety via Content Gap Analyzer.',
+        detectedCategory: item.category,
+        riskCategory: item.riskCategory || null,
+        suggestedLicenseStatus: item.licenseStatus || 'unknown',
+        officialSourceUrl: item.officialSourceUrl || '',
+        thirdPartyMirrorUrl: item.thirdPartyMirrorUrl || '',
+        licenseEvidence: item.licenseEvidence || '',
+        operatorVerifiedSource: true
+      });
+      setLedger(updated);
+      alert(`"${item.title}" (${filename}) has been approved in the ledger and is now unlocked!`);
+    } catch (e) {
+      alert(`Approval failed: ${e.message}`);
+    }
+  };
 
   const isItemPresent = (item) => {
     const itemTitleLower = item.title.toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -310,7 +350,16 @@ export default function ContentGapAnalyzerPanel({
                       <Clipboard size={12} /> Copy Official Source URL
                     </button>
                   )}
-                  {ledgerStatus.rawRecord && setToolkitSubTab && (
+                  {isItemPresent(item) && ledgerStatus.decision !== 'approved' && (
+                    <button 
+                      className="btn-tactical" 
+                      onClick={() => handleQuickApprove(item)}
+                      style={{ padding: '4px 10px', fontSize: '0.75rem', backgroundColor: 'var(--brand-primary)', color: '#000', fontWeight: 'bold' }}
+                    >
+                      Quick Approve (Unlock for J.A.R.V.I.S.)
+                    </button>
+                  )}
+                  {setToolkitSubTab && (
                     <button 
                       className="btn-tactical-outline" 
                       onClick={() => setToolkitSubTab('ledger')}
@@ -372,17 +421,19 @@ export default function ContentGapAnalyzerPanel({
                         LEDGER: {ledgerStatus.status.toUpperCase()}
                       </span>
                     </div>
-                    <span style={{ fontSize: '0.75rem', padding: '2px 8px', borderRadius: '4px', backgroundColor: 'rgba(255, 69, 0, 0.1)', color: '#ff4500', fontWeight: 'bold' }}>
-                      LOCKED
+                    <span style={{ fontSize: '0.75rem', padding: '2px 8px', borderRadius: '4px', backgroundColor: (isItemPresent(item) || ledgerStatus.decision === 'approved') ? 'rgba(0, 255, 127, 0.1)' : 'rgba(255, 69, 0, 0.1)', color: (isItemPresent(item) || ledgerStatus.decision === 'approved') ? '#00ff7f' : '#ff4500', fontWeight: 'bold' }}>
+                      {(isItemPresent(item) || ledgerStatus.decision === 'approved') ? 'UNLOCKED' : 'LOCKED'}
                     </span>
                   </div>
                 </div>
                 <p style={{ margin: '6px 0 0 0', fontSize: '0.8rem', color: '#a0a0a0' }}>
                   <strong>Licensing Issue:</strong> {item.licenseEvidence}
                 </p>
-                <div style={{ marginTop: '8px', fontSize: '0.78rem', color: '#ff7f50', backgroundColor: 'rgba(255, 69, 0, 0.03)', padding: '4px 8px', borderRadius: '4px', display: 'inline-block', border: '1px solid rgba(255,69,0,0.1)' }}>
-                  🔒 Excluded from automated lists. Must be manually purchased or verified by the operator outside SurvivalOS.
-                </div>
+                {!isItemPresent(item) && (
+                  <div style={{ marginTop: '8px', fontSize: '0.78rem', color: '#ff7f50', backgroundColor: 'rgba(255, 69, 0, 0.03)', padding: '4px 8px', borderRadius: '4px', display: 'inline-block', border: '1px solid rgba(255,69,0,0.1)' }}>
+                    🔒 Excluded from automated lists. Must be manually purchased or verified by the operator outside SurvivalOS.
+                  </div>
+                )}
                 {/* Safe Actions */}
                 <div style={{ marginTop: '12px', display: 'flex', gap: '8px', flexWrap: 'wrap', borderTop: '1px solid rgba(255,255,255,0.03)', paddingTop: '10px' }}>
                   {qStatus === 'not_queued' && !isItemPresent(item) && (
@@ -412,7 +463,16 @@ export default function ContentGapAnalyzerPanel({
                       <Clipboard size={12} /> Copy Official Source URL
                     </button>
                   )}
-                  {ledgerStatus.rawRecord && setToolkitSubTab && (
+                  {isItemPresent(item) && ledgerStatus.decision !== 'approved' && (
+                    <button 
+                      className="btn-tactical" 
+                      onClick={() => handleQuickApprove(item)}
+                      style={{ padding: '4px 10px', fontSize: '0.75rem', backgroundColor: 'var(--brand-primary)', color: '#000', fontWeight: 'bold' }}
+                    >
+                      Quick Approve (Unlock for J.A.R.V.I.S.)
+                    </button>
+                  )}
+                  {setToolkitSubTab && (
                     <button 
                       className="btn-tactical-outline" 
                       onClick={() => setToolkitSubTab('ledger')}
