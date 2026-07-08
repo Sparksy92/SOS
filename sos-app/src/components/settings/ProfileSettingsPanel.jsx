@@ -4,7 +4,8 @@ import {
   Settings, 
   Trash2, 
   Info,
-  CheckSquare
+  CheckSquare,
+  Volume2
 } from 'lucide-react';
 import { localStore } from '../../services/localStore.js';
 
@@ -12,9 +13,38 @@ export default function ProfileSettingsPanel({
   profile, 
   setProfile, 
   dashboardWidgets, 
-  setDashboardWidgets 
+  setDashboardWidgets,
+  voiceSettings = { voiceURI: '', rate: 1.05, pitch: 0.95 },
+  setVoiceSettings,
+  speakText
 }) {
 
+  const [voices, setVoices] = React.useState([]);
+
+  React.useEffect(() => {
+    const updateVoices = () => {
+      if (typeof window !== 'undefined' && window.speechSynthesis) {
+        setVoices(window.speechSynthesis.getVoices());
+      }
+    };
+    updateVoices();
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+      window.speechSynthesis.onvoiceschanged = updateVoices;
+    }
+  }, []);
+
+  const handleUpdateVoiceField = (field, val) => {
+    setVoiceSettings(prev => ({
+      ...prev,
+      [field]: val
+    }));
+  };
+
+  const handleTestVoice = () => {
+    if (speakText) {
+      speakText("J.A.R.V.I.S. Audio synthesis online. Standby for instructions.");
+    }
+  };
   const handleUpdateProfileField = (field, val) => {
     let value = val;
     if (field === 'peopleCount' || field === 'targetWeeks') {
@@ -148,6 +178,87 @@ export default function ProfileSettingsPanel({
               </span>
             </label>
           ))}
+        </div>
+      </div>
+
+      {/* J.A.R.V.I.S. Voice Configuration */}
+      <div className="glass-panel" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <h3 style={{ margin: 0, fontSize: '0.95rem', color: 'var(--brand-primary)', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Volume2 size={16} /> J.A.R.V.I.S. VOICE CONFIGURATION
+        </h3>
+        <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: '1.4' }}>
+          Configure text-to-speech audio feedback parameters. Selecting a British English voice (if installed on your system) is recommended to approximate the default JARVIS persona.
+        </p>
+        
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {/* Voice Dropdown */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>SPEECH SYNTHESIS ENGINE VOICE</label>
+            <select
+              className="search-input glass-panel"
+              style={{ width: '100%', padding: '8px', background: 'var(--bg-main)', color: 'var(--text-main)', border: '1px solid var(--border-subtle)', borderRadius: '4px' }}
+              value={voiceSettings.voiceURI || ''}
+              onChange={e => handleUpdateVoiceField('voiceURI', e.target.value)}
+            >
+              <option value="">Default (Auto-Selected British Accent)</option>
+              {voices.map((v, idx) => (
+                <option key={idx} value={v.voiceURI}>
+                  {v.name} ({v.lang}) {v.localService ? '[Local]' : ''}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Speed Rate Slider */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem' }}>
+              <span style={{ color: 'var(--text-muted)' }}>PLAYBACK SPEED (RATE)</span>
+              <span style={{ color: 'var(--brand-primary)', fontWeight: 'bold' }}>{voiceSettings.rate}x</span>
+            </div>
+            <input 
+              type="range"
+              min="0.5"
+              max="2.0"
+              step="0.05"
+              value={voiceSettings.rate}
+              onChange={e => handleUpdateVoiceField('rate', parseFloat(e.target.value))}
+              style={{ width: '100%', cursor: 'pointer', accentColor: 'var(--brand-primary)' }}
+            />
+          </div>
+
+          {/* Pitch Slider */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem' }}>
+              <span style={{ color: 'var(--text-muted)' }}>VOICE PITCH (TONALITY)</span>
+              <span style={{ color: 'var(--brand-primary)', fontWeight: 'bold' }}>{voiceSettings.pitch}</span>
+            </div>
+            <input 
+              type="range"
+              min="0.5"
+              max="1.5"
+              step="0.05"
+              value={voiceSettings.pitch}
+              onChange={e => handleUpdateVoiceField('pitch', parseFloat(e.target.value))}
+              style={{ width: '100%', cursor: 'pointer', accentColor: 'var(--brand-primary)' }}
+            />
+          </div>
+
+          {/* Test Audio Button */}
+          <button 
+            className="btn-tactical"
+            onClick={handleTestVoice}
+            style={{ 
+              marginTop: '8px',
+              padding: '10px',
+              fontSize: '0.85rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px'
+            }}
+          >
+            <Volume2 size={16} /> TEST AUDIO SYNTHESIS
+          </button>
         </div>
       </div>
 

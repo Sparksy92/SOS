@@ -133,6 +133,24 @@ function App() {
   const [metadata, setMetadata] = useState({});
   const [activeCategory, setActiveCategory] = useState(null);
   const [currentPath, setCurrentPath] = useState([]);
+  
+  // J.A.R.V.I.S. Voice Settings State
+  const [voiceSettings, setVoiceSettings] = useState(() => {
+    try {
+      const saved = localStorage.getItem('sos-voice-settings');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {}
+    return {
+      voiceURI: '',
+      rate: 1.05,
+      pitch: 0.95
+    };
+  });
+
+  useEffect(() => {
+    localStorage.setItem('sos-voice-settings', JSON.stringify(voiceSettings));
+  }, [voiceSettings]);
+
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -190,6 +208,8 @@ function App() {
   const [chatInput, setChatInput] = useState('');
   const [chatLoading, setChatLoading] = useState(false);
   const messagesEndRef = useRef(null);
+  const speechQueue = useRef([]);
+  const isSpeaking = useRef(false);
 
   // Decoding state
   const [isDecoding, setIsDecoding] = useState(false);
@@ -826,34 +846,49 @@ function App() {
 
   const speakText = (text, onEndCallback) => {
     window.speechSynthesis.cancel();
+    if (!text) {
+      if (onEndCallback) onEndCallback();
+      return;
+    }
     const utterance = new SpeechSynthesisUtterance(text);
-    
-    // Attempt to load British English voices for JARVIS accent approximation
     const voices = window.speechSynthesis.getVoices();
-    const gbVoice = voices.find(v => v.lang.replace('_', '-').startsWith('en-GB') && (
-                      v.name.toLowerCase().includes('male') || 
-                      v.name.toLowerCase().includes('george') || 
-                      v.name.toLowerCase().includes('oliver') ||
-                      v.name.toLowerCase().includes('harry')
-                    )) || 
-                    voices.find(v => v.lang.replace('_', '-').startsWith('en-GB') && 
-                      !v.name.toLowerCase().includes('female') && 
-                      !v.name.toLowerCase().includes('hazel') && 
-                      !v.name.toLowerCase().includes('susan')
-                    ) || 
-                    voices.find(v => v.lang.replace('_', '-').startsWith('en-GB')) || 
-                    voices.find(v => v.lang.startsWith('en'));
-                    
-    if (gbVoice) {
-      utterance.voice = gbVoice;
+    
+    let selectedVoice = null;
+    if (voiceSettings.voiceURI) {
+      selectedVoice = voices.find(v => v.voiceURI === voiceSettings.voiceURI);
     }
     
-    utterance.rate = 1.08;
-    utterance.pitch = 0.92;
+    if (!selectedVoice) {
+      selectedVoice = voices.find(v => v.lang.replace('_', '-').startsWith('en-GB') && (
+                        v.name.toLowerCase().includes('male') || 
+                        v.name.toLowerCase().includes('george') || 
+                        v.name.toLowerCase().includes('oliver') ||
+                        v.name.toLowerCase().includes('harry')
+                      )) || 
+                      voices.find(v => v.lang.replace('_', '-').startsWith('en-GB') && 
+                        !v.name.toLowerCase().includes('female') && 
+                        !v.name.toLowerCase().includes('hazel') && 
+                        !v.name.toLowerCase().includes('susan')
+                      ) || 
+                      voices.find(v => v.lang.replace('_', '-').startsWith('en-GB')) || 
+                      voices.find(v => v.lang.startsWith('en'));
+    }
+    
+    if (selectedVoice) {
+      utterance.voice = selectedVoice;
+    }
+    
+    utterance.rate = voiceSettings.rate;
+    utterance.pitch = voiceSettings.pitch;
     
     if (onEndCallback) {
       utterance.onend = onEndCallback;
     }
+    
+    utterance.onerror = (e) => {
+      console.warn("Speech synthesis error:", e);
+      if (onEndCallback) onEndCallback();
+    };
     
     window.speechSynthesis.speak(utterance);
   };
@@ -1819,31 +1854,128 @@ function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: textToSend, isLiveGuide, useGeneralKnowledge })
       });
-      const data = await res.json();
+
+      if (!res.ok) throw new Error(`HTTP error ${res.status}`);
       
-      if (data.error) throw new Error(data.error);
-      
+      // Initialize empty AI message in state
       setMessages(prev => [...prev, { 
         role: 'ai', 
-        text: data.answer, 
-        sources: data.sources,
-        answerStatus: data.answerStatus
+        text: '', 
+        sources: [],
+        answerStatus: 'verified_local'
       }]);
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
       
-      // Auto Speech Feedback
-      if (isVoiceChatActive) {
-        const steps = parseSteps(data.answer);
-        if (isLiveGuide && steps.length > 0) {
-          setActiveStepIndex(0);
-          speakText(`Step 1. ${steps[0].content}`, () => {
+      let fullAnswer = "";
+      let answerSources = [];
+      let answerStatus = "verified_local";
+
+      // Reset speech queue variables
+      speechQueue.current = [];
+      isSpeaking.current = false;
+      window.speechSynthesis.cancel();
+
+      let unprocessedSpeechText = "";
+
+      const speakNextInQueue = () => {
+        if (speechQueue.current.length === 0) {
+          isSpeaking.current = false;
+          if (isVoiceChatActive) {
             startListening();
-          });
-        } else {
-          speakText(data.answer, () => {
-            startListening();
-          });
+          }
+          return;
+        }
+        
+        isSpeaking.current = true;
+        const textToSpeak = speechQueue.current.shift();
+        speakText(textToSpeak, () => {
+          speakNextInQueue();
+        });
+      };
+
+      const processSpeechText = (textChunk, isFinal = false) => {
+        if (!isVoiceChatActive) return;
+        
+        unprocessedSpeechText += textChunk;
+        
+        // Find sentence boundaries: period, question mark, exclamation, or newline
+        const sentenceBoundaryRegex = /([^.!?\n]+[.!?\n]+)/g;
+        let match;
+        let lastIndex = 0;
+        
+        while ((match = sentenceBoundaryRegex.exec(unprocessedSpeechText)) !== null) {
+          const sentence = match[1].trim();
+          if (sentence) {
+            speechQueue.current.push(sentence);
+          }
+          lastIndex = sentenceBoundaryRegex.lastIndex;
+        }
+        
+        unprocessedSpeechText = unprocessedSpeechText.substring(lastIndex);
+        
+        if (isFinal && unprocessedSpeechText.trim()) {
+          speechQueue.current.push(unprocessedSpeechText.trim());
+          unprocessedSpeechText = "";
+        }
+        
+        if (!isSpeaking.current && speechQueue.current.length > 0) {
+          speakNextInQueue();
+        }
+      };
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        
+        const chunkText = decoder.decode(value, { stream: true });
+        const lines = chunkText.split('\n');
+        
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const dataStr = line.slice(6).trim();
+            if (dataStr === '[DONE]') continue;
+            try {
+              const parsed = JSON.parse(dataStr);
+              if (parsed.error) {
+                throw new Error(parsed.error);
+              }
+              if (parsed.type === 'metadata') {
+                answerSources = parsed.sources;
+                answerStatus = parsed.answerStatus;
+              } else if (parsed.type === 'token') {
+                fullAnswer += parsed.text;
+                
+                setMessages(prev => {
+                  const copy = [...prev];
+                  const last = copy[copy.length - 1];
+                  last.text = fullAnswer;
+                  last.sources = answerSources;
+                  last.answerStatus = answerStatus;
+                  return copy;
+                });
+
+                processSpeechText(parsed.text, false);
+              }
+            } catch (e) {
+              // Ignore partial JSON chunk parse issues
+            }
+          }
         }
       }
+
+      // Finalize speech queue with remaining text
+      processSpeechText("", true);
+
+      // Post-stream step initialization for Live Guide
+      if (isLiveGuide) {
+        const steps = parseSteps(fullAnswer);
+        if (steps.length > 0) {
+          setActiveStepIndex(0);
+        }
+      }
+
     } catch (err) {
       setMessages(prev => [...prev, { role: 'ai', text: `SYSTEM ERROR: ${err.message}` }]);
     } finally {
@@ -3065,6 +3197,9 @@ function App() {
                     setProfile={setProfile}
                     dashboardWidgets={dashboardWidgets}
                     setDashboardWidgets={setDashboardWidgets}
+                    voiceSettings={voiceSettings}
+                    setVoiceSettings={setVoiceSettings}
+                    speakText={speakText}
                   />
                 </PanelErrorBoundary>
                 <PanelErrorBoundary name="Crawler Sync Controls">

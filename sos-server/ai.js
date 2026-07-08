@@ -164,7 +164,7 @@ function getRiskCategory(text) {
 /**
  * Query the AI using RAG (SQLite Retrieval)
  */
-const askQuestion = async (query, isLiveGuide = false, useGeneralKnowledge = false) => {
+const askQuestion = async (query, isLiveGuide = false, useGeneralKnowledge = false, streamCallback = null) => {
   // Check if database is empty
   if (!useGeneralKnowledge) {
     try {
@@ -223,12 +223,24 @@ ANSWER:`;
       new StringOutputParser(),
     ]);
 
-    const response = await chain.invoke({
-      question: query,
-    });
+    let responseText = "";
+    if (streamCallback) {
+      const responseStream = await chain.stream({
+        question: query,
+      });
+      for await (const chunk of responseStream) {
+        responseText += chunk;
+        streamCallback(chunk, { answerStatus: "uncited_model", sources: [] });
+      }
+    } else {
+      const response = await chain.invoke({
+        question: query,
+      });
+      responseText = response;
+    }
 
     return {
-      answer: response,
+      answer: responseText,
       answerStatus: "uncited_model",
       sources: []
     };
@@ -362,12 +374,25 @@ ANSWER:`;
   ]);
 
   console.log("Generating AI response...");
-  const response = await chain.invoke({
-    context: contextText,
-    question: query,
-  });
+  let responseText = "";
+  if (streamCallback) {
+    const responseStream = await chain.stream({
+      context: contextText,
+      question: query,
+    });
+    for await (const chunk of responseStream) {
+      responseText += chunk;
+      streamCallback(chunk, { answerStatus: "verified_local", sources });
+    }
+  } else {
+    const response = await chain.invoke({
+      context: contextText,
+      question: query,
+    });
+    responseText = response;
+  }
 
-  const responseText = response.trim();
+  responseText = responseText.trim();
   const insufficientPhrase = "I do not have enough verified local information to answer this query.";
   const isInsufficient = responseText.includes(insufficientPhrase) || responseText.toLowerCase().includes("not have enough verified local information");
 
@@ -380,7 +405,7 @@ ANSWER:`;
   }
 
   return {
-    answer: response,
+    answer: responseText,
     answerStatus: "verified_local",
     sources
   };

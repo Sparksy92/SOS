@@ -125,11 +125,38 @@ app.post('/api/chat', async (req, res) => {
     const { message, isLiveGuide, useGeneralKnowledge } = req.body;
     if (!message) return res.status(400).json({ error: "Message is required" });
     
-    const response = await ai.askQuestion(message, isLiveGuide, useGeneralKnowledge);
-    res.json(response);
+    res.writeHead(200, {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive',
+      'X-Accel-Buffering': 'no'
+    });
+
+    let sentMetadata = false;
+
+    const finalResponse = await ai.askQuestion(message, isLiveGuide, useGeneralKnowledge, (token, meta) => {
+      if (!sentMetadata && meta) {
+        res.write(`data: ${JSON.stringify({ type: 'metadata', sources: meta.sources, answerStatus: meta.answerStatus })}\n\n`);
+        sentMetadata = true;
+      }
+      res.write(`data: ${JSON.stringify({ type: 'token', text: token })}\n\n`);
+    });
+
+    if (!sentMetadata) {
+      res.write(`data: ${JSON.stringify({ 
+        type: 'metadata', 
+        sources: finalResponse.sources || [], 
+        answerStatus: finalResponse.answerStatus 
+      })}\n\n`);
+      res.write(`data: ${JSON.stringify({ type: 'token', text: finalResponse.answer })}\n\n`);
+    }
+
+    res.write('data: [DONE]\n\n');
+    res.end();
   } catch (err) {
     console.error("AI Error:", err);
-    res.status(500).json({ error: err.message });
+    res.write(`data: ${JSON.stringify({ error: err.message })}\n\n`);
+    res.end();
   }
 });
 
