@@ -132,6 +132,7 @@ function App() {
   const [categories, setCategories] = useState({});
   const [metadata, setMetadata] = useState({});
   const [activeCategory, setActiveCategory] = useState(null);
+  const [currentPath, setCurrentPath] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -693,6 +694,34 @@ function App() {
       groups[subdirPath].push(f);
     });
     return groups;
+  };
+
+  const getCurrentDirectoryFilesAndFolders = (filesList) => {
+    const foldersSet = new Set();
+    const immediateFiles = [];
+
+    filesList.forEach(f => {
+      const subdirs = f.subdirectories || [];
+      
+      let prefixMatch = true;
+      for (let i = 0; i < currentPath.length; i++) {
+        if (subdirs[i] !== currentPath[i]) {
+          prefixMatch = false;
+          break;
+        }
+      }
+
+      if (prefixMatch) {
+        if (subdirs.length === currentPath.length) {
+          immediateFiles.push(f);
+        } else if (subdirs.length > currentPath.length) {
+          foldersSet.add(subdirs[currentPath.length]);
+        }
+      }
+    });
+
+    const immediateFolders = Array.from(foldersSet).sort();
+    return { folders: immediateFolders, files: immediateFiles };
   };
 
   const openFile = (file) => {
@@ -1954,7 +1983,13 @@ function App() {
                 <div 
                   key={cat}
                   className={`nav-item ${activeCategory === cat && viewMode === 'files' ? 'active' : ''}`}
-                  onClick={() => { setActiveCategory(cat); setViewMode('files'); setSidebarOpen(false); }}
+                  onClick={() => { 
+                    setActiveCategory(cat); 
+                    setCurrentPath([]);
+                    setSearchQuery('');
+                    setViewMode('files'); 
+                    setSidebarOpen(false); 
+                  }}
                 >
                   <FolderOpen size={18} />
                   <span>{cat.toUpperCase()}</span>
@@ -2126,56 +2161,102 @@ function App() {
                     )}
                   </div>
                 ) : (
-                  /* Hierarchical directory tree view */
+                  /* Hierarchical virtual directory explorer view */
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     {(() => {
                       const filtered = getFilteredFiles();
-                      const grouped = getGroupedFiles(filtered);
-                      const groupKeys = Object.keys(grouped).sort();
+                      const { folders, files } = getCurrentDirectoryFilesAndFolders(filtered);
 
-                      if (filtered.length === 0) {
-                        return (
-                          <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>
-                            NO RECORDS MATCHING TAB FILTER
-                          </div>
-                        );
-                      }
-
-                      return groupKeys.map((groupPath) => {
-                        const isCollapsed = !!collapsedFolders[groupPath];
-                        const groupFiles = grouped[groupPath];
-                        
-                        return (
-                          <div key={groupPath} style={{ display: 'flex', flexDirection: 'column' }}>
-                            {/* Directory Header */}
-                            <div 
-                              onClick={() => toggleFolder(groupPath)}
-                              style={{
-                                display: 'flex', alignItems: 'center', gap: '10px',
-                                padding: '12px 16px', background: 'rgba(255,255,255,0.02)',
-                                border: '1px solid var(--border-subtle)', borderRadius: '4px',
-                                margin: '16px 0 12px 0', cursor: 'pointer',
-                                fontFamily: 'var(--font-mono)', fontSize: '0.85rem',
-                                letterSpacing: '1px', color: 'var(--brand-primary)',
-                                transition: 'all 0.2s ease',
-                                boxShadow: isCollapsed ? 'none' : 'var(--glow-primary)'
-                              }}
-                              className="folder-header-hover"
+                      return (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                          {/* Breadcrumbs Bar */}
+                          <div className="breadcrumb-bar glass-panel" style={{
+                            display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px',
+                            padding: '8px 16px',
+                            fontFamily: 'var(--font-mono)', fontSize: '0.8rem',
+                            backgroundColor: 'rgba(255, 255, 255, 0.01)',
+                            border: '1px solid var(--border-subtle)',
+                            borderRadius: '8px'
+                          }}>
+                            <span 
+                              style={{ cursor: 'pointer', color: currentPath.length === 0 ? 'var(--text-muted)' : 'var(--brand-primary)', fontWeight: 'bold' }}
+                              onClick={() => setCurrentPath([])}
                             >
-                              <FolderOpen size={16} />
-                              <span>{groupPath.toUpperCase()}</span>
-                              <span style={{color: 'var(--text-muted)', marginLeft: 'auto', fontSize: '0.75rem', letterSpacing: '0.5px'}}>
-                                {isCollapsed ? '[EXPAND]' : '[COLLAPSE]'} ({groupFiles.length} records)
+                              ROOT
+                            </span>
+                            {currentPath.map((folder, idx) => (
+                              <span key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <span style={{ color: 'var(--text-muted)' }}>/</span>
+                                <span 
+                                  style={{ 
+                                    cursor: idx === currentPath.length - 1 ? 'default' : 'pointer', 
+                                    color: idx === currentPath.length - 1 ? 'var(--brand-secondary)' : 'var(--brand-primary)',
+                                    fontWeight: idx === currentPath.length - 1 ? 'bold' : 'normal'
+                                  }}
+                                  onClick={() => {
+                                    if (idx < currentPath.length - 1) {
+                                      setCurrentPath(currentPath.slice(0, idx + 1));
+                                    }
+                                  }}
+                                >
+                                  {folder.toUpperCase()}
+                                </span>
                               </span>
-                            </div>
+                            ))}
+                          </div>
 
-                            {/* Files in Folder */}
-                            {!isCollapsed && (
+                          {/* Folders List */}
+                          {folders.length > 0 && (
+                            <div>
+                              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '12px', fontFamily: 'var(--font-mono)' }}>
+                                Subdirectories ({folders.length})
+                              </div>
+                              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '16px', marginBottom: '16px' }}>
+                                {folders.map((folderName, idx) => (
+                                  <div 
+                                    key={idx} 
+                                    className="file-card glass-panel folder-card-hover" 
+                                    onClick={() => setCurrentPath([...currentPath, folderName])}
+                                    style={{ 
+                                      display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '12px', 
+                                      padding: '16px', cursor: 'pointer', transition: 'all 0.2s ease',
+                                      border: '1px solid var(--border-subtle)', borderRadius: '8px'
+                                    }}
+                                  >
+                                    <div style={{ color: 'var(--brand-primary)', display: 'flex', alignItems: 'center' }}>
+                                      <FolderOpen size={24} />
+                                    </div>
+                                    <div style={{ fontWeight: 'bold', fontSize: '0.85rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: 'var(--font-mono)' }}>
+                                      {folderName.toUpperCase()}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Files List */}
+                          <div>
+                            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '12px', fontFamily: 'var(--font-mono)' }}>
+                              Documents ({files.length})
+                            </div>
+                            {files.length > 0 ? (
                               <div className="file-grid">
-                                {groupFiles.map((file, idx) => {
+                                {files.map((file, idx) => {
                                   const meta = metadata[file.path];
                                   const displayTitle = meta && meta.title && meta.title !== 'Unknown Document' ? meta.title : file.name;
                                   const displaySummary = meta && meta.summary ? meta.summary : `ORIGINAL FILE: ${file.name}`;
+                                  
+                                  // Risk indicator badge
+                                  const riskBadge = file.riskCategory ? (
+                                    <span style={{ 
+                                      fontSize: '0.65rem', padding: '2px 6px', borderRadius: '4px',
+                                      background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444',
+                                      border: '1px solid rgba(239, 68, 68, 0.2)', marginRight: '6px'
+                                    }}>
+                                      RISK: {file.riskCategory.toUpperCase()}
+                                    </span>
+                                  ) : null;
                                   
                                   return (
                                     <div className="file-card glass-panel" key={idx} onClick={() => openFile(file)}>
@@ -2189,7 +2270,12 @@ function App() {
                                         {displaySummary}
                                       </div>
                                       <div className="file-meta" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-                                        <span style={{color: 'var(--brand-secondary)'}}>{`TYPE: ${file.extension.toUpperCase().replace('.', '')}`}</span>
+                                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                                          {riskBadge}
+                                          <span style={{color: 'var(--brand-secondary)', fontSize: '0.75rem'}}>
+                                            {file.extension.toUpperCase().replace('.', '')}
+                                          </span>
+                                        </div>
                                         <button 
                                           className="btn-tactical" 
                                           style={{fontSize: '0.6rem', padding: '4px 8px'}}
@@ -2202,10 +2288,16 @@ function App() {
                                   );
                                 })}
                               </div>
+                            ) : (
+                              folders.length === 0 && (
+                                <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)', border: '1px dashed var(--border-subtle)', borderRadius: '8px' }}>
+                                  NO RECORDS IN THIS DIRECTORY
+                                </div>
+                              )
                             )}
                           </div>
-                        );
-                      });
+                        </div>
+                      );
                     })()}
                   </div>
                 )}

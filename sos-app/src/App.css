@@ -399,3 +399,13 @@
   border-color: var(--border-subtle);
   color: var(--text-muted);
 }
+
+.folder-card-hover {
+  background: rgba(255, 255, 255, 0.02) !important;
+}
+
+.folder-card-hover:hover {
+  background: rgba(0, 229, 255, 0.05) !important;
+  border-color: var(--brand-secondary) !important;
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.2) !important;
+}
