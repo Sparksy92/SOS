@@ -537,22 +537,86 @@ function App() {
   }, [viewMode]);
 
   useEffect(() => {
-    // Fetch materials and metadata
-    Promise.all([
-      fetch(`${API_BASE}/api/materials`).then(res => res.json()),
-      fetch(`${API_BASE}/api/metadata`).then(res => res.json())
-    ])
-    .then(([materialsData, metadataData]) => {
-      setCategories(materialsData.categories);
-      setMetadata(metadataData || {});
-      const cats = Object.keys(materialsData.categories);
-      if (cats.length > 0) setActiveCategory(cats[0]);
-      setLoading(false);
-    })
-    .catch(err => {
-      setError("Failed to connect to Local Data Core.");
-      setLoading(false);
-    });
+    const cacheName = 'sos-materials-cache';
+    const materialsUrl = `${API_BASE}/api/materials`;
+    const metadataUrl = `${API_BASE}/api/metadata`;
+
+    // 1. Try to load from Cache Storage first (instant)
+    const loadFromCache = async () => {
+      try {
+        if ('caches' in window) {
+          const cache = await caches.open(cacheName);
+          const cachedMaterials = await cache.match(materialsUrl);
+          const cachedMetadata = await cache.match(metadataUrl);
+
+          if (cachedMaterials && cachedMetadata) {
+            const materialsData = await cachedMaterials.json();
+            const metadataData = await cachedMetadata.json();
+            
+            if (materialsData && materialsData.categories) {
+              setCategories(materialsData.categories);
+              setMetadata(metadataData || {});
+              const cats = Object.keys(materialsData.categories);
+              if (cats.length > 0) setActiveCategory(cats[0]);
+              setLoading(false);
+              return true;
+            }
+          }
+        }
+      } catch (e) {
+        console.warn("Cache read failed:", e);
+      }
+      return false;
+    };
+
+    // 2. Fetch from network and update cache
+    const fetchFromNetwork = async (hasCache) => {
+      try {
+        const [materialsRes, metadataRes] = await Promise.all([
+          fetch(materialsUrl),
+          fetch(metadataUrl)
+        ]);
+
+        if (materialsRes.ok && metadataRes.ok) {
+          // Clone responses because they can only be read once
+          const materialsClone = materialsRes.clone();
+          const metadataClone = metadataRes.clone();
+
+          const materialsData = await materialsRes.json();
+          const metadataData = await metadataRes.json();
+
+          setCategories(materialsData.categories);
+          setMetadata(metadataData || {});
+          const cats = Object.keys(materialsData.categories);
+          if (cats.length > 0) setActiveCategory(cats[0]);
+          setLoading(false);
+
+          // Save to Cache Storage for next time
+          if ('caches' in window) {
+            const cache = await caches.open(cacheName);
+            await cache.put(materialsUrl, materialsClone);
+            await cache.put(metadataUrl, metadataClone);
+          }
+        } else if (!hasCache) {
+          setError("Failed to connect to Local Data Core.");
+          setLoading(false);
+        }
+      } catch (err) {
+        console.error("Network fetch failed:", err);
+        if (!hasCache) {
+          setError("Failed to connect to Local Data Core.");
+          setLoading(false);
+        }
+      }
+    };
+
+    const initialize = async () => {
+      const hasCache = await loadFromCache();
+      // Always run network fetch in background to revalidate/update
+      await fetchFromNetwork(hasCache);
+    };
+
+    initialize();
 
     // Load theme
     const savedTheme = localStorage.getItem('sos-theme') || 'amber';
