@@ -3148,7 +3148,11 @@ function App() {
                 )}
                 {toolkitSubTab === 'gap' && (
                   <PanelErrorBoundary name="Gap Analyzer">
-                    <ContentGapAnalyzerPanel setToolkitSubTab={setToolkitSubTab} />
+                    <ContentGapAnalyzerPanel 
+                      setToolkitSubTab={setToolkitSubTab} 
+                      allFiles={Object.values(categories).flat()}
+                      metadata={metadata}
+                    />
                   </PanelErrorBoundary>
                 )}
                 {toolkitSubTab === 'zim' && (

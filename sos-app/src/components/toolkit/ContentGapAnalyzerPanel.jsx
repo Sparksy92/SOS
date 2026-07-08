@@ -5,8 +5,12 @@ import { loadQueue, saveQueueItem } from '../../modules/toolkit/acquisitionQueue
 import { loadAllowlist, saveAllowlistEntry } from '../../modules/toolkit/sourceAllowlistStore.js';
 import { ShieldAlert, BookOpen, AlertTriangle, CheckCircle, ExternalLink, Plus, Check, Clipboard } from 'lucide-react';
 
-export default function ContentGapAnalyzerPanel({ setToolkitSubTab }) {
-  const { categoryCoverage, candidateItems, blockedItems } = GAP_ANALYSIS_DATA;
+export default function ContentGapAnalyzerPanel({ 
+  setToolkitSubTab,
+  allFiles = [],
+  metadata = {}
+}) {
+  const { candidateItems, blockedItems } = GAP_ANALYSIS_DATA;
   const [ledger, setLedger] = useState([]);
   const [queue, setQueue] = useState([]);
   const [allowlist, setAllowlist] = useState([]);
@@ -16,6 +20,55 @@ export default function ContentGapAnalyzerPanel({ setToolkitSubTab }) {
     setQueue(loadQueue());
     setAllowlist(loadAllowlist());
   }, []);
+
+  const isItemPresent = (item) => {
+    const itemTitleLower = item.title.toLowerCase().replace(/[^a-z0-9]/g, '');
+    
+    return allFiles.some(file => {
+      const fileNameLower = file.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+      if (fileNameLower.includes(itemTitleLower) || itemTitleLower.includes(fileNameLower)) {
+        return true;
+      }
+      
+      const fileMeta = metadata[file.path];
+      if (fileMeta && fileMeta.title && fileMeta.title !== 'Unknown Document') {
+        const metaTitleLower = fileMeta.title.toLowerCase().replace(/[^a-z0-9]/g, '');
+        if (metaTitleLower.includes(itemTitleLower) || itemTitleLower.includes(metaTitleLower)) {
+          return true;
+        }
+      }
+      return false;
+    });
+  };
+
+  const dynamicCategoryCoverage = [
+    { category: 'homesteading' },
+    { category: 'farming' },
+    { category: 'general_survival' },
+    { category: 'water' },
+    { category: 'bushcraft' },
+    { category: 'shelter' },
+    { category: 'medical_reference' }
+  ].map(cat => {
+    const candidates = candidateItems.filter(item => item.category === cat.category);
+    const presentCount = candidates.filter(isItemPresent).length;
+    const totalCount = candidates.length;
+    
+    let coverage = 'missing';
+    if (presentCount === totalCount && totalCount > 0) {
+      coverage = 'complete';
+    } else if (presentCount > 0) {
+      coverage = 'partial';
+    }
+    
+    return {
+      category: cat.category,
+      localCount: presentCount,
+      externalCandidateCount: totalCount,
+      coverage,
+      notes: `Operator has ${presentCount} of ${totalCount} items cataloged.`
+    };
+  });
 
   const getLedgerStatus = (item) => {
     const record = ledger.find(r => {
@@ -143,7 +196,7 @@ export default function ContentGapAnalyzerPanel({ setToolkitSubTab }) {
       <div style={{ marginBottom: '24px' }}>
         <h4 style={{ color: '#fff', fontSize: '1.1rem', margin: '0 0 12px 0' }}>Library Coverage Metrics</h4>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '12px' }}>
-          {categoryCoverage.map(cat => {
+          {dynamicCategoryCoverage.map(cat => {
             const isMissing = cat.coverage === 'missing';
             return (
               <div 
@@ -163,8 +216,8 @@ export default function ContentGapAnalyzerPanel({ setToolkitSubTab }) {
                     fontSize: '0.72rem', 
                     padding: '2px 6px', 
                     borderRadius: '4px',
-                    backgroundColor: isMissing ? 'rgba(255, 69, 0, 0.1)' : 'rgba(0, 255, 127, 0.1)',
-                    color: isMissing ? '#ff4500' : '#00ff7f'
+                    backgroundColor: cat.coverage === 'missing' ? 'rgba(255, 69, 0, 0.1)' : cat.coverage === 'partial' ? 'rgba(255, 215, 0, 0.1)' : 'rgba(0, 255, 127, 0.1)',
+                    color: cat.coverage === 'missing' ? '#ff4500' : cat.coverage === 'partial' ? '#ffd700' : '#00ff7f'
                   }}>
                     {cat.coverage.toUpperCase()}
                   </span>
@@ -200,6 +253,11 @@ export default function ContentGapAnalyzerPanel({ setToolkitSubTab }) {
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
                     <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                      {isItemPresent(item) && (
+                        <span style={{ fontSize: '0.72rem', padding: '2px 6px', borderRadius: '4px', backgroundColor: 'rgba(0, 255, 127, 0.1)', color: '#00ff7f', fontWeight: 'bold' }}>
+                          PRESENT
+                        </span>
+                      )}
                       <span style={{ fontSize: '0.72rem', padding: '2px 6px', borderRadius: '4px', backgroundColor: 'rgba(255,255,255,0.05)', color: ledgerStatus.color, fontWeight: 'bold' }}>
                         LEDGER: {ledgerStatus.status.toUpperCase()}
                       </span>
@@ -222,7 +280,7 @@ export default function ContentGapAnalyzerPanel({ setToolkitSubTab }) {
                 )}
                 {/* Safe Actions */}
                 <div style={{ marginTop: '12px', display: 'flex', gap: '8px', flexWrap: 'wrap', borderTop: '1px solid rgba(255,255,255,0.03)', paddingTop: '10px' }}>
-                  {qStatus === 'not_queued' && (
+                  {qStatus === 'not_queued' && !isItemPresent(item) && (
                     <button 
                       className="btn-tactical" 
                       onClick={() => handleAddToQueue(item, ledgerStatus.rawRecord)}
@@ -293,6 +351,11 @@ export default function ContentGapAnalyzerPanel({ setToolkitSubTab }) {
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
                     <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                      {isItemPresent(item) && (
+                        <span style={{ fontSize: '0.72rem', padding: '2px 6px', borderRadius: '4px', backgroundColor: 'rgba(0, 255, 127, 0.1)', color: '#00ff7f', fontWeight: 'bold' }}>
+                          PRESENT
+                        </span>
+                      )}
                       <span style={{ fontSize: '0.72rem', padding: '2px 6px', borderRadius: '4px', backgroundColor: 'rgba(255,255,255,0.05)', color: ledgerStatus.color, fontWeight: 'bold' }}>
                         LEDGER: {ledgerStatus.status.toUpperCase()}
                       </span>
@@ -316,7 +379,7 @@ export default function ContentGapAnalyzerPanel({ setToolkitSubTab }) {
                 </div>
                 {/* Safe Actions */}
                 <div style={{ marginTop: '12px', display: 'flex', gap: '8px', flexWrap: 'wrap', borderTop: '1px solid rgba(255,255,255,0.03)', paddingTop: '10px' }}>
-                  {qStatus === 'not_queued' && (
+                  {qStatus === 'not_queued' && !isItemPresent(item) && (
                     <button 
                       className="btn-tactical" 
                       onClick={() => handleAddToQueue(item, ledgerStatus.rawRecord)}
