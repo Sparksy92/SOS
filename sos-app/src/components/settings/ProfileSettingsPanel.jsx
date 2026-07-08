@@ -200,9 +200,9 @@ export default function ProfileSettingsPanel({
               value={voiceSettings.voiceURI || ''}
               onChange={e => handleUpdateVoiceField('voiceURI', e.target.value)}
             >
-              <option value="">Default (Auto-Selected British Accent)</option>
+              <option value="" style={{ background: '#121212', color: '#ffffff' }}>Default (Auto-Selected British Accent)</option>
               {voices.map((v, idx) => (
-                <option key={idx} value={v.voiceURI}>
+                <option key={idx} value={v.voiceURI} style={{ background: '#121212', color: '#ffffff' }}>
                   {v.name} ({v.lang}) {v.localService ? '[Local]' : ''}
                 </option>
               ))}
