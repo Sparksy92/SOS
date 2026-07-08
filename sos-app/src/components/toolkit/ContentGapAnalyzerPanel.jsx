@@ -253,19 +253,22 @@ export default function ContentGapAnalyzerPanel({
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
                     <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                      {isItemPresent(item) && (
+                      {isItemPresent(item) ? (
                         <span style={{ fontSize: '0.72rem', padding: '2px 6px', borderRadius: '4px', backgroundColor: 'rgba(0, 255, 127, 0.1)', color: '#00ff7f', fontWeight: 'bold' }}>
-                          PRESENT
+                          PRESENT (OFFLINE LOCAL)
                         </span>
+                      ) : (
+                        <>
+                          <span style={{ fontSize: '0.72rem', padding: '2px 6px', borderRadius: '4px', backgroundColor: 'rgba(255,255,255,0.05)', color: qStatus === 'not_queued' ? '#888' : '#00f2fe', fontWeight: 'bold' }}>
+                            QUEUE: {qStatus.toUpperCase()}
+                          </span>
+                          <span style={{ fontSize: '0.72rem', padding: '2px 6px', borderRadius: '4px', backgroundColor: 'rgba(255,255,255,0.05)', color: aStatus === 'trusted' ? '#00ff7f' : '#888', fontWeight: 'bold' }}>
+                            ALLOWLIST: {aStatus.toUpperCase()}
+                          </span>
+                        </>
                       )}
                       <span style={{ fontSize: '0.72rem', padding: '2px 6px', borderRadius: '4px', backgroundColor: 'rgba(255,255,255,0.05)', color: ledgerStatus.color, fontWeight: 'bold' }}>
                         LEDGER: {ledgerStatus.status.toUpperCase()}
-                      </span>
-                      <span style={{ fontSize: '0.72rem', padding: '2px 6px', borderRadius: '4px', backgroundColor: 'rgba(255,255,255,0.05)', color: qStatus === 'not_queued' ? '#888' : '#00f2fe', fontWeight: 'bold' }}>
-                        QUEUE: {qStatus.toUpperCase()}
-                      </span>
-                      <span style={{ fontSize: '0.72rem', padding: '2px 6px', borderRadius: '4px', backgroundColor: 'rgba(255,255,255,0.05)', color: aStatus === 'trusted' ? '#00ff7f' : '#888', fontWeight: 'bold' }}>
-                        ALLOWLIST: {aStatus.toUpperCase()}
                       </span>
                     </div>
                   </div>
@@ -289,7 +292,7 @@ export default function ContentGapAnalyzerPanel({
                       Add to Acquisition Queue
                     </button>
                   )}
-                  {item.officialSourceUrl && aStatus === 'not_listed' && (
+                  {item.officialSourceUrl && aStatus === 'not_listed' && !isItemPresent(item) && (
                     <button 
                       className="btn-tactical" 
                       onClick={() => handleAddToAllowlist(item)}
@@ -298,7 +301,7 @@ export default function ContentGapAnalyzerPanel({
                       Add Official Source to Allowlist
                     </button>
                   )}
-                  {item.officialSourceUrl && (
+                  {item.officialSourceUrl && !isItemPresent(item) && (
                     <button 
                       className="btn-tactical-outline" 
                       onClick={() => handleCopyUrl(item.officialSourceUrl)}
@@ -351,19 +354,22 @@ export default function ContentGapAnalyzerPanel({
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
                     <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                      {isItemPresent(item) && (
+                      {isItemPresent(item) ? (
                         <span style={{ fontSize: '0.72rem', padding: '2px 6px', borderRadius: '4px', backgroundColor: 'rgba(0, 255, 127, 0.1)', color: '#00ff7f', fontWeight: 'bold' }}>
-                          PRESENT
+                          PRESENT (OFFLINE LOCAL)
                         </span>
+                      ) : (
+                        <>
+                          <span style={{ fontSize: '0.72rem', padding: '2px 6px', borderRadius: '4px', backgroundColor: 'rgba(255,255,255,0.05)', color: qStatus === 'not_queued' ? '#888' : '#00f2fe', fontWeight: 'bold' }}>
+                            QUEUE: {qStatus.toUpperCase()}
+                          </span>
+                          <span style={{ fontSize: '0.72rem', padding: '2px 6px', borderRadius: '4px', backgroundColor: 'rgba(255,255,255,0.05)', color: aStatus === 'trusted' ? '#00ff7f' : '#888', fontWeight: 'bold' }}>
+                            ALLOWLIST: {aStatus.toUpperCase()}
+                          </span>
+                        </>
                       )}
                       <span style={{ fontSize: '0.72rem', padding: '2px 6px', borderRadius: '4px', backgroundColor: 'rgba(255,255,255,0.05)', color: ledgerStatus.color, fontWeight: 'bold' }}>
                         LEDGER: {ledgerStatus.status.toUpperCase()}
-                      </span>
-                      <span style={{ fontSize: '0.72rem', padding: '2px 6px', borderRadius: '4px', backgroundColor: 'rgba(255,255,255,0.05)', color: qStatus === 'not_queued' ? '#888' : '#00f2fe', fontWeight: 'bold' }}>
-                        QUEUE: {qStatus.toUpperCase()}
-                      </span>
-                      <span style={{ fontSize: '0.72rem', padding: '2px 6px', borderRadius: '4px', backgroundColor: 'rgba(255,255,255,0.05)', color: aStatus === 'trusted' ? '#00ff7f' : '#888', fontWeight: 'bold' }}>
-                        ALLOWLIST: {aStatus.toUpperCase()}
                       </span>
                     </div>
                     <span style={{ fontSize: '0.75rem', padding: '2px 8px', borderRadius: '4px', backgroundColor: 'rgba(255, 69, 0, 0.1)', color: '#ff4500', fontWeight: 'bold' }}>
@@ -388,7 +394,7 @@ export default function ContentGapAnalyzerPanel({
                       Add to Acquisition Queue
                     </button>
                   )}
-                  {item.officialSourceUrl && aStatus === 'not_listed' && (
+                  {item.officialSourceUrl && aStatus === 'not_listed' && !isItemPresent(item) && (
                     <button 
                       className="btn-tactical" 
                       onClick={() => handleAddToAllowlist(item)}
@@ -397,7 +403,7 @@ export default function ContentGapAnalyzerPanel({
                       Add Official Source to Allowlist
                     </button>
                   )}
-                  {item.officialSourceUrl && (
+                  {item.officialSourceUrl && !isItemPresent(item) && (
                     <button 
                       className="btn-tactical-outline" 
                       onClick={() => handleCopyUrl(item.officialSourceUrl)}
