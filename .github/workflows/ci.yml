@@ -32,7 +32,7 @@ jobs:
 
       - name: Run Backend Logic Tests
         run: |
-          node --test sos-server/tests/*.test.mjs
+          node --test-concurrency=1 --test sos-server/tests/*.test.mjs
 
       - name: Clean up test artifacts
         run: |
