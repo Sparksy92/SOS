@@ -16,6 +16,10 @@ function getDb() {
   currentDbPath = targetPath;
   currentDb = new DatabaseSync(targetPath);
   
+  // Optimize for concurrency and performance
+  currentDb.exec("PRAGMA busy_timeout = 10000;");
+  currentDb.exec("PRAGMA journal_mode = WAL;");
+  
   // Initialize Tables
   currentDb.exec(`
     CREATE TABLE IF NOT EXISTS documents (
