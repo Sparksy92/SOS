@@ -58,7 +58,7 @@ graph TD
 *   **Ollama**: Installed and running locally on the system.
 *   **Python**: `v3.10` or higher (for TTS and OCR service scripts).
 
-### 🚀 Seamless Installation & Setup
+### 🚀 Seamless Installation & Setup (Install Dependencies)
 For a fresh user, the onboarding is automated using the setup script:
 
 ```bash
@@ -73,7 +73,10 @@ The script automatically:
 *   Creates a Python `venv/` virtual environment and installs dependencies (`requirements.txt`).
 
 ### 3. Environment Variables Configuration
-Configure environment parameters by copying `.env.example` to `.env` in both the server directory and the root directory.
+Configure environment parameters by copying `.env.example` to `.env` in both the server directory and the root directory. You can manually set this up using:
+```bash
+cp .env.example .env
+```
 
 Key server configurations (`sos-server/.env`):
 ```env
