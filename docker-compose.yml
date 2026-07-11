@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  sos-server:
+    build:
+      context: ./sos-server
+      dockerfile: Dockerfile
+    container_name: sos-server
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./sos-server/sos_database.db:/app/sos_database.db
+      - ./sos-server/metadata.json:/app/metadata.json
+      # Mount your local library folder. Customize the host path to point to your library path.
+      - /media/bs/JARVIS/SurvivalOS_Library:/materials:ro
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - SOS_DB_PATH=/app/sos_database.db
+      - SOS_MATERIALS_DIR=/materials
+      - OLLAMA_BASE_URL=http://host.docker.internal:11434
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+  sos-app:
+    build:
+      context: ./sos-app
+      dockerfile: Dockerfile
+    container_name: sos-app
+    ports:
+      - "80:80"
+    depends_on:
+      - sos-server
+    restart: unless-stopped

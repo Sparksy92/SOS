@@ -344,6 +344,28 @@ export default function LocalReleaseCandidatePanel({ setViewMode, setToolkitSubT
             </ol>
           </div>
 
+          {/* Production Deployment Templates */}
+          <div style={{ backgroundColor: '#181b24', border: '1px solid rgba(0, 242, 254, 0.25)', borderRadius: '8px', padding: '16px' }}>
+            <h4 style={{ margin: '0 0 12px 0', fontSize: '0.98rem', color: '#00f2fe', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <FileText size={16} style={{ color: '#00f2fe' }} />
+              Production Deployment Templates
+            </h4>
+            <p style={{ margin: '0 0 10px 0', fontSize: '0.8rem', color: '#ccc', lineHeight: '1.4' }}>
+              Templates are pre-configured in your project workspace for seamless LAN or off-grid hosting:
+            </p>
+            <ul style={{ margin: 0, paddingLeft: '18px', fontSize: '0.78rem', color: '#ccc', lineHeight: '1.5' }}>
+              <li style={{ marginBottom: '6px' }}>
+                <strong>Docker Infrastructure:</strong> Run using <code style={{ color: 'var(--brand-primary)' }}>docker-compose.yml</code> at the project root for unified port 80 proxying.
+              </li>
+              <li style={{ marginBottom: '6px' }}>
+                <strong>Systemd Services:</strong> Configure automatic start-on-boot using <code style={{ color: 'var(--brand-primary)' }}>docs/systemd/survivalos-backend.service</code>.
+              </li>
+              <li style={{ marginBottom: '6px' }}>
+                <strong>LAN Web Proxy:</strong> Distribute the app over local Wi-Fi router networks using the Nginx configuration template in <code style={{ color: 'var(--brand-primary)' }}>docs/systemd/nginx-system-reverse-proxy.conf</code>.
+              </li>
+            </ul>
+          </div>
+
           {/* Quick Actions Panel */}
           <div style={{ backgroundColor: '#12151c', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '8px', padding: '16px' }}>
             <h4 style={{ margin: '0 0 16px 0', fontSize: '0.95rem', color: '#fff', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Audit Navigation</h4>
