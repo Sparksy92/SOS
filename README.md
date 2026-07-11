@@ -61,10 +61,17 @@ graph TD
 ### 🚀 Seamless Installation & Setup (Install Dependencies)
 For a fresh user, the onboarding is automated using the setup script:
 
+**On Linux/macOS:**
 ```bash
-# Clone the repository and run the setup wizard
 chmod +x setup.sh
 ./setup.sh
+```
+
+**On Windows:**
+Open PowerShell as Administrator and run:
+```powershell
+Set-ExecutionPolicy Bypass -Scope Process -Force
+.\setup.ps1
 ```
 
 The script automatically:

@@ -9,6 +9,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const require = createRequire(import.meta.url);
 
+const TEST_DB_PATH = path.join(__dirname, 'security_hardening_test.db');
+process.env.SOS_DB_PATH = TEST_DB_PATH;
+
 const { 
   resolveMaterialPath, 
   setMaterialsDirOverride,
@@ -27,6 +30,16 @@ test('SOS Security Hardening Test Suite', async (t) => {
 
   t.after(() => {
     setMaterialsDirOverride(null);
+    const { closeDb } = require('../db');
+    closeDb();
+    const fs = require('fs');
+    try {
+      if (fs.existsSync(TEST_DB_PATH)) fs.unlinkSync(TEST_DB_PATH);
+      const walFile = TEST_DB_PATH + '-wal';
+      const shmFile = TEST_DB_PATH + '-shm';
+      if (fs.existsSync(walFile)) fs.unlinkSync(walFile);
+      if (fs.existsSync(shmFile)) fs.unlinkSync(shmFile);
+    } catch (e) {}
   });
 
   await t.test('1. Advanced Path Traversal Defenses', () => {

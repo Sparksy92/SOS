@@ -11,6 +11,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const require = createRequire(import.meta.url);
 
+const TEST_DB_PATH = path.join(__dirname, 'material_boundary_test.db');
+process.env.SOS_DB_PATH = TEST_DB_PATH;
+
 const { 
   getMaterialRoot, 
   setMaterialsDirOverride, 
@@ -46,10 +49,19 @@ test('SOS Material Boundary & Crawler Hardening Test Suite', async (t) => {
   t.after(() => {
     // Restore override
     setMaterialsDirOverride(null);
+    const { closeDb } = require('../db');
+    closeDb();
     try {
       if (fs.existsSync(tempMaterialDir)) {
         fs.rmSync(tempMaterialDir, { recursive: true, force: true });
       }
+    } catch (e) {}
+    try {
+      if (fs.existsSync(TEST_DB_PATH)) fs.unlinkSync(TEST_DB_PATH);
+      const walFile = TEST_DB_PATH + '-wal';
+      const shmFile = TEST_DB_PATH + '-shm';
+      if (fs.existsSync(walFile)) fs.unlinkSync(walFile);
+      if (fs.existsSync(shmFile)) fs.unlinkSync(shmFile);
     } catch (e) {}
   });
 
