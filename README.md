@@ -58,26 +58,19 @@ graph TD
 *   **Ollama**: Installed and running locally on the system.
 *   **Python**: `v3.10` or higher (for TTS and OCR service scripts).
 
-### 1. Install Dependencies
-Run package installation commands in both project folders:
-```bash
-# Install backend dependencies
-cd sos-server
-npm install
+### 🚀 Seamless Installation & Setup
+For a fresh user, the onboarding is automated using the setup script:
 
-# Install frontend dependencies
-cd ../sos-app
-npm install
+```bash
+# Clone the repository and run the setup wizard
+chmod +x setup.sh
+./setup.sh
 ```
 
-### 2. Set Up Python Virtual Environment
-Initialize a local virtual environment at the project root:
-```bash
-cd /home/bs/projects/survival
-python -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-```
+The script automatically:
+*   Initializes root and sub-project `.env` configuration files.
+*   Installs Node.js packages for both server and app clients.
+*   Creates a Python `venv/` virtual environment and installs dependencies (`requirements.txt`).
 
 ### 3. Environment Variables Configuration
 Configure environment parameters by copying `.env.example` to `.env` in both the server directory and the root directory.
@@ -150,3 +143,14 @@ cd sos-app
 npm run build
 ```
 This updates the static assets inside the `dist/` directory for deployment on offline web servers.
+
+---
+
+## 📚 Off-Grid Library Reference Sources
+
+SurvivalOS does not bundle proprietary books or manuals. To populate your custom offline library directory (`SOS_MATERIALS_DIR`), we suggest checking out these curated public repositories:
+
+*   **[pieroboseta/APOCALYPSE](https://github.com/pieroboseta/APOCALYPSE):** A curated offline encyclopedia collection covering medicine, agriculture, plumbing, mechanical engineering, structural building, and general off-grid survival.
+*   **[PR0M3TH3AN/Survival-Data](https://github.com/PR0M3TH3AN/Survival-Data):** Curated databases of emergency checklists, radio manuals, HAM operations guides, and first-aid runbooks designed for disaster scenarios.
+*   **[alx-xlx/awesome-survival](https://github.com/alx-xlx/awesome-survival):** Aggregated index lists of outdoor bushcraft, survival, foraging, and wilderness guidance.
+
