@@ -11,13 +11,30 @@ test('SOS End-to-End API Integration Suite', async (t) => {
   process.env.SOS_AUTO_CRAWL = 'false'; // Disable background crawler
 
   let server;
+  const originalFetch = global.fetch;
   
   t.before(() => {
+    // Mock the external TTS service call
+    global.fetch = async (url, options) => {
+      const urlStr = typeof url === 'string' ? url : url.toString();
+      if (urlStr.includes(':3002/api/tts')) {
+        return {
+          ok: true,
+          status: 200,
+          headers: new Headers({ 'content-type': 'audio/wav' }),
+          text: async () => 'mock wav data',
+          arrayBuffer: async () => new Uint8Array(2000).buffer
+        };
+      }
+      return originalFetch(url, options);
+    };
+
     // Require index.js which boots the Express server on process.env.PORT
     server = require('../index.js');
   });
 
   t.after(() => {
+    global.fetch = originalFetch;
     if (server && typeof server.close === 'function') {
       server.close();
     }
@@ -55,5 +72,24 @@ test('SOS End-to-End API Integration Suite', async (t) => {
     
     const buffer = await res.arrayBuffer();
     assert.ok(buffer.byteLength > 1000); // Verify we got actual binary data back
+  });
+
+  await t.test('5. Settings API library-path roundtrip', async () => {
+    // 1. Set library path
+    const postRes = await fetch(`http://localhost:${testPort}/api/settings/library-path`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ path: '/media/bs/JARVIS/SurvivalOS_Library' })
+    });
+    assert.strictEqual(postRes.status, 200);
+    const postBody = await postRes.json();
+    assert.strictEqual(postBody.success, true);
+    assert.strictEqual(postBody.path, '/media/bs/JARVIS/SurvivalOS_Library');
+
+    // 2. Retrieve library path
+    const getRes = await fetch(`http://localhost:${testPort}/api/settings/library-path`);
+    assert.strictEqual(getRes.status, 200);
+    const getBody = await getRes.json();
+    assert.strictEqual(getBody.path, '/media/bs/JARVIS/SurvivalOS_Library');
   });
 });

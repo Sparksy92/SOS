@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   sos-server:
     build:
@@ -11,8 +9,8 @@ services:
     volumes:
       - ./sos-server/sos_database.db:/app/sos_database.db
       - ./sos-server/metadata.json:/app/metadata.json
-      # Mount your local library folder. Customize the host path to point to your library path.
-      - /media/bs/JARVIS/SurvivalOS_Library:/materials:ro
+      # Mount your local library folder. Customize the host path via SOS_MATERIALS_DIR env var.
+      - ${SOS_MATERIALS_DIR:-./materials}:/materials:ro
     environment:
       - NODE_ENV=production
       - PORT=3001

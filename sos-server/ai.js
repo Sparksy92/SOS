@@ -230,7 +230,7 @@ function searchManifestMetadata(query) {
     return [];
   }
 }
-const checkPolicyRejection = async (responseText, sources, isLiveGuide, useGeneralKnowledge, streamCallback) => {
+const checkPolicyRejection = async (responseText, sources, isLiveGuide, useGeneralKnowledge, streamCallback, options = {}) => {
   const actionMatched = responseText.match(/\[PROPOSE_DECISION:\s*([^\]\*\r\n]+)/i);
   if (actionMatched) {
     const proposedAction = actionMatched[1].trim();
@@ -245,7 +245,7 @@ Please propose an alternative action or explain the constraint.`;
         streamCallback(`\n\n⚠️ **CDL POLICY GATE: REJECTED**\nProposed action "${proposedAction}" violates constitutional safety guardrails.\nRe-evaluating alternative courses of action...\n\n`, { answerStatus: useGeneralKnowledge ? "uncited_model" : "verified_local", sources });
       }
       
-      return await askQuestion(correctionPrompt, isLiveGuide, useGeneralKnowledge, streamCallback);
+      return await askQuestion(correctionPrompt, isLiveGuide, useGeneralKnowledge, streamCallback, options);
     } else {
       console.log(`[POLICY GATE] Proposed action "${proposedAction}" APPROVED by EBG.`);
       let approvedText = `\n\n🟢 **CDL POLICY GATE: APPROVED**\nDecision "${proposedAction}" passed constitutional guardrails.`;
@@ -261,7 +261,7 @@ Please propose an alternative action or explain the constraint.`;
 /**
  * Query the AI using RAG (SQLite Retrieval)
  */
-const askQuestion = async (query, isLiveGuide = false, useGeneralKnowledge = false, streamCallback = null) => {
+const askQuestion = async (query, isLiveGuide = false, useGeneralKnowledge = false, streamCallback = null, options = {}) => {
   // Check if database is empty
   if (!useGeneralKnowledge) {
     try {
@@ -317,13 +317,17 @@ ANSWER:`;
 
     let responseText = "";
     if (streamCallback) {
-      const responseStream = await chain.stream({ question: query });
+      const responseStream = await chain.stream({ question: query }, { signal: options.signal });
       for await (const chunk of responseStream) {
+        if (options.signal && options.signal.aborted) {
+          console.log("[AI Stream] General Knowledge chain aborted.");
+          break;
+        }
         responseText += chunk;
         streamCallback(chunk, { answerStatus: "uncited_model", sources: [] });
       }
     } else {
-      responseText = await chain.invoke({ question: query });
+      responseText = await chain.invoke({ question: query }, { signal: options.signal });
     }
 
     return {
@@ -394,8 +398,12 @@ ANSWER:`;
       const responseStream = await chain.stream({
         question: query,
         cdl_state: ebgContext,
-      });
+      }, { signal: options.signal });
       for await (const chunk of responseStream) {
+        if (options.signal && options.signal.aborted) {
+          console.log("[AI Stream] Secondary chain aborted.");
+          break;
+        }
         responseText += chunk;
         streamCallback(chunk, { answerStatus: "uncited_model", sources: [] });
       }
@@ -408,7 +416,7 @@ ANSWER:`;
       const response = await chain.invoke({
         question: query,
         cdl_state: ebgContext,
-      });
+      }, { signal: options.signal });
       responseText = response;
       if (zimRecommendation) {
         responseText = `${responseText}\n\n* * *\n\n💡 **ZIM ARCHIVE RECOMMENDATION**\n${zimRecommendation}`;
@@ -434,7 +442,7 @@ ANSWER:`;
   if (hasFts5) {
     try {
       const searchStmt = db.prepare(`
-        SELECT document_path, chunk_index, content 
+        SELECT document_path, chunk_index, content, is_ocr 
         FROM document_chunks 
         WHERE content MATCH ? 
         ORDER BY rank 
@@ -450,7 +458,7 @@ ANSWER:`;
   if (matches.length === 0) {
     try {
       const fallbackStmt = db.prepare(`
-        SELECT document_path, chunk_index, content 
+        SELECT document_path, chunk_index, content, is_ocr 
         FROM document_chunks 
         WHERE content LIKE ? 
         LIMIT 5
@@ -482,7 +490,8 @@ ANSWER:`;
         matchLabel: 'Inventory Match',
         riskCategory: file.riskCategory,
         page: null,
-        section: null
+        section: null,
+        isOcr: false
       };
     });
 
@@ -553,7 +562,8 @@ ANSWER:`;
       matchLabel,
       riskCategory: getRiskCategory(`${documentPath} ${m.content}`),
       page,
-      section
+      section,
+      isOcr: m.is_ocr === 1 || isOcrMarkdown
     };
   });
 
@@ -586,6 +596,12 @@ SYSTEM INSTRUCTIONS:
 1. Ground your answers strictly in confirmed beliefs.
 2. If the user asks about a provisional belief, address it as a hypothesis and seek user confirmation.
 3. If you propose actions or decisions, you must state them in this format: [PROPOSE_DECISION: <action>].
+4. TOOL MANIPULATION ACTION TAGS:
+If the user requests you to track, log, or record an item (e.g., logging water volumes, saving field notes, or updating pantry stock), you MUST append the exact action tag at the end of your response in one of these formats:
+- To log a water container: [ACTION: log_water volume=X type=Y location=Z] (where X is a number, e.g., volume=20, type is one of: mineral, drinking, rainwater, greywater, and location is a brief string without quotes, e.g., location=kitchen)
+- To record a field note: [ACTION: save_note content="text details" category=general|water|food|medical|comms]
+- To update pantry stock: [ACTION: update_pantry item="item name" quantity=X] (where X is a number)
+Generating these tags will trigger confirmation panels for the operator. Always explain in text what action you are proposing.
 
 {cdl_state}`;
 
@@ -621,8 +637,12 @@ ANSWER:`;
       context: contextText,
       cdl_state: ebgContext,
       question: query,
-    });
+    }, { signal: options.signal });
     for await (const chunk of responseStream) {
+      if (options.signal && options.signal.aborted) {
+        console.log("[AI Stream] Main RAG generation chain aborted.");
+        break;
+      }
       responseText += chunk;
       streamCallback(chunk, { answerStatus: "verified_local", sources });
     }
@@ -636,7 +656,7 @@ ANSWER:`;
       context: contextText,
       cdl_state: ebgContext,
       question: query,
-    });
+    }, { signal: options.signal });
     responseText = response;
     if (zimRecommendation) {
       responseText = `${responseText}\n\n* * *\n\n💡 **ZIM ARCHIVE RECOMMENDATION**\n${zimRecommendation}`;

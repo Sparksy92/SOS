@@ -159,6 +159,9 @@ const indexRoutes = require('./routes/index.routes');
 const toolkitRoutes = require('./routes/toolkit.routes');
 const launcherRoutes = require('./routes/launcher.routes');
 const ebgRoutes = require('./routes/ebg.routes');
+const settingsRoutes = require('./routes/settings.routes');
+const meshtasticRoutes = require('./routes/meshtastic.routes');
+const networkRoutes = require('./routes/network.routes');
 
 app.use('/api/crawler', crawlerRoutes);
 app.use('/api/video', mediaRoutes);
@@ -168,6 +171,9 @@ app.use('/api/index', indexRoutes);
 app.use('/api/toolkit', toolkitRoutes);
 app.use('/api/launcher', launcherRoutes);
 app.use('/api/ebg', ebgRoutes);
+app.use('/api/settings', settingsRoutes);
+app.use('/api/mesh', meshtasticRoutes);
+app.use('/api/network', networkRoutes);
 
 // Launcher UI HTML route
 app.get('/launcher', (req, res) => {
@@ -177,6 +183,15 @@ app.get('/launcher', (req, res) => {
 // AI Chat Endpoint
 
 app.post('/api/chat', async (req, res) => {
+  const abortController = new AbortController();
+  
+  req.on('close', () => {
+    if (!res.writableEnded) {
+      console.log("[API CHAT] Client connection closed early. Aborting Ollama inference stream.");
+      abortController.abort();
+    }
+  });
+
   try {
     const { message, isLiveGuide, useGeneralKnowledge } = req.body;
     if (!message) return res.status(400).json({ error: "Message is required" });
@@ -191,12 +206,17 @@ app.post('/api/chat', async (req, res) => {
     let sentMetadata = false;
 
     const finalResponse = await ai.askQuestion(message, isLiveGuide, useGeneralKnowledge, (token, meta) => {
+      if (req.destroyed || abortController.signal.aborted) return;
       if (!sentMetadata && meta) {
         res.write(`data: ${JSON.stringify({ type: 'metadata', sources: meta.sources, answerStatus: meta.answerStatus })}\n\n`);
         sentMetadata = true;
       }
       res.write(`data: ${JSON.stringify({ type: 'token', text: token })}\n\n`);
-    });
+    }, { signal: abortController.signal });
+
+    if (req.destroyed || abortController.signal.aborted) {
+      return;
+    }
 
     if (!sentMetadata) {
       res.write(`data: ${JSON.stringify({ 
@@ -210,9 +230,15 @@ app.post('/api/chat', async (req, res) => {
     res.write('data: [DONE]\n\n');
     res.end();
   } catch (err) {
-    console.error("AI Error:", err);
-    res.write(`data: ${JSON.stringify({ error: err.message })}\n\n`);
-    res.end();
+    if (err.name === 'AbortError') {
+      console.log("[API CHAT] LLM inference cleanly aborted.");
+    } else {
+      console.error("AI Error:", err);
+      if (!req.destroyed) {
+        res.write(`data: ${JSON.stringify({ error: err.message })}\n\n`);
+        res.end();
+      }
+    }
   }
 });
 

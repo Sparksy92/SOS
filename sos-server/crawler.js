@@ -9,6 +9,11 @@ const manifestService = require('./services/manifestService');
 
 const METADATA_FILE = path.join(__dirname, 'metadata.json');
 
+// Global crash protection for third-party PDF parser unhandled rejections
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('[CRAWLER WARNING] Unhandled Promise Rejection (corrupted file or parser error):', reason);
+});
+
 let status = {
   isCrawling: false,
   totalZips: 0,

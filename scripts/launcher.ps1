@@ -221,9 +221,9 @@ function Install-Dependencies {
     
     # 1. Check & Install Node.js if missing
     if (!(Get-Command node -ErrorAction SilentlyContinue)) {
-        Write-Host "Node.js not found. Downloading Node.js installer..." -ForegroundColor Yellow
+        Write-Host "Node.js not found. Downloading Node.js v22.11.0 installer..." -ForegroundColor Yellow
         $tempMsi = Join-Path $env:TEMP "node.msi"
-        Invoke-WebRequest -Uri "https://nodejs.org/dist/v20.11.1/node-v20.11.1-x64.msi" -OutFile $tempMsi
+        Invoke-WebRequest -Uri "https://nodejs.org/dist/v22.11.0/node-v22.11.0-x64.msi" -OutFile $tempMsi
         Write-Host "Running Node.js installer... Please follow the prompts." -ForegroundColor White
         Start-Process msiexec.exe -ArgumentList "/i `"$tempMsi`"" -Wait
         Write-Host "✔ Node.js installation completed." -ForegroundColor Green

@@ -61,6 +61,7 @@ const ReportBuilder = ({
   // Debounced Autosave Effect
   useEffect(() => {
     setAutosaveStatus('saving');
+    let fadeTimer = null;
     const timer = setTimeout(() => {
       const reportObj = buildReportObject();
       if (onSaveDraft) {
@@ -68,14 +69,17 @@ const ReportBuilder = ({
       }
       setAutosaveStatus('saved');
       
-      const fadeTimer = setTimeout(() => {
+      fadeTimer = setTimeout(() => {
         setAutosaveStatus('idle');
       }, 2000);
-      
-      return () => clearTimeout(fadeTimer);
     }, 1500);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      if (fadeTimer) {
+        clearTimeout(fadeTimer);
+      }
+    };
   }, [title, reportType, author, summary, manualNotes, nextActions, selectedAnswers, selectedNotes, selectedSources]);
 
   // Compile full report object

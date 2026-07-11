@@ -28,6 +28,7 @@ import {
   LayoutDashboard,
   Droplet,
   Wheat,
+  Gamepad2,
   ClipboardList,
   Trash2,
   Plus,
@@ -118,6 +119,13 @@ import SourceAllowlistPanel from './components/toolkit/SourceAllowlistPanel.jsx'
 import LibraryLifecyclePanel from './components/toolkit/LibraryLifecyclePanel.jsx';
 import OfflineToolkitBackupPanel from './components/toolkit/OfflineToolkitBackupPanel.jsx';
 import TacticalMapPanel from './components/map/TacticalMapPanel.jsx';
+import OfflineAppsPanel from './components/toolkit/OfflineAppsPanel.jsx';
+import SolarCalculatorPanel from './components/toolkit/SolarCalculatorPanel.jsx';
+import RadioCommsPanel from './components/toolkit/RadioCommsPanel.jsx';
+import WeatherLoggerPanel from './components/toolkit/WeatherLoggerPanel.jsx';
+import FirstAidPanel from './components/toolkit/FirstAidPanel.jsx';
+import RecipePlannerPanel from './components/toolkit/RecipePlannerPanel.jsx';
+import NetworkBuilderPanel from './components/toolkit/NetworkBuilderPanel.jsx';
 import LocalReleaseCandidatePanel from './components/release/LocalReleaseCandidatePanel.jsx';
 import { loadSetupProgress, DEFAULT_STEPS } from './modules/toolkit/setupProgressStore.js';
 import { loadLedger } from './modules/toolkit/importApprovalLedgerStore.js';
@@ -136,6 +144,39 @@ const encodePath = (pathString) => {
 function App() {
   const currentAudioRef = useRef(null);
   const nextAudioRef = useRef(null);
+
+  const tourSteps = [
+    {
+      title: "Welcome to SurvivalOS 🚀",
+      text: "This off-grid tactical dashboard is designed to manage your homestead inventory and navigate your local manual library entirely offline. Let's do a 60-second walkthrough.",
+      action: () => {},
+      btnText: "Start Walkthrough"
+    },
+    {
+      title: "1. The Tactical Dashboard 📊",
+      text: "Here is your central command deck. You can track food/water status, view your mission checklists, and check your System Readiness Score.",
+      action: () => setViewMode('dashboard'),
+      btnText: "Next Tab"
+    },
+    {
+      title: "2. The Library Browser 📚",
+      text: "Browse your directories and read books directly inside the browser. It parses PDFs, TXT, HTML, and guides your offline knowledge retrieval.",
+      action: () => setViewMode('files'),
+      btnText: "Next Tab"
+    },
+    {
+      title: "3. J.A.R.V.I.S. Local AI 🤖",
+      text: "Type any question in natural language. J.A.R.V.I.S. retrieves exact passages from your indexed manuals to give safe, verified offline answers with page citations.",
+      action: () => setViewMode('chat'),
+      btnText: "Next Tab"
+    },
+    {
+      title: "4. System Settings & Folder Browser ⚙️",
+      text: "Customize your profile and link your library folder. You can use the 'BROWSE' button to select folders directly from Windows Explorer, no coding or terminal required!",
+      action: () => setViewMode('settings'),
+      btnText: "Finish Tour"
+    }
+  ];
   const [categories, setCategories] = useState({});
   const [metadata, setMetadata] = useState({});
   
@@ -269,6 +310,23 @@ function App() {
   const [docStatus, setDocStatus] = useState(null);
   const [ocrRunning, setOcrRunning] = useState(false);
   const [readingProgress, setReadingProgress] = useState({ currentPage: 0, totalPages: 0 });
+  const [simpleMode, setSimpleMode] = useState(() => {
+    const val = localStorage.getItem('sos_simple_mode');
+    return val === null ? true : val === 'true';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('sos_simple_mode', simpleMode);
+  }, [simpleMode]);
+
+  const [tourStep, setTourStep] = useState(null);
+
+  useEffect(() => {
+    const tourCompleted = localStorage.getItem('sos_tour_completed');
+    if (!tourCompleted) {
+      setTourStep(0);
+    }
+  }, []);
 
   useEffect(() => {
     localStorage.setItem('sos_quick_notes', notepadText);
@@ -1406,6 +1464,95 @@ function App() {
     return null;
   };
 
+  const parseActionTag = (text) => {
+    if (!text) return null;
+    const match = text.match(/\[ACTION:\s+(\w+)\s+([^\]]+)\]/);
+    if (!match) return null;
+    
+    const actionName = match[1];
+    const paramsStr = match[2];
+    const params = {};
+    
+    const regex = /(\w+)=(?:(?:\"([^\"]*)\")|([^\s]+))/g;
+    let paramMatch;
+    while ((paramMatch = regex.exec(paramsStr)) !== null) {
+      const key = paramMatch[1];
+      const val = paramMatch[2] !== undefined ? paramMatch[2] : paramMatch[3];
+      params[key] = val;
+    }
+    
+    return {
+      raw: match[0],
+      action: actionName,
+      params
+    };
+  };
+
+  const handleExecuteAiAction = (actionData, messageIndex) => {
+    try {
+      const { action, params } = actionData;
+      
+      if (action === 'log_water') {
+        const newContainer = {
+          id: Date.now(),
+          name: `${params.type.toUpperCase()} - ${params.location.toUpperCase()}`,
+          capacity: parseFloat(params.volume) || 0,
+          currentLevel: parseFloat(params.volume) || 0,
+          unit: 'Liters',
+          filterType: 'None',
+          filterChangeDate: '',
+          lastTestDate: '',
+          lastTestResult: 'Safe',
+          notes: 'Automatically logged via J.A.R.V.I.S. action request.'
+        };
+        setWaterContainers(prev => [...prev, newContainer]);
+      } 
+      else if (action === 'save_note') {
+        const noteData = {
+          title: `J.A.R.V.I.S. Note (${params.category ? params.category.toUpperCase() : 'GENERAL'})`,
+          content: params.content,
+          category: params.category || 'general',
+          timestamp: new Date().toISOString()
+        };
+        addFieldNote(noteData);
+      } 
+      else if (action === 'update_pantry') {
+        const category = params.item;
+        setProfile(prev => ({
+          ...prev,
+          pantry: {
+            ...prev.pantry,
+            [category]: parseFloat(params.quantity) || 0
+          }
+        }));
+      }
+      
+      // Mark action as executed in the message history
+      setMessages(prev => {
+        const copy = [...prev];
+        if (copy[messageIndex]) {
+          copy[messageIndex].actionExecuted = true;
+        }
+        return copy;
+      });
+      
+      alert(`Action executed successfully: ${action.replace('_', ' ').toUpperCase()}`);
+    } catch (e) {
+      console.error("Failed to execute AI tool action:", e);
+      alert(`Action failed: ${e.message}`);
+    }
+  };
+
+  const handleRejectAiAction = (messageIndex) => {
+    setMessages(prev => {
+      const copy = [...prev];
+      if (copy[messageIndex]) {
+        copy[messageIndex].actionRejected = true;
+      }
+      return copy;
+    });
+  };
+
   const handleSendMessage = async (overrideText = null, useGeneralKnowledge = false) => {
     const textToSend = overrideText || chatInput;
     if (!textToSend.trim() || chatLoading) return;
@@ -2437,20 +2584,32 @@ function App() {
             </div>
 
             <div 
-              className={`nav-item ${viewMode === 'index-integrity' ? 'active' : ''}`}
-              onClick={() => { setViewMode('index-integrity'); setSidebarOpen(false); }}
+              className={`nav-item ${viewMode === 'arcade' ? 'active' : ''}`}
+              onClick={() => { setViewMode('arcade'); setSidebarOpen(false); }}
             >
-              <Database size={18} className={viewMode === 'index-integrity' ? 'text-glow' : ''}/>
-              <span style={{color: viewMode === 'index-integrity' ? 'var(--brand-primary)' : ''}}>INDEX INTEGRITY</span>
+              <Gamepad2 size={18} className={viewMode === 'arcade' ? 'text-glow' : ''}/>
+              <span style={{color: viewMode === 'arcade' ? 'var(--brand-primary)' : ''}}>TACTICAL ARCADE</span>
             </div>
 
-            <div 
-              className={`nav-item ${viewMode === 'ebg' ? 'active' : ''}`}
-              onClick={() => { setViewMode('ebg'); setSidebarOpen(false); }}
-            >
-              <Network size={18} className={viewMode === 'ebg' ? 'text-glow' : ''}/>
-              <span style={{color: viewMode === 'ebg' ? 'var(--brand-primary)' : ''}}>COGNITIVE BELIEF GRAPH</span>
-            </div>
+            {!simpleMode && (
+              <>
+                <div 
+                  className={`nav-item ${viewMode === 'index-integrity' ? 'active' : ''}`}
+                  onClick={() => { setViewMode('index-integrity'); setSidebarOpen(false); }}
+                >
+                  <Database size={18} className={viewMode === 'index-integrity' ? 'text-glow' : ''}/>
+                  <span style={{color: viewMode === 'index-integrity' ? 'var(--brand-primary)' : ''}}>INDEX INTEGRITY</span>
+                </div>
+
+                <div 
+                  className={`nav-item ${viewMode === 'ebg' ? 'active' : ''}`}
+                  onClick={() => { setViewMode('ebg'); setSidebarOpen(false); }}
+                >
+                  <Network size={18} className={viewMode === 'ebg' ? 'text-glow' : ''}/>
+                  <span style={{color: viewMode === 'ebg' ? 'var(--brand-primary)' : ''}}>COGNITIVE BELIEF GRAPH</span>
+                </div>
+              </>
+            )}
 
             <div style={{ margin: '16px 0 8px 16px', fontSize: '0.75rem', color: 'var(--brand-primary)', letterSpacing: '1px', textTransform: 'uppercase' }}>
               Library Browser
@@ -2999,7 +3158,83 @@ function App() {
                           </div>
                         ) : (
                           /* Standard Text Render */
-                          <div style={{ whiteSpace: 'pre-wrap', lineHeight: '1.5' }}>{msg.text}</div>
+                          <div>
+                            {(() => {
+                              const actionData = parseActionTag(msg.text);
+                              const cleanText = actionData ? msg.text.replace(actionData.raw, '').trim() : msg.text;
+                              return (
+                                <>
+                                  <div style={{ whiteSpace: 'pre-wrap', lineHeight: '1.5' }}>{cleanText}</div>
+                                  
+                                  {actionData && (
+                                    <div style={{
+                                      marginTop: '14px',
+                                      padding: '14px',
+                                      backgroundColor: 'rgba(0, 242, 254, 0.05)',
+                                      border: '1px dashed var(--brand-primary)',
+                                      borderRadius: '6px',
+                                      display: 'flex',
+                                      flexDirection: 'column',
+                                      gap: '10px'
+                                    }}>
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--brand-primary)', fontSize: '0.85rem', fontWeight: 'bold' }}>
+                                        <CheckSquare size={14} /> J.A.R.V.I.S. PROPOSED ACTION
+                                      </div>
+                                      
+                                      <div style={{ fontSize: '0.82rem', color: '#e0e0e0', lineHeight: '1.4' }}>
+                                        {actionData.action === 'log_water' && (
+                                          <>
+                                            Log **{actionData.params.volume} Liters** of **{actionData.params.type}** water in the **{actionData.params.location}**.
+                                          </>
+                                        )}
+                                        {actionData.action === 'save_note' && (
+                                          <>
+                                            Save a **{actionData.params.category}** field note:
+                                            <div style={{ marginTop: '6px', fontStyle: 'italic', color: '#b0b0b0', paddingLeft: '10px', borderLeft: '2px solid rgba(255,255,255,0.2)' }}>
+                                              "{actionData.params.content}"
+                                            </div>
+                                          </>
+                                        )}
+                                        {actionData.action === 'update_pantry' && (
+                                          <>
+                                            Update pantry stock item **"{actionData.params.item}"** to quantity **{actionData.params.quantity}**.
+                                          </>
+                                        )}
+                                      </div>
+
+                                      {/* Proposal State Buttons */}
+                                      {msg.actionExecuted ? (
+                                        <div style={{ color: '#00ff66', fontSize: '0.82rem', fontWeight: 'bold' }}>
+                                          ✓ Action Approved & Executed
+                                        </div>
+                                      ) : msg.actionRejected ? (
+                                        <div style={{ color: 'var(--brand-danger)', fontSize: '0.82rem', fontWeight: 'bold' }}>
+                                          ✗ Action Declined
+                                        </div>
+                                      ) : (
+                                        <div style={{ display: 'flex', gap: '10px', marginTop: '4px' }}>
+                                          <button 
+                                            className="btn-tactical"
+                                            style={{ padding: '6px 14px', fontSize: '0.75rem', backgroundColor: 'rgba(0, 255, 102, 0.15)', borderColor: '#00ff66', color: '#00ff66' }}
+                                            onClick={() => handleExecuteAiAction(actionData, i)}
+                                          >
+                                            APPROVE
+                                          </button>
+                                          <button 
+                                            className="btn-tactical-outline"
+                                            style={{ padding: '6px 14px', fontSize: '0.75rem', color: 'var(--brand-danger)', borderColor: 'var(--brand-danger)' }}
+                                            onClick={() => handleRejectAiAction(i)}
+                                          >
+                                            DECLINE
+                                          </button>
+                                        </div>
+                                      )}
+                                    </div>
+                                  )}
+                                </>
+                              );
+                            })()}
+                          </div>
                         )}
 
                         {msg.role === 'ai' && (
@@ -3164,6 +3399,20 @@ function App() {
                                         {isHighRisk && (
                                           <span style={{ fontSize: '0.65rem', backgroundColor: 'var(--brand-danger)', color: 'white', padding: '2px 6px', borderRadius: '3px', fontWeight: 'bold', fontFamily: 'var(--font-mono)' }}>
                                             RISK: {riskCategory.toUpperCase()}
+                                          </span>
+                                        )}
+                                        {s.isOcr && (
+                                          <span style={{ 
+                                            fontSize: '0.65rem', 
+                                            backgroundColor: 'rgba(255, 165, 0, 0.1)', 
+                                            border: '1px solid #ffa500', 
+                                            color: '#ffa500', 
+                                            padding: '2px 6px', 
+                                            borderRadius: '3px', 
+                                            fontWeight: 'bold', 
+                                            fontFamily: 'var(--font-mono)' 
+                                          }}>
+                                            ⚠️ OCR TRANSCRIPTION
                                           </span>
                                         )}
                                       </div>
@@ -3565,6 +3814,48 @@ function App() {
                   >
                     Backup
                   </button>
+                  <button 
+                    onClick={() => setToolkitSubTab('solar')}
+                    className={`btn-tactical${toolkitSubTab === 'solar' ? '' : '-outline'}`}
+                    style={{ padding: '8px 16px', borderRadius: '4px 4px 0 0', borderBottom: 'none', marginBottom: '4px' }}
+                  >
+                    Solar Diagnostics
+                  </button>
+                  <button 
+                    onClick={() => setToolkitSubTab('radio')}
+                    className={`btn-tactical${toolkitSubTab === 'radio' ? '' : '-outline'}`}
+                    style={{ padding: '8px 16px', borderRadius: '4px 4px 0 0', borderBottom: 'none', marginBottom: '4px' }}
+                  >
+                    Comms Directory
+                  </button>
+                  <button 
+                    onClick={() => setToolkitSubTab('weather')}
+                    className={`btn-tactical${toolkitSubTab === 'weather' ? '' : '-outline'}`}
+                    style={{ padding: '8px 16px', borderRadius: '4px 4px 0 0', borderBottom: 'none', marginBottom: '4px' }}
+                  >
+                    Weather Logger
+                  </button>
+                  <button 
+                    onClick={() => setToolkitSubTab('firstaid')}
+                    className={`btn-tactical${toolkitSubTab === 'firstaid' ? '' : '-outline'}`}
+                    style={{ padding: '8px 16px', borderRadius: '4px 4px 0 0', borderBottom: 'none', marginBottom: '4px' }}
+                  >
+                    First Aid
+                  </button>
+                  <button 
+                    onClick={() => setToolkitSubTab('recipes')}
+                    className={`btn-tactical${toolkitSubTab === 'recipes' ? '' : '-outline'}`}
+                    style={{ padding: '8px 16px', borderRadius: '4px 4px 0 0', borderBottom: 'none', marginBottom: '4px' }}
+                  >
+                    Recipe Planner
+                  </button>
+                  <button 
+                    onClick={() => setToolkitSubTab('network')}
+                    className={`btn-tactical${toolkitSubTab === 'network' ? '' : '-outline'}`}
+                    style={{ padding: '8px 16px', borderRadius: '4px 4px 0 0', borderBottom: 'none', marginBottom: '4px' }}
+                  >
+                    Network Builder
+                  </button>
                 </div>
                 {toolkitSubTab === 'wizard' && (
                   <PanelErrorBoundary name="Setup Wizard">
@@ -3614,6 +3905,42 @@ function App() {
                     <OfflineToolkitBackupPanel setToolkitSubTab={setToolkitSubTab} setViewMode={setViewMode} />
                   </PanelErrorBoundary>
                 )}
+                {toolkitSubTab === 'solar' && (
+                  <PanelErrorBoundary name="Solar & Battery Calculator">
+                    <SolarCalculatorPanel />
+                  </PanelErrorBoundary>
+                )}
+                {toolkitSubTab === 'radio' && (
+                  <PanelErrorBoundary name="Radio Comms Log">
+                    <RadioCommsPanel />
+                  </PanelErrorBoundary>
+                )}
+                {toolkitSubTab === 'weather' && (
+                  <PanelErrorBoundary name="Weather Logger">
+                    <WeatherLoggerPanel />
+                  </PanelErrorBoundary>
+                )}
+                {toolkitSubTab === 'firstaid' && (
+                  <PanelErrorBoundary name="First Aid protocols">
+                    <FirstAidPanel 
+                      onTriggerSearch={(query) => {
+                        setViewMode('chat');
+                        setChatInput(query);
+                        handleSendMessage(query);
+                      }}
+                    />
+                  </PanelErrorBoundary>
+                )}
+                {toolkitSubTab === 'recipes' && (
+                  <PanelErrorBoundary name="Recipe Planner">
+                    <RecipePlannerPanel profile={profile} />
+                  </PanelErrorBoundary>
+                )}
+                {toolkitSubTab === 'network' && (
+                  <PanelErrorBoundary name="Network Builder">
+                    <NetworkBuilderPanel />
+                  </PanelErrorBoundary>
+                )}
               </div>
             )}
 
@@ -3630,6 +3957,9 @@ function App() {
                     speakText={speakText}
                     currentTheme={currentTheme}
                     changeTheme={changeTheme}
+                    simpleMode={simpleMode}
+                    setSimpleMode={setSimpleMode}
+                    setTourStep={setTourStep}
                   />
                 </PanelErrorBoundary>
                 <PanelErrorBoundary name="Crawler Sync Controls">
@@ -3639,6 +3969,12 @@ function App() {
                   />
                 </PanelErrorBoundary>
               </div>
+            )}
+
+            {!error && !loading && viewMode === 'arcade' && (
+              <PanelErrorBoundary name="Tactical Arcade">
+                <OfflineAppsPanel />
+              </PanelErrorBoundary>
             )}
 
             {viewMode === 'release' && (
@@ -3787,6 +4123,25 @@ function App() {
               {/* The Document Previewer */}
               <div className="glass-panel" style={{ flex: showAudioHUD ? 0.6 : 1, overflow: 'hidden', position: 'relative', borderRadius: '8px', transition: 'all 0.3s ease', display: 'flex', flexDirection: 'column' }}>
                 
+                {/* Transcribed PDF success banner */}
+                {docStatus?.ocrCompleted && (
+                  <div style={{
+                    padding: '12px 20px',
+                    background: 'rgba(0, 255, 102, 0.05)',
+                    borderBottom: '1px solid rgba(0, 255, 102, 0.2)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '0.8rem',
+                    color: '#00ff66',
+                    gap: '8px',
+                    flexShrink: 0
+                  }}>
+                    <CheckCircle size={16} />
+                    <span><strong>High-Fidelity Text Transcribed:</strong> Search, text selection, and audio reader are fully enabled.</span>
+                  </div>
+                )}
+
                 {/* Scanned PDF warning banner */}
                 {docStatus?.isScanned && (
                   <div style={{
@@ -4195,6 +4550,77 @@ function App() {
             setViewMode('reports-panel');
           }}
         />
+      )}
+
+      {/* Interactive Guided Tour Overlay */}
+      {tourStep !== null && tourSteps[tourStep] && (
+        <div style={{
+          position: 'fixed',
+          top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.65)',
+          zIndex: 99999,
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: '20px',
+          backdropFilter: 'blur(4px)'
+        }}>
+          <div className="glass-panel" style={{
+            maxWidth: '520px',
+            width: '100%',
+            padding: '28px',
+            borderColor: 'var(--brand-primary)',
+            boxShadow: 'var(--glow-primary)',
+            backgroundColor: '#0c0f16',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '18px',
+            fontFamily: 'var(--font-mono)'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: '0.75rem', color: '#ffb300', fontWeight: 'bold', letterSpacing: '1px' }}>
+                SYSTEM TUTORIAL ({tourStep + 1} / {tourSteps.length})
+              </span>
+              <button 
+                onClick={() => {
+                  localStorage.setItem('sos_tour_completed', 'true');
+                  setTourStep(null);
+                }}
+                style={{ background: 'none', border: 'none', color: 'var(--brand-danger)', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 'bold' }}
+              >
+                SKIP TUTORIAL
+              </button>
+            </div>
+
+            <div>
+              <h3 style={{ margin: '0 0 8px 0', fontSize: '1.2rem', color: 'var(--brand-primary)', letterSpacing: '1px' }}>
+                {tourSteps[tourStep].title}
+              </h3>
+              <p style={{ margin: 0, fontSize: '0.88rem', color: '#d0d0d0', lineHeight: '1.5' }}>
+                {tourSteps[tourStep].text}
+              </p>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '8px' }}>
+              <button 
+                className="btn-tactical"
+                onClick={() => {
+                  const nextStep = tourStep + 1;
+                  if (nextStep < tourSteps.length) {
+                    tourSteps[nextStep].action();
+                    setTourStep(nextStep);
+                  } else {
+                    localStorage.setItem('sos_tour_completed', 'true');
+                    setTourStep(null);
+                  }
+                }}
+                style={{ padding: '8px 24px', fontSize: '0.85rem' }}
+              >
+                {tourSteps[tourStep].btnText.toUpperCase()}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </>
   );

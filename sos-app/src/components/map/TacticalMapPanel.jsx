@@ -23,6 +23,8 @@ L.Icon.Default.mergeOptions({
   shadowUrl: '/leaflet/marker-shadow.png',
 });
 
+import { API_BASE } from '../../config.js';
+
 // Area Shoelace Calculator (Lat/Lng to local meters projection)
 const calculateAreaAcres = (points) => {
   if (!points || points.length < 3) return 0;
@@ -75,6 +77,23 @@ export default function TacticalMapPanel() {
   const [useGridFallback, setUseGridFallback] = useState(false);
   const [currentPosition, setCurrentPosition] = useState(null);
   const [markerLabel, setMarkerLabel] = useState('');
+  const [meshNodes, setMeshNodes] = useState([]);
+
+  useEffect(() => {
+    const fetchMeshNodes = () => {
+      fetch(`${API_BASE}/api/mesh/nodes`)
+        .then(res => res.json())
+        .then(data => {
+          if (Array.isArray(data)) {
+            setMeshNodes(data);
+          }
+        })
+        .catch(err => console.error("Error polling mesh nodes:", err));
+    };
+    fetchMeshNodes();
+    const interval = setInterval(fetchMeshNodes, 10000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Layer groups for active updates on map
   const activePolygonsLayer = useRef(null);
@@ -193,6 +212,7 @@ export default function TacticalMapPanel() {
     if (useGridFallback || !activeMarkersLayer.current || !mapRef.current) return;
     activeMarkersLayer.current.clearLayers();
 
+    // 1. Render manual markers
     markers.forEach(m => {
       let color = 'var(--brand-primary)';
       if (m.type === 'water') color = '#00f2fe';
@@ -209,7 +229,21 @@ export default function TacticalMapPanel() {
       leafletMarker.bindPopup(`<strong>${m.label.toUpperCase()}</strong><br/>Category: ${m.type.toUpperCase()}`);
       activeMarkersLayer.current.addLayer(leafletMarker);
     });
-  }, [markers, useGridFallback]);
+
+    // 2. Render Meshtastic nodes (Neon pink style)
+    meshNodes.forEach(node => {
+      const color = '#ff007f';
+      const customIcon = L.divIcon({
+        className: 'custom-div-icon',
+        html: `<div style="background-color: ${color}; width: 14px; height: 14px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 12px ${color}; display: flex; align-items: center; justify-content: center;"><span style="color: white; font-size: 8px; font-weight: bold;">M</span></div>`,
+        iconSize: [14, 14]
+      });
+
+      const leafletMarker = L.marker([node.latitude, node.longitude], { icon: customIcon });
+      leafletMarker.bindPopup(`<strong>📡 MESH NODE: ${node.name}</strong><br/>Battery: ${node.battery}%<br/>ID: ${node.id}<br/>Seen: ${new Date(node.lastSeen).toLocaleTimeString()}`);
+      activeMarkersLayer.current.addLayer(leafletMarker);
+    });
+  }, [markers, meshNodes, useGridFallback]);
 
   // Render Drawing temp elements
   useEffect(() => {

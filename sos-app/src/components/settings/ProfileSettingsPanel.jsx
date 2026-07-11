@@ -5,9 +5,11 @@ import {
   Trash2, 
   Info,
   CheckSquare,
-  Volume2
+  Volume2,
+  FolderOpen
 } from 'lucide-react';
 import { localStore } from '../../services/localStore.js';
+import { API_BASE } from '../../config.js';
 
 export default function ProfileSettingsPanel({ 
   profile, 
@@ -18,10 +20,15 @@ export default function ProfileSettingsPanel({
   setVoiceSettings,
   speakText,
   currentTheme,
-  changeTheme
+  changeTheme,
+  simpleMode,
+  setSimpleMode
 }) {
 
   const [voices, setVoices] = React.useState([]);
+  const [libraryPath, setLibraryPath] = React.useState('');
+  const [isBrowsing, setIsBrowsing] = React.useState(false);
+  const [saveStatus, setSaveStatus] = React.useState('');
 
   React.useEffect(() => {
     const updateVoices = () => {
@@ -34,6 +41,52 @@ export default function ProfileSettingsPanel({
       window.speechSynthesis.onvoiceschanged = updateVoices;
     }
   }, []);
+
+  React.useEffect(() => {
+    fetch(`${API_BASE}/api/settings/library-path`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.path) {
+          setLibraryPath(data.path);
+        }
+      })
+      .catch(err => console.error("Failed to load settings path:", err));
+  }, []);
+
+  const handleBrowseFolder = () => {
+    setIsBrowsing(true);
+    fetch(`${API_BASE}/api/settings/browse-folder`, { method: 'POST' })
+      .then(res => res.json())
+      .then(data => {
+        if (data.path) {
+          setLibraryPath(data.path);
+        }
+      })
+      .catch(err => console.error("Browse failed:", err))
+      .finally(() => setIsBrowsing(false));
+  };
+
+  const handleSaveLibraryPath = () => {
+    setSaveStatus('Saving...');
+    fetch(`${API_BASE}/api/settings/library-path`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ path: libraryPath })
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setSaveStatus('Saved successfully!');
+          setTimeout(() => setSaveStatus(''), 3000);
+        } else {
+          setSaveStatus('Error saving settings');
+        }
+      })
+      .catch(err => {
+        console.error("Save failed:", err);
+        setSaveStatus('Save request failed');
+      });
+  };
 
   const handleUpdateVoiceField = (field, val) => {
     setVoiceSettings(prev => ({
@@ -83,6 +136,34 @@ export default function ProfileSettingsPanel({
         <h2 className="category-title" style={{ letterSpacing: '2px', margin: 0 }}>SETTINGS & PROFILE</h2>
         <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: '4px' }}>
           MANAGE Logistical parameters and local application configurations
+        </div>
+      </div>
+
+      {/* Simple Operator Mode Switch */}
+      <div className="glass-panel" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px', borderColor: simpleMode ? 'rgba(0, 255, 102, 0.25)' : 'rgba(255, 255, 255, 0.1)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+          <div style={{ flex: 1, minWidth: '240px' }}>
+            <h3 style={{ margin: 0, fontSize: '0.98rem', color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              SIMPLE OPERATOR MODE
+            </h3>
+            <p style={{ margin: '4px 0 0 0', fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: '1.4' }}>
+              Simplifies sidebar navigation by hiding advanced diagnostic and graph utilities to reduce system complexity.
+            </p>
+          </div>
+          
+          <button 
+            type="button" 
+            className={`btn-tactical${simpleMode ? '' : '-outline'}`} 
+            style={{ 
+              padding: '8px 20px', 
+              fontSize: '0.85rem', 
+              borderColor: simpleMode ? '#00ff66' : 'var(--border-subtle)', 
+              color: simpleMode ? '#00ff66' : 'var(--text-muted)' 
+            }}
+            onClick={() => setSimpleMode(!simpleMode)}
+          >
+            {simpleMode ? 'ENABLED (SIMPLE)' : 'DISABLED (ADVANCED)'}
+          </button>
         </div>
       </div>
 
@@ -157,6 +238,50 @@ export default function ProfileSettingsPanel({
             </div>
           </div>
 
+        </div>
+      </div>
+
+      {/* Survival Library Path Config */}
+      <div className="glass-panel" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <h3 style={{ margin: 0, fontSize: '0.95rem', color: 'var(--brand-primary)', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <FolderOpen size={16} /> SURVIVAL LIBRARY PATH
+        </h3>
+        <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: '1.4' }}>
+          Specify the directory containing your offline books, manuals, and PDF references.
+        </p>
+
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          <input 
+            type="text" 
+            placeholder="e.g. C:\SurvivalLibrary or /media/usb/library" 
+            className="search-input glass-panel" 
+            style={{ flex: 1, padding: '8px' }}
+            value={libraryPath}
+            onChange={e => setLibraryPath(e.target.value)}
+          />
+          <button 
+            type="button" 
+            className="btn-tactical-outline" 
+            onClick={handleBrowseFolder}
+            disabled={isBrowsing}
+            style={{ padding: '8px 16px', fontSize: '0.85rem' }}
+          >
+            {isBrowsing ? 'BROWSING...' : 'BROWSE'}
+          </button>
+        </div>
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' }}>
+          <span style={{ fontSize: '0.8rem', color: saveStatus.includes('Error') || saveStatus.includes('failed') ? 'var(--brand-danger)' : '#00ff66', fontFamily: 'var(--font-mono)' }}>
+            {saveStatus}
+          </span>
+          <button 
+            type="button" 
+            className="btn-tactical" 
+            onClick={handleSaveLibraryPath}
+            style={{ padding: '8px 20px', fontSize: '0.85rem' }}
+          >
+            SAVE LOCATION
+          </button>
         </div>
       </div>
 
@@ -358,6 +483,18 @@ export default function ProfileSettingsPanel({
             <div style={{ marginBottom: '2px' }}>EMBEDDING MODEL: <span style={{color: 'var(--brand-primary)', fontFamily: 'var(--font-mono)'}}>nomic-embed-text</span></div>
             <div>STATUS: <span style={{color: '#00ff66', fontWeight: 'bold'}}>ONLINE</span></div>
           </div>
+        </div>
+
+        <div style={{ marginTop: '16px', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '16px' }}>
+          <h4 style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '8px' }}>SYSTEM WALKTHROUGH</h4>
+          <button 
+            type="button" 
+            className="btn-tactical-outline"
+            onClick={() => setTourStep(0)}
+            style={{ padding: '8px 16px', fontSize: '0.85rem' }}
+          >
+            REPLAY GUIDED SYSTEM TOUR
+          </button>
         </div>
       </div>
 

@@ -6,6 +6,19 @@ const path = require('path');
 const os = require('os');
 const http = require('http');
 
+// Secure administrative endpoints to local access only
+router.use((req, res, next) => {
+  const ip = req.ip || req.connection.remoteAddress;
+  const isLocal = ip === '127.0.0.1' || 
+                  ip === '::1' || 
+                  ip === '::ffff:127.0.0.1' || 
+                  ip === 'localhost';
+  if (!isLocal) {
+    return res.status(403).json({ error: "Access denied: Administrative launcher actions are restricted to localhost." });
+  }
+  next();
+});
+
 // Global state for background operations
 let activeOperation = {
   running: false,

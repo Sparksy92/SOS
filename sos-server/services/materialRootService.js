@@ -14,6 +14,18 @@ function getMaterialRoot() {
   if (materialsDirOverride) {
     return materialsDirOverride;
   }
+  
+  // Try loading from SQLite database settings table
+  try {
+    const { db } = require('../db');
+    const row = db.prepare("SELECT value FROM settings WHERE key = ?").get('library_path');
+    if (row && row.value && row.value.trim() !== '') {
+      return path.resolve(row.value);
+    }
+  } catch (err) {
+    // Database table might not be initialized yet during early boot, ignore error
+  }
+  
   if (process.env.SOS_MATERIALS_DIR) {
     return path.resolve(process.env.SOS_MATERIALS_DIR);
   }

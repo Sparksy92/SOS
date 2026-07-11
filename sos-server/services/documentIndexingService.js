@@ -49,15 +49,22 @@ async function extractDocumentTextPages(absolutePath) {
   if (ext === '.pdf' && fs.existsSync(mdPath)) {
     console.log(`[SQLITE] Found high-fidelity olmOCR Markdown: ${mdPath}`);
     const text = fs.readFileSync(mdPath, 'utf8');
-    return [text];
+    const pages = [text];
+    pages.isOcr = true;
+    return pages;
   } else if (ext === '.pdf') {
     const loader = new PDFLoader(absolutePath);
     const docs = await loader.load();
-    return docs.map(d => d.pageContent);
+    const pages = docs.map(d => d.pageContent);
+    
+    // Auto-detect native text vs scanned: count non-whitespace characters
+    const totalText = pages.join(' ').trim();
+    const charCount = totalText.replace(/\s/g, '').length;
+    pages.isOcr = (charCount < 100); // Scanned if almost zero selectable text
+    return pages;
   } else if (ext === '.txt' || ext === '.md' || ext === '.html' || ext === '.htm') {
     let text = fs.readFileSync(absolutePath, 'utf8');
     if (ext === '.html' || ext === '.htm') {
-      // Remove script/style tags content, then strip HTML markup and entities
       text = text
         .replace(/<script[^>]*>([\s\S]*?)<\/script>/gi, '')
         .replace(/<style[^>]*>([\s\S]*?)<\/style>/gi, '')
@@ -70,7 +77,9 @@ async function extractDocumentTextPages(absolutePath) {
         .replace(/\s+/g, ' ')
         .trim();
     }
-    return [text];
+    const pages = [text];
+    pages.isOcr = false;
+    return pages;
   } else {
     throw new Error(`Unsupported file type: ${ext}`);
   }
@@ -91,10 +100,11 @@ function writeDocumentChunksToSqlite(webPath, pages) {
     const deleteChunks = db.prepare('DELETE FROM document_chunks WHERE document_path = ?');
     deleteChunks.run(webPath);
 
-    // Insert fresh chunks
-    const insertChunk = db.prepare("INSERT INTO document_chunks (document_path, chunk_index, content) VALUES (?, ?, ?)");
+    // Insert fresh chunks (including is_ocr flag)
+    const isOcrFlag = pages.isOcr ? 1 : 0;
+    const insertChunk = db.prepare("INSERT INTO document_chunks (document_path, chunk_index, content, is_ocr) VALUES (?, ?, ?, ?)");
     for (let i = 0; i < pages.length; i++) {
-      insertChunk.run(webPath, i, pages[i]);
+      insertChunk.run(webPath, i, pages[i], isOcrFlag);
     }
 
     // Upsert into indexed_docs

@@ -88,7 +88,7 @@ cp .env.example .env
 Key server configurations (`sos-server/.env`):
 ```env
 # Path to your local offline materials library (leave blank to use app root)
-SOS_MATERIALS_DIR=/media/bs/SurvivalOS_Library
+SOS_MATERIALS_DIR=/path/to/your/library
 
 # Disable automatic background crawling/indexing
 SOS_AUTO_CRAWL=false
