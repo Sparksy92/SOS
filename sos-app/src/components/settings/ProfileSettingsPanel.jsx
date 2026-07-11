@@ -16,7 +16,9 @@ export default function ProfileSettingsPanel({
   setDashboardWidgets,
   voiceSettings = { voiceURI: '', rate: 1.05, pitch: 0.95 },
   setVoiceSettings,
-  speakText
+  speakText,
+  currentTheme,
+  changeTheme
 }) {
 
   const [voices, setVoices] = React.useState([]);
@@ -191,57 +193,104 @@ export default function ProfileSettingsPanel({
         </p>
         
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {/* Engine Selector */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>SPEECH SYNTHESIS ENGINE MODE</label>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button 
+                type="button"
+                className={`btn-tactical${voiceSettings.engineMode === 'browser' || !voiceSettings.engineMode ? '' : '-outline'}`}
+                style={{ padding: '6px 12px', fontSize: '0.8rem', flex: 1, justifyContent: 'center' }}
+                onClick={() => handleUpdateVoiceField('engineMode', 'browser')}
+              >
+                BROWSER DEFAULT (ROBOT)
+              </button>
+              <button 
+                type="button"
+                className={`btn-tactical${voiceSettings.engineMode === 'neural' ? '' : '-outline'}`}
+                style={{ padding: '6px 12px', fontSize: '0.8rem', flex: 1, justifyContent: 'center' }}
+                onClick={() => handleUpdateVoiceField('engineMode', 'neural')}
+              >
+                NEURAL TTS (HUMAN-LIKE)
+              </button>
+            </div>
+          </div>
+
           {/* Voice Dropdown */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-            <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>SPEECH SYNTHESIS ENGINE VOICE</label>
-            <select
-              className="search-input glass-panel"
-              style={{ width: '100%', padding: '8px', background: 'var(--bg-main)', color: 'var(--text-main)', border: '1px solid var(--border-subtle)', borderRadius: '4px' }}
-              value={voiceSettings.voiceURI || ''}
-              onChange={e => handleUpdateVoiceField('voiceURI', e.target.value)}
-            >
-              <option value="" style={{ background: '#121212', color: '#ffffff' }}>Default (Auto-Selected British Accent)</option>
-              {voices.map((v, idx) => (
-                <option key={idx} value={v.voiceURI} style={{ background: '#121212', color: '#ffffff' }}>
-                  {v.name} ({v.lang}) {v.localService ? '[Local]' : ''}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Speed Rate Slider */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem' }}>
-              <span style={{ color: 'var(--text-muted)' }}>PLAYBACK SPEED (RATE)</span>
-              <span style={{ color: 'var(--brand-primary)', fontWeight: 'bold' }}>{voiceSettings.rate}x</span>
+          {voiceSettings.engineMode === 'neural' ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>PREMIUM OFFLINE NEURAL VOICE</label>
+              <select
+                className="search-input glass-panel"
+                style={{ width: '100%', padding: '8px', background: 'var(--bg-main)', color: 'var(--text-main)', border: '1px solid var(--border-subtle)', borderRadius: '4px' }}
+                value={voiceSettings.neuralVoice || 'af_sarah'}
+                onChange={e => handleUpdateVoiceField('neuralVoice', e.target.value)}
+              >
+                <option value="af_sarah" style={{ background: '#121212', color: '#ffffff' }}>af_sarah (Female US - Crisp & Professional)</option>
+                <option value="af_heart" style={{ background: '#121212', color: '#ffffff' }}>af_heart (Female US - Warm & Natural)</option>
+                <option value="af_nicole" style={{ background: '#121212', color: '#ffffff' }}>af_nicole (Female US - Clear & Focused)</option>
+                <option value="af_sky" style={{ background: '#121212', color: '#ffffff' }}>af_sky (Female US - Bright & Direct)</option>
+                <option value="bm_lewis" style={{ background: '#121212', color: '#ffffff' }}>bm_lewis (Male UK - Tactical / J.A.R.V.I.S. style)</option>
+                <option value="bm_george" style={{ background: '#121212', color: '#ffffff' }}>bm_george (Male UK - Deep & Steady)</option>
+                <option value="am_michael" style={{ background: '#121212', color: '#ffffff' }}>am_michael (Male US - Narrative / Audio-book)</option>
+                <option value="am_adam" style={{ background: '#121212', color: '#ffffff' }}>am_adam (Male US - Direct & Serious)</option>
+              </select>
             </div>
-            <input 
-              type="range"
-              min="0.5"
-              max="2.0"
-              step="0.05"
-              value={voiceSettings.rate}
-              onChange={e => handleUpdateVoiceField('rate', parseFloat(e.target.value))}
-              style={{ width: '100%', cursor: 'pointer', accentColor: 'var(--brand-primary)' }}
-            />
-          </div>
-
-          {/* Pitch Slider */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem' }}>
-              <span style={{ color: 'var(--text-muted)' }}>VOICE PITCH (TONALITY)</span>
-              <span style={{ color: 'var(--brand-primary)', fontWeight: 'bold' }}>{voiceSettings.pitch}</span>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>SPEECH SYNTHESIS ENGINE VOICE</label>
+              <select
+                className="search-input glass-panel"
+                style={{ width: '100%', padding: '8px', background: 'var(--bg-main)', color: 'var(--text-main)', border: '1px solid var(--border-subtle)', borderRadius: '4px' }}
+                value={voiceSettings.voiceURI || ''}
+                onChange={e => handleUpdateVoiceField('voiceURI', e.target.value)}
+              >
+                <option value="" style={{ background: '#121212', color: '#ffffff' }}>Default (Auto-Selected British Accent)</option>
+                {voices.map((v, idx) => (
+                  <option key={idx} value={v.voiceURI} style={{ background: '#121212', color: '#ffffff' }}>
+                    {v.name} ({v.lang}) {v.localService ? '[Local]' : ''}
+                  </option>
+                ))}
+              </select>
             </div>
-            <input 
-              type="range"
-              min="0.5"
-              max="1.5"
-              step="0.05"
-              value={voiceSettings.pitch}
-              onChange={e => handleUpdateVoiceField('pitch', parseFloat(e.target.value))}
-              style={{ width: '100%', cursor: 'pointer', accentColor: 'var(--brand-primary)' }}
-            />
-          </div>
+          )}
+
+          {/* Speed Rate Slider (only show if not neural) */}
+          {voiceSettings.engineMode !== 'neural' && (
+            <>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem' }}>
+                  <span style={{ color: 'var(--text-muted)' }}>PLAYBACK SPEED (RATE)</span>
+                  <span style={{ color: 'var(--brand-primary)', fontWeight: 'bold' }}>{voiceSettings.rate}x</span>
+                </div>
+                <input 
+                  type="range"
+                  min="0.5"
+                  max="2.0"
+                  step="0.05"
+                  value={voiceSettings.rate}
+                  onChange={e => handleUpdateVoiceField('rate', parseFloat(e.target.value))}
+                  style={{ width: '100%', cursor: 'pointer', accentColor: 'var(--brand-primary)' }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem' }}>
+                  <span style={{ color: 'var(--text-muted)' }}>VOICE PITCH (TONALITY)</span>
+                  <span style={{ color: 'var(--brand-primary)', fontWeight: 'bold' }}>{voiceSettings.pitch}</span>
+                </div>
+                <input 
+                  type="range"
+                  min="0.5"
+                  max="1.5"
+                  step="0.05"
+                  value={voiceSettings.pitch}
+                  onChange={e => handleUpdateVoiceField('pitch', parseFloat(e.target.value))}
+                  style={{ width: '100%', cursor: 'pointer', accentColor: 'var(--brand-primary)' }}
+                />
+              </div>
+            </>
+          )}
 
           {/* Test Audio Button */}
           <button 
@@ -259,6 +308,56 @@ export default function ProfileSettingsPanel({
           >
             <Volume2 size={16} /> TEST AUDIO SYNTHESIS
           </button>
+        </div>
+      </div>
+
+      {/* System Configuration */}
+      <div className="glass-panel" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <h3 style={{ margin: 0, fontSize: '0.95rem', color: 'var(--brand-primary)', letterSpacing: '1.5px' }}>
+          SYSTEM CONFIGURATION
+        </h3>
+        
+        <div style={{ marginBottom: '12px' }}>
+          <h4 style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '8px' }}>THEME ACCENT COLOR</h4>
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <button 
+              className={`btn-tactical${currentTheme === 'amber' ? '' : '-outline'}`} 
+              style={{ borderColor: '#FFB700', color: '#FFB700', padding: '6px 12px', fontSize: '0.9rem' }} 
+              onClick={() => changeTheme('amber')}
+            >
+              AMBER
+            </button>
+            <button 
+              className={`btn-tactical${currentTheme === 'cyan' ? '' : '-outline'}`} 
+              style={{ borderColor: '#00E5FF', color: '#00E5FF', padding: '6px 12px', fontSize: '0.9rem' }} 
+              onClick={() => changeTheme('cyan')}
+            >
+              CYAN
+            </button>
+            <button 
+              className={`btn-tactical${currentTheme === 'green' ? '' : '-outline'}`} 
+              style={{ borderColor: '#00ff66', color: '#00ff66', padding: '6px 12px', fontSize: '0.9rem' }} 
+              onClick={() => changeTheme('green')}
+            >
+              GREEN
+            </button>
+          </div>
+        </div>
+        
+        <div style={{ marginBottom: '12px' }}>
+          <h4 style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '4px' }}>CORE DATABASE PATH</h4>
+          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem', color: 'var(--text-main)', wordBreak: 'break-all' }}>
+            [Project Root]/sos-server/sos_database.db
+          </div>
+        </div>
+
+        <div>
+          <h4 style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '4px' }}>NEURAL MODULES (OLLAMA)</h4>
+          <div style={{ fontSize: '0.8rem', color: 'var(--text-main)', lineHeight: '1.6' }}>
+            <div style={{ marginBottom: '2px' }}>LLM MODEL: <span style={{color: 'var(--brand-primary)', fontFamily: 'var(--font-mono)'}}>llama3.1:8b</span></div>
+            <div style={{ marginBottom: '2px' }}>EMBEDDING MODEL: <span style={{color: 'var(--brand-primary)', fontFamily: 'var(--font-mono)'}}>nomic-embed-text</span></div>
+            <div>STATUS: <span style={{color: '#00ff66', fontWeight: 'bold'}}>ONLINE</span></div>
+          </div>
         </div>
       </div>
 

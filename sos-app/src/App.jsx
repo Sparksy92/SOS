@@ -41,7 +41,10 @@ import {
   FileSpreadsheet,
   Square,
   Compass,
-  ShieldCheck
+  ShieldCheck,
+  StickyNote,
+  Network,
+  CheckCircle
 } from 'lucide-react';
 import './App.css';
 import { getRiskLevel, requiresAcknowledgement, getSafetyWarning } from './modules/safety/riskRules.js';
@@ -77,6 +80,7 @@ import FieldNoteEditor from './components/notes/FieldNoteEditor.jsx';
 import MissionModePanel from './components/missions/MissionModePanel.jsx';
 import MissionJarvisContextPanel from './components/missions/MissionJarvisContextPanel.jsx';
 import IndexIntegrityPanel from './components/library/IndexIntegrityPanel.jsx';
+import EbgGraphPanel from './components/toolkit/EbgGraphPanel.jsx';
 import { 
   loadActiveMission, saveActiveMission, updateMission, addMissionTimelineEvent,
   attachSavedAnswerToMission, attachSavedSourceToMission, attachFieldNoteToMission
@@ -113,15 +117,16 @@ import AcquisitionQueuePanel from './components/toolkit/AcquisitionQueuePanel.js
 import SourceAllowlistPanel from './components/toolkit/SourceAllowlistPanel.jsx';
 import LibraryLifecyclePanel from './components/toolkit/LibraryLifecyclePanel.jsx';
 import OfflineToolkitBackupPanel from './components/toolkit/OfflineToolkitBackupPanel.jsx';
+import TacticalMapPanel from './components/map/TacticalMapPanel.jsx';
 import LocalReleaseCandidatePanel from './components/release/LocalReleaseCandidatePanel.jsx';
 import { loadSetupProgress, DEFAULT_STEPS } from './modules/toolkit/setupProgressStore.js';
 import { loadLedger } from './modules/toolkit/importApprovalLedgerStore.js';
-import { loadQueue } from './modules/toolkit/acquisitionQueueStore.js';
+import { loadQueue, saveQueueItem } from './modules/toolkit/acquisitionQueueStore.js';
+import { GAP_ANALYSIS_DATA } from './modules/toolkit/gapAnalysisData.js';
 import { loadAllowlist } from './modules/toolkit/sourceAllowlistStore.js';
 import { computeLifecycleRecords } from './modules/toolkit/libraryLifecycleAnalyzer.js';
 import { createOfflineToolkitBackup, runOfflineToolkitIntegrityAudit } from './modules/toolkit/offlineToolkitBackupStore.js';
-
-const API_BASE = window.location.port === '3001' ? '' : `http://${window.location.hostname}:3001`;
+import { API_BASE } from './config.js';
 
 const encodePath = (pathString) => {
   if (!pathString) return '';
@@ -129,8 +134,28 @@ const encodePath = (pathString) => {
 };
 
 function App() {
+  const currentAudioRef = useRef(null);
+  const nextAudioRef = useRef(null);
   const [categories, setCategories] = useState({});
   const [metadata, setMetadata] = useState({});
+  
+  const updateMaterialsAndCache = async (newCategories) => {
+    setCategories(newCategories);
+    if ('caches' in window) {
+      try {
+        const cache = await caches.open('sos-materials-cache');
+        const materialsUrl = `${API_BASE}/api/materials`;
+        const responseData = { categories: newCategories };
+        const response = new Response(JSON.stringify(responseData), {
+          headers: { 'Content-Type': 'application/json' }
+        });
+        await cache.put(materialsUrl, response);
+      } catch (e) {
+        console.error("Failed to update cache:", e);
+      }
+    }
+  };
+
   const [activeCategory, setActiveCategory] = useState(null);
   const [currentPath, setCurrentPath] = useState([]);
   
@@ -226,6 +251,8 @@ function App() {
 
   // In-App Viewer state
   const [selectedDocument, setSelectedDocument] = useState(null);
+  const [viewerText, setViewerText] = useState('');
+  const [viewerLoading, setViewerLoading] = useState(false);
 
   // Crawler status state
   const [crawlerStatus, setCrawlerStatus] = useState(null);
@@ -235,6 +262,130 @@ function App() {
 
   // Settings modal state
   const [settingsOpen, setSettingsOpen] = useState(false);
+
+  const [currentTheme, setCurrentTheme] = useState(() => localStorage.getItem('sos-theme') || 'amber');
+  const [showNotepad, setShowNotepad] = useState(false);
+  const [notepadText, setNotepadText] = useState(() => localStorage.getItem('sos_quick_notes') || '');
+  const [docStatus, setDocStatus] = useState(null);
+  const [ocrRunning, setOcrRunning] = useState(false);
+  const [readingProgress, setReadingProgress] = useState({ currentPage: 0, totalPages: 0 });
+
+  useEffect(() => {
+    localStorage.setItem('sos_quick_notes', notepadText);
+  }, [notepadText]);
+
+  useEffect(() => {
+    if (selectedDocument) {
+      try {
+        const queue = loadQueue();
+        const existing = queue.find(q => q.filePath === selectedDocument.path || q.title.toLowerCase() === selectedDocument.name.toLowerCase());
+        
+        if (!existing) {
+          saveQueueItem({
+            title: selectedDocument.name,
+            filenameHint: selectedDocument.name,
+            category: selectedDocument.category || 'general_survival',
+            filePath: selectedDocument.path,
+            acquisitionStatus: 'planned',
+            sourceType: 'local_library',
+            currentPage: 0,
+            totalPages: 0,
+            progressPercent: 0,
+            lastReadAt: new Date().toISOString()
+          });
+          setReadingProgress({ currentPage: 0, totalPages: 0 });
+        } else {
+          saveQueueItem({
+            ...existing,
+            filePath: selectedDocument.path,
+            lastReadAt: new Date().toISOString()
+          });
+          setReadingProgress({
+            currentPage: existing.currentPage || 0,
+            totalPages: existing.totalPages || 0
+          });
+        }
+      } catch (err) {
+        console.error("Failed to auto-add to reading list:", err);
+      }
+    }
+  }, [selectedDocument]);
+
+  useEffect(() => {
+    if (!selectedDocument) {
+      setViewerText('');
+      setDocStatus(null);
+      return;
+    }
+
+    // Fetch EBG / scanned status
+    fetch(`${API_BASE}/api/index/status?path=${encodeURIComponent(selectedDocument.path)}`)
+      .then(res => res.json())
+      .then(data => {
+        setDocStatus(data);
+      })
+      .catch(err => {
+        console.error("Failed to fetch document status:", err);
+      });
+  }, [selectedDocument]);
+
+  useEffect(() => {
+    if (!selectedDocument) {
+      setViewerText('');
+      return;
+    }
+    const ext = selectedDocument.extension?.toLowerCase();
+    if (['.txt', '.md'].includes(ext) || (ext === '.pdf' && docStatus?.ocrCompleted)) {
+      setViewerLoading(true);
+      fetch(`${API_BASE}/api/document/text?path=${encodeURIComponent(selectedDocument.path)}`)
+        .then(res => {
+          if (!res.ok) throw new Error("Failed to load document text.");
+          return res.json();
+        })
+        .then(data => {
+          setViewerText(data.text || '');
+          setViewerLoading(false);
+        })
+        .catch(err => {
+          setViewerText(`ERROR LOADING DOCUMENT: ${err.message}`);
+          setViewerLoading(false);
+        });
+    }
+  }, [selectedDocument, docStatus]);
+
+  const saveProgressToStore = (doc, current, total) => {
+    try {
+      const queue = loadQueue();
+      const existing = queue.find(q => q.filePath === doc.path || q.title.toLowerCase() === doc.name.toLowerCase());
+      const percent = total > 0 ? Math.round((current / total) * 100) : 0;
+      const status = (percent >= 100 || (total > 0 && current === total)) ? 'manually_acquired' : 'planned';
+      
+      const itemToSave = {
+        title: metadata[doc.path]?.title || doc.name,
+        filenameHint: doc.name,
+        category: doc.category || 'general_survival',
+        filePath: doc.path,
+        acquisitionStatus: status,
+        sourceType: 'local_library',
+        currentPage: current,
+        totalPages: total,
+        progressPercent: percent,
+        lastReadAt: new Date().toISOString()
+      };
+      
+      if (existing) {
+        saveQueueItem({
+          ...existing,
+          ...itemToSave,
+          id: existing.id
+        });
+      } else {
+        saveQueueItem(itemToSave);
+      }
+    } catch (err) {
+      console.error("Error saving progress to store:", err);
+    }
+  };
 
   // Phase 5 Notes & Reports States
   const [pendingSaveAction, setPendingSaveAction] = useState(null);
@@ -530,6 +681,7 @@ function App() {
       root.style.setProperty('--glow-primary-strong', '0 0 20px rgba(0, 255, 102, 0.4)');
     }
     localStorage.setItem('sos-theme', theme);
+    setCurrentTheme(theme);
   };
 
   useEffect(() => {
@@ -635,7 +787,6 @@ function App() {
       
       rec.onresult = (event) => {
         const transcript = event.results[0][0].transcript;
-        console.log("[SPEECH RECOGNITION] Capture:", transcript);
         handleSendMessage(transcript);
       };
       
@@ -664,7 +815,7 @@ function App() {
       clearInterval(interval);
       window.speechSynthesis.cancel();
     };
-  }, [isVoiceChatActive, isLiveGuide]); // Depend on voice chat state to keep fetch callbacks aligned
+  }, []);
 
   useEffect(() => {
     saveProfile(profile);
@@ -909,52 +1060,96 @@ function App() {
   };
 
   const speakText = (text, onEndCallback) => {
+    // 1. Cancel native browser speech synthesis
     window.speechSynthesis.cancel();
+    
+    // 2. Stop and clear any active neural audio playback
+    if (currentAudioRef.current) {
+      currentAudioRef.current.pause();
+      currentAudioRef.current.onended = null;
+      currentAudioRef.current.onerror = null;
+      currentAudioRef.current = null;
+    }
+
     if (!text) {
       if (onEndCallback) onEndCallback();
       return;
     }
-    const utterance = new SpeechSynthesisUtterance(text);
-    const voices = window.speechSynthesis.getVoices();
-    
-    let selectedVoice = null;
-    if (voiceSettings.voiceURI) {
-      selectedVoice = voices.find(v => v.voiceURI === voiceSettings.voiceURI);
+
+    if (voiceSettings.engineMode === 'neural') {
+      try {
+        const voice = voiceSettings.neuralVoice || 'af_sarah';
+        const url = `${API_BASE}/api/tts?text=${encodeURIComponent(text)}&voice=${encodeURIComponent(voice)}`;
+        const audio = new Audio(url);
+        currentAudioRef.current = audio;
+        
+        audio.onended = () => {
+          if (currentAudioRef.current === audio) {
+            currentAudioRef.current = null;
+          }
+          if (onEndCallback) onEndCallback();
+        };
+        
+        audio.onerror = (err) => {
+          console.warn("[NEURAL TTS] Playback error or connection issue:", err);
+          if (currentAudioRef.current === audio) {
+            currentAudioRef.current = null;
+          }
+          if (onEndCallback) onEndCallback();
+        };
+
+        audio.play().catch(err => {
+          console.warn("[NEURAL TTS] play() was interrupted or failed:", err);
+          if (onEndCallback) onEndCallback();
+        });
+      } catch (err) {
+        console.warn("[NEURAL TTS] Setup error:", err);
+        if (onEndCallback) onEndCallback();
+      }
+    } else {
+      // Browser Speech Synthesis (default)
+      const utterance = new SpeechSynthesisUtterance(text);
+      const voices = window.speechSynthesis.getVoices();
+      
+      let selectedVoice = null;
+      if (voiceSettings.voiceURI) {
+        selectedVoice = voices.find(v => v.voiceURI === voiceSettings.voiceURI);
+      }
+      
+      if (!selectedVoice) {
+        selectedVoice = voices.find(v => v.lang.replace('_', '-').startsWith('en-GB') && (
+                          v.name.toLowerCase().includes('male') || 
+                          v.name.toLowerCase().includes('george') || 
+                          v.name.toLowerCase().includes('oliver') ||
+                          v.name.toLowerCase().includes('harry')
+                        )) || 
+                        voices.find(v => v.lang.replace('_', '-').startsWith('en-GB') && 
+                          !v.name.toLowerCase().includes('female') && 
+                          !v.name.toLowerCase().includes('hazel') && 
+                          !v.name.toLowerCase().includes('susan')
+                        ) || 
+                        voices.find(v => v.lang.replace('_', '-').startsWith('en-GB')) || 
+                        voices.find(v => v.lang.startsWith('en'));
+      }
+      
+      if (selectedVoice) {
+        utterance.voice = selectedVoice;
+      }
+      
+      utterance.rate = voiceSettings.rate || 1.0;
+      utterance.pitch = voiceSettings.pitch || 1.0;
+      
+      if (onEndCallback) {
+        utterance.onend = onEndCallback;
+      }
+      
+      utterance.onerror = (e) => {
+        console.warn("Speech synthesis error:", e);
+        if (onEndCallback) onEndCallback();
+      };
+      
+      window.speechSynthesis.speak(utterance);
     }
-    
-    if (!selectedVoice) {
-      selectedVoice = voices.find(v => v.lang.replace('_', '-').startsWith('en-GB') && (
-                        v.name.toLowerCase().includes('male') || 
-                        v.name.toLowerCase().includes('george') || 
-                        v.name.toLowerCase().includes('oliver') ||
-                        v.name.toLowerCase().includes('harry')
-                      )) || 
-                      voices.find(v => v.lang.replace('_', '-').startsWith('en-GB') && 
-                        !v.name.toLowerCase().includes('female') && 
-                        !v.name.toLowerCase().includes('hazel') && 
-                        !v.name.toLowerCase().includes('susan')
-                      ) || 
-                      voices.find(v => v.lang.replace('_', '-').startsWith('en-GB')) || 
-                      voices.find(v => v.lang.startsWith('en'));
-    }
-    
-    if (selectedVoice) {
-      utterance.voice = selectedVoice;
-    }
-    
-    utterance.rate = voiceSettings.rate;
-    utterance.pitch = voiceSettings.pitch;
-    
-    if (onEndCallback) {
-      utterance.onend = onEndCallback;
-    }
-    
-    utterance.onerror = (e) => {
-      console.warn("Speech synthesis error:", e);
-      if (onEndCallback) onEndCallback();
-    };
-    
-    window.speechSynthesis.speak(utterance);
   };
 
   const activateAudioReader = async (doc) => {
@@ -1005,22 +1200,99 @@ function App() {
       setIsAudioPlaying(false);
       return;
     }
-    
-    const textToSpeak = chunksList[index];
-    speakText(textToSpeak, () => {
+
+    if (voiceSettings.engineMode === 'neural') {
+      // 1. Cancel browser speech synthesis
+      window.speechSynthesis.cancel();
+      
+      // 2. Cancel and clean up current audio element
+      if (currentAudioRef.current) {
+        currentAudioRef.current.pause();
+        currentAudioRef.current.onended = null;
+        currentAudioRef.current.onerror = null;
+        currentAudioRef.current = null;
+      }
+
+      // 3. Retrieve or create the audio element for the current chunk
+      let audio = null;
+      if (nextAudioRef.current && nextAudioRef.current.chunkIndex === index) {
+        audio = nextAudioRef.current;
+        nextAudioRef.current = null;
+      } else {
+        const voice = voiceSettings.neuralVoice || 'af_sarah';
+        const url = `${API_BASE}/api/tts?text=${encodeURIComponent(chunksList[index])}&voice=${encodeURIComponent(voice)}`;
+        audio = new Audio(url);
+      }
+
+      currentAudioRef.current = audio;
+
+      // 4. Set listeners to continue to the next chunk
+      audio.onended = () => {
+        if (currentAudioRef.current === audio) {
+          currentAudioRef.current = null;
+        }
+        const nextIndex = index + 1;
+        if (nextIndex < chunksList.length) {
+          setCurrentChunkIndex(nextIndex);
+          speakCurrentChunk(chunksList, nextIndex);
+        } else {
+          setIsAudioPlaying(false);
+        }
+      };
+
+      audio.onerror = (err) => {
+        console.warn("[NEURAL TTS] Playback error on chunk index", index, err);
+        if (currentAudioRef.current === audio) {
+          currentAudioRef.current = null;
+        }
+        const nextIndex = index + 1;
+        if (nextIndex < chunksList.length) {
+          setCurrentChunkIndex(nextIndex);
+          speakCurrentChunk(chunksList, nextIndex);
+        } else {
+          setIsAudioPlaying(false);
+        }
+      };
+
+      // 5. Preload next chunk immediately
       const nextIndex = index + 1;
       if (nextIndex < chunksList.length) {
-        setCurrentChunkIndex(nextIndex);
-        speakCurrentChunk(chunksList, nextIndex);
-      } else {
-        setIsAudioPlaying(false);
+        const nextVoice = voiceSettings.neuralVoice || 'af_sarah';
+        const nextUrl = `${API_BASE}/api/tts?text=${encodeURIComponent(chunksList[nextIndex])}&voice=${encodeURIComponent(nextVoice)}`;
+        const nextAudio = new Audio(nextUrl);
+        nextAudio.chunkIndex = nextIndex;
+        nextAudio.preload = 'auto';
+        nextAudioRef.current = nextAudio;
       }
-    });
+
+      // 6. Start playing current chunk
+      audio.play().catch(err => {
+        console.warn("[NEURAL TTS] play failed:", err);
+      });
+    } else {
+      // Browser Speech Synthesis (default)
+      const textToSpeak = chunksList[index];
+      speakText(textToSpeak, () => {
+        const nextIndex = index + 1;
+        if (nextIndex < chunksList.length) {
+          setCurrentChunkIndex(nextIndex);
+          speakCurrentChunk(chunksList, nextIndex);
+        } else {
+          setIsAudioPlaying(false);
+        }
+      });
+    }
   };
 
   const toggleAudioPlay = () => {
     if (isAudioPlaying) {
       window.speechSynthesis.cancel();
+      if (currentAudioRef.current) {
+        currentAudioRef.current.pause();
+      }
+      if (nextAudioRef.current) {
+        nextAudioRef.current = null;
+      }
       setIsAudioPlaying(false);
     } else {
       setIsAudioPlaying(true);
@@ -1030,6 +1302,13 @@ function App() {
 
   const stopAudioReader = () => {
     window.speechSynthesis.cancel();
+    if (currentAudioRef.current) {
+      currentAudioRef.current.pause();
+      currentAudioRef.current = null;
+    }
+    if (nextAudioRef.current) {
+      nextAudioRef.current = null;
+    }
     setIsAudioPlaying(false);
     setShowAudioHUD(false);
     setAudioChunks([]);
@@ -2053,6 +2332,15 @@ function App() {
     }
   }, [messages]);
 
+  const readiness = calculateReadinessScore({
+    waterContainers,
+    pantryItems: profile.pantry,
+    peopleCount: profile.peopleCount,
+    targetWeeks: profile.targetWeeks,
+    energyLevel: profile.energyLevel,
+    selfRelianceLevel: profile.selfRelianceLevel
+  });
+
   return (
     <>
       <div className="scanlines"></div>
@@ -2117,11 +2405,11 @@ function App() {
             </div>
 
             <div 
-              className={`nav-item ${viewMode === 'readiness' ? 'active' : ''}`}
-              onClick={() => { setViewMode('readiness'); setSidebarOpen(false); }}
+              className={`nav-item ${viewMode === 'map' ? 'active' : ''}`}
+              onClick={() => { setViewMode('map'); setSidebarOpen(false); }}
             >
-              <ShieldAlert size={18} className={viewMode === 'readiness' ? 'text-glow' : ''}/>
-              <span style={{color: viewMode === 'readiness' ? 'var(--brand-primary)' : ''}}>READINESS SCORE</span>
+              <Compass size={18} className={viewMode === 'map' ? 'text-glow' : ''}/>
+              <span style={{color: viewMode === 'map' ? 'var(--brand-primary)' : ''}}>TACTICAL MAP</span>
             </div>
 
             <div 
@@ -2149,14 +2437,6 @@ function App() {
             </div>
 
             <div 
-              className={`nav-item ${viewMode === 'settings' ? 'active' : ''}`}
-              onClick={() => { setViewMode('settings'); setSidebarOpen(false); }}
-            >
-              <Settings size={18} className={viewMode === 'settings' ? 'text-glow' : ''}/>
-              <span style={{color: viewMode === 'settings' ? 'var(--brand-primary)' : ''}}>SETTINGS / PROFILE</span>
-            </div>
-
-            <div 
               className={`nav-item ${viewMode === 'index-integrity' ? 'active' : ''}`}
               onClick={() => { setViewMode('index-integrity'); setSidebarOpen(false); }}
             >
@@ -2165,11 +2445,11 @@ function App() {
             </div>
 
             <div 
-              className={`nav-item ${viewMode === 'release' ? 'active' : ''}`}
-              onClick={() => { setViewMode('release'); setSidebarOpen(false); }}
+              className={`nav-item ${viewMode === 'ebg' ? 'active' : ''}`}
+              onClick={() => { setViewMode('ebg'); setSidebarOpen(false); }}
             >
-              <ShieldCheck size={18} className={viewMode === 'release' ? 'text-glow' : ''}/>
-              <span style={{color: viewMode === 'release' ? 'var(--brand-primary)' : ''}}>RELEASE CHECK</span>
+              <Network size={18} className={viewMode === 'ebg' ? 'text-glow' : ''}/>
+              <span style={{color: viewMode === 'ebg' ? 'var(--brand-primary)' : ''}}>COGNITIVE BELIEF GRAPH</span>
             </div>
 
             <div style={{ margin: '16px 0 8px 16px', fontSize: '0.75rem', color: 'var(--brand-primary)', letterSpacing: '1px', textTransform: 'uppercase' }}>
@@ -2214,20 +2494,118 @@ function App() {
                 className="search-input" 
                 placeholder="QUERY LOCAL DATABASE..." 
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setSearchQuery(val);
+                  if (val) {
+                    setViewMode('files');
+                  }
+                }}
               />
             </div>
+
+            {/* Condensed Readiness Score display */}
+            <div 
+              style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '8px', 
+                padding: '6px 12px', 
+                background: 'rgba(0, 242, 254, 0.03)', 
+                border: '1px solid rgba(0, 242, 254, 0.15)', 
+                borderRadius: '4px', 
+                cursor: 'pointer', 
+                fontFamily: 'var(--font-mono)', 
+                fontSize: '0.8rem',
+                color: '#fff',
+                marginLeft: '12px',
+                transition: 'all 0.2s'
+              }} 
+              onClick={() => setViewMode('readiness')}
+              className="hover-bg-accent"
+              title="Click to view detailed Readiness Score breakdown"
+            >
+              <ShieldAlert size={14} style={{ color: readiness.total >= 90 ? '#00ff66' : readiness.total >= 75 ? 'var(--brand-primary)' : readiness.total >= 50 ? '#00E5FF' : '#ff6600' }} />
+              <span>READINESS: <strong style={{ color: readiness.total >= 90 ? '#00ff66' : readiness.total >= 75 ? 'var(--brand-primary)' : readiness.total >= 50 ? '#00E5FF' : '#ff6600' }}>{readiness.total}%</strong></span>
+            </div>
+
+            {/* Real-time Sync Progress Widget */}
+            {crawlerStatus && crawlerStatus.isCrawling && (
+              <div 
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  margin: '0 24px',
+                  padding: '6px 14px',
+                  background: 'rgba(255, 183, 0, 0.03)',
+                  border: '1px solid rgba(255, 183, 0, 0.15)',
+                  borderRadius: '4px',
+                  fontSize: '0.75rem',
+                  fontFamily: 'var(--font-mono)',
+                  color: 'var(--brand-primary)',
+                  flex: 1,
+                  maxWidth: '380px',
+                  minWidth: '200px',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap'
+                }}
+                title={`Indexing: ${crawlerStatus.currentFile}`}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+                  <span className="sync-pulse" style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--brand-primary)', display: 'inline-block', boxShadow: '0 0 6px var(--brand-primary)' }}></span>
+                  <span>SYNCING: {crawlerStatus.processedDocs} / {crawlerStatus.totalDocs}</span>
+                </div>
+                
+                <div style={{ flex: 1, height: '4px', background: 'rgba(255,255,255,0.08)', borderRadius: '2px', overflow: 'hidden' }}>
+                  <div 
+                    style={{ 
+                      width: `${crawlerStatus.totalDocs > 0 ? ((crawlerStatus.processedDocs / crawlerStatus.totalDocs) * 100) : 0}%`, 
+                      height: '100%', 
+                      background: 'var(--brand-primary)', 
+                      boxShadow: '0 0 4px var(--brand-primary)',
+                      transition: 'width 0.3s ease' 
+                    }}
+                  ></div>
+                </div>
+                
+                <span style={{ fontWeight: 'bold', flexShrink: 0 }}>
+                  {crawlerStatus.totalDocs > 0 ? ((crawlerStatus.processedDocs / crawlerStatus.totalDocs) * 100).toFixed(1) : 0}%
+                </span>
+                
+                <span style={{ color: 'var(--text-muted)', fontSize: '0.7rem', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '120px' }}>
+                  {crawlerStatus.currentFile}
+                </span>
+              </div>
+            )}
             
-            <div className="system-status">
+            <div className="system-status" style={{ gap: '14px' }}>
               <div className="status-indicator">
                 <div className="status-dot"></div>
                 <span>CORE ONLINE</span>
               </div>
               <div style={{color: 'var(--text-muted)'}}>{window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'LOCAL HOST' : window.location.hostname.toUpperCase()}</div>
+              
+              <StickyNote 
+                size={18} 
+                style={{cursor: 'pointer', color: showNotepad ? 'var(--brand-primary)' : 'var(--text-muted)'}}
+                onClick={() => setShowNotepad(!showNotepad)}
+                title="Toggle Operator Notebook"
+              />
+
+              <ShieldCheck 
+                size={18} 
+                style={{cursor: 'pointer', color: viewMode === 'release' ? 'var(--brand-primary)' : 'var(--text-muted)'}}
+                onClick={() => setViewMode('release')}
+                title="Open Release Diagnostics"
+              />
+
               <Settings 
                 size={18} 
-                style={{cursor: 'pointer', color: 'var(--text-muted)'}}
-                onClick={() => setSettingsOpen(true)}
+                style={{cursor: 'pointer', color: viewMode === 'settings' ? 'var(--brand-primary)' : 'var(--text-muted)'}}
+                onClick={() => setViewMode('settings')}
+                title="Open System & Profile Settings"
               />
             </div>
           </div>
@@ -2253,11 +2631,11 @@ function App() {
               </div>
             )}
             
-            {!error && !loading && viewMode === 'files' && activeCategory && (
+            {!error && !loading && viewMode === 'files' && (activeCategory || searchQuery) && (
               <>
                 <div className="category-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: '16px' }}>
                   <div>
-                    <h2 className="category-title">{searchQuery ? `SEARCH: "${searchQuery.toUpperCase()}"` : activeCategory.toUpperCase()}</h2>
+                    <h2 className="category-title">{searchQuery ? `SEARCH: "${searchQuery.toUpperCase()}"` : (activeCategory ? activeCategory.toUpperCase() : '')}</h2>
                     <div style={{color: 'var(--text-muted)'}}>{getFilteredFiles().length} RECORDS FOUND</div>
                   </div>
                   {!searchQuery && (
@@ -3053,6 +3431,8 @@ function App() {
                 <PantryPanel 
                   profile={profile}
                   setProfile={setProfile}
+                  setViewMode={setViewMode}
+                  setChatInput={setChatInput}
                 />
               </PanelErrorBoundary>
             )}
@@ -3063,6 +3443,12 @@ function App() {
                   profile={profile}
                   waterContainers={waterContainers}
                 />
+              </PanelErrorBoundary>
+            )}
+
+            {!error && !loading && viewMode === 'map' && (
+              <PanelErrorBoundary name="Tactical Map">
+                <TacticalMapPanel />
               </PanelErrorBoundary>
             )}
 
@@ -3101,7 +3487,7 @@ function App() {
                 <IndexIntegrityPanel 
                   onRefreshManifest={async () => {
                     try {
-                      const res = await fetch(`http://${window.location.hostname}:3001/api/materials`);
+                      const res = await fetch(`${API_BASE}/api/materials`);
                       const data = await res.json();
                       if (data.categories) {
                         setCategories(data.categories);
@@ -3111,6 +3497,12 @@ function App() {
                     }
                   }}
                 />
+              </PanelErrorBoundary>
+            )}
+
+            {!error && !loading && viewMode === 'ebg' && (
+              <PanelErrorBoundary name="Cognitive Belief Graph">
+                <EbgGraphPanel />
               </PanelErrorBoundary>
             )}
 
@@ -3205,12 +3597,16 @@ function App() {
                 )}
                 {toolkitSubTab === 'acq' && (
                   <PanelErrorBoundary name="Acquisition Queue">
-                    <AcquisitionQueuePanel />
+                    <AcquisitionQueuePanel 
+                      selectedDocument={selectedDocument}
+                      setSelectedDocument={setSelectedDocument}
+                      categories={categories}
+                    />
                   </PanelErrorBoundary>
                 )}
                 {toolkitSubTab === 'lifecycle' && (
                   <PanelErrorBoundary name="Library Index">
-                    <LibraryLifecyclePanel />
+                     <LibraryLifecyclePanel categories={categories} updateCategories={updateMaterialsAndCache} />
                   </PanelErrorBoundary>
                 )}
                 {toolkitSubTab === 'backup' && (
@@ -3232,6 +3628,8 @@ function App() {
                     voiceSettings={voiceSettings}
                     setVoiceSettings={setVoiceSettings}
                     speakText={speakText}
+                    currentTheme={currentTheme}
+                    changeTheme={changeTheme}
                   />
                 </PanelErrorBoundary>
                 <PanelErrorBoundary name="Crawler Sync Controls">
@@ -3266,10 +3664,47 @@ function App() {
           padding: '24px',
           backdropFilter: 'blur(8px)'
         }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-            <h2 style={{ color: 'var(--brand-primary)', margin: 0, flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
+            <h2 style={{ color: 'var(--brand-primary)', margin: 0, flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: '200px' }}>
               {metadata[selectedDocument.path]?.title || selectedDocument.name}
             </h2>
+            
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#ccc', fontSize: '0.85rem', fontFamily: 'var(--font-mono)', marginRight: '16px' }}>
+              <span style={{ color: 'var(--brand-primary)' }}>PROGRESS:</span>
+              <input 
+                type="number" 
+                min="0"
+                placeholder="PAGE"
+                value={readingProgress.currentPage || ''}
+                onChange={(e) => {
+                  const val = parseInt(e.target.value) || 0;
+                  setReadingProgress(prev => {
+                    const next = { ...prev, currentPage: val };
+                    saveProgressToStore(selectedDocument, next.currentPage, next.totalPages);
+                    return next;
+                  });
+                }}
+                style={{ width: '60px', padding: '6px 4px', background: '#0a0a0a', border: '1px solid var(--border-subtle)', color: '#fff', borderRadius: '4px', textAlign: 'center', outline: 'none' }}
+              />
+              <span>/</span>
+              <input 
+                type="number" 
+                min="0"
+                placeholder="TOTAL"
+                value={readingProgress.totalPages || ''}
+                onChange={(e) => {
+                  const val = parseInt(e.target.value) || 0;
+                  setReadingProgress(prev => {
+                    const next = { ...prev, totalPages: val };
+                    saveProgressToStore(selectedDocument, next.currentPage, next.totalPages);
+                    return next;
+                  });
+                }}
+                style={{ width: '60px', padding: '6px 4px', background: '#0a0a0a', border: '1px solid var(--border-subtle)', color: '#fff', borderRadius: '4px', textAlign: 'center', outline: 'none' }}
+              />
+              <span>PAGES</span>
+            </div>
+
             <div style={{ display: 'flex', gap: '12px' }}>
                {['.pdf', '.txt', '.md'].includes(selectedDocument.extension?.toLowerCase()) && (
                  <button 
@@ -3350,16 +3785,91 @@ function App() {
           ) : (
             <div style={{ display: 'flex', gap: '20px', flex: 1, overflow: 'hidden' }}>
               {/* The Document Previewer */}
-              <div className="glass-panel" style={{ flex: showAudioHUD ? 0.6 : 1, overflow: 'hidden', position: 'relative', borderRadius: '8px', transition: 'all 0.3s ease' }}>
+              <div className="glass-panel" style={{ flex: showAudioHUD ? 0.6 : 1, overflow: 'hidden', position: 'relative', borderRadius: '8px', transition: 'all 0.3s ease', display: 'flex', flexDirection: 'column' }}>
+                
+                {/* Scanned PDF warning banner */}
+                {docStatus?.isScanned && (
+                  <div style={{
+                    padding: '12px 20px',
+                    background: 'rgba(255, 179, 0, 0.1)',
+                    borderBottom: '1px solid rgba(255, 179, 0, 0.3)',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '0.8rem',
+                    color: '#ffb300',
+                    gap: '12px',
+                    flexShrink: 0
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <AlertTriangle size={16} />
+                      <span><strong>WARNING: SCANNED IMAGE PDF.</strong> This document is image-only. Text search, highlighting, and audio narration are unavailable.</span>
+                    </div>
+                    <button 
+                      className="btn-tactical"
+                      disabled={ocrRunning}
+                      onClick={async () => {
+                        setOcrRunning(true);
+                        try {
+                          const res = await fetch(`${API_BASE}/api/crawler/ocr`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ filePath: selectedDocument.path })
+                          });
+                          const data = await res.json();
+                          if (data.success) {
+                            alert("OCR complete! Transcribed text has been indexed and loaded.");
+                            // Re-fetch status so the UI reloads the OCR'd text
+                            const statusRes = await fetch(`${API_BASE}/api/index/status?path=${encodeURIComponent(selectedDocument.path)}`);
+                            const statusData = await statusRes.json();
+                            setDocStatus(statusData);
+                          } else {
+                            alert("OCR failed: " + (data.error || "Unknown error"));
+                          }
+                        } catch (e) {
+                          alert("OCR request failed: " + e.message);
+                        } finally {
+                          setOcrRunning(false);
+                        }
+                      }}
+                      style={{ padding: '6px 14px', fontSize: '0.75rem', borderColor: '#ffb300', color: '#ffb300', backgroundColor: 'rgba(255, 179, 0, 0.05)', whiteSpace: 'nowrap' }}
+                    >
+                      {ocrRunning ? 'RUNNING LOCAL OCR...' : 'RUN LOCAL OCR (LLAVA:7B)'}
+                    </button>
+                  </div>
+                )}
+
+                {/* OCR Success banner */}
+                {docStatus?.ocrCompleted && (
+                  <div style={{
+                    padding: '8px 20px',
+                    background: 'rgba(0, 229, 255, 0.1)',
+                    borderBottom: '1px solid rgba(0, 229, 255, 0.3)',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '0.75rem',
+                    color: '#00e5ff',
+                    flexShrink: 0
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <CheckCircle size={14} />
+                      <span><strong>OCR TRANSCRIPTION RECOVERY PROTOCOL ACTIVE.</strong> Displaying text recovered via local Vision LLM.</span>
+                    </div>
+                  </div>
+                )}
+
                 {['.mp4', '.webm'].includes(selectedDocument.extension?.toLowerCase()) ? (
                   <video 
                     src={`${API_BASE}${encodePath(selectedDocument.path)}`} 
                     controls 
                     autoPlay
-                    style={{ width: '100%', height: '100%', backgroundColor: 'black', borderRadius: '8px' }} 
+                    style={{ width: '100%', flex: 1, backgroundColor: 'black', borderRadius: '8px' }} 
                   />
                 ) : ['.avi', '.mkv', '.wmv', '.mov'].includes(selectedDocument.extension?.toLowerCase()) ? (
-                  <div style={{ position: 'relative', width: '100%', height: '100%', backgroundColor: 'black', borderRadius: '8px', overflow: 'hidden' }}>
+                  <div style={{ position: 'relative', width: '100%', flex: 1, backgroundColor: 'black', borderRadius: '8px', overflow: 'hidden' }}>
                     <div style={{
                       position: 'absolute', top: '12px', left: '12px', zIndex: 10,
                       backgroundColor: 'rgba(0,0,0,0.7)', border: '1px solid var(--brand-primary)',
@@ -3380,7 +3890,7 @@ function App() {
                 ) : selectedDocument.extension?.toLowerCase() === '.iso' ? (
                   <div style={{
                     display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                    height: '100%', padding: '40px', textAlign: 'center', backgroundColor: '#0a0a0a', color: 'var(--text-main)'
+                    flex: 1, padding: '40px', textAlign: 'center', backgroundColor: '#0a0a0a', color: 'var(--text-main)'
                   }}>
                     <Disc size={64} style={{ color: 'var(--brand-primary)', marginBottom: '24px' }} />
                     <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', marginBottom: '12px' }}>
@@ -3410,9 +3920,9 @@ function App() {
                       <button 
                         className="btn-tactical"
                         onClick={() => {
-                          const absoluteLocalPath = selectedDocument.path.replace('/materials/', 'C:\\Users\\Blair\\Downloads\\survival\\').replace(/\//g, '\\');
-                          navigator.clipboard.writeText(absoluteLocalPath);
-                          alert(`Copied local path:\n${absoluteLocalPath}`);
+                          const docPath = selectedDocument.path;
+                          navigator.clipboard.writeText(docPath);
+                          alert(`Copied path:\n${docPath}`);
                         }}
                         style={{ padding: '12px 24px', fontSize: '1rem' }}
                       >
@@ -3421,18 +3931,27 @@ function App() {
                     </div>
                   </div>
                 ) : ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp'].includes(selectedDocument.extension?.toLowerCase()) ? (
-                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', height: '100%', backgroundColor: '#0a0a0a', borderRadius: '8px', overflow: 'auto', padding: '16px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', flex: 1, backgroundColor: '#0a0a0a', borderRadius: '8px', overflow: 'auto', padding: '16px' }}>
                     <img 
                       src={`${API_BASE}${encodePath(selectedDocument.path)}`} 
                       alt={selectedDocument.name} 
                       style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', borderRadius: '4px', border: '1px solid var(--border-subtle)', boxShadow: 'var(--glow-primary)' }} 
                     />
                   </div>
+                ) : (['.txt', '.md'].includes(selectedDocument.extension?.toLowerCase()) || (selectedDocument.extension?.toLowerCase() === '.pdf' && docStatus?.ocrCompleted)) ? (
+                  <div style={{ padding: '24px', overflowY: 'auto', flex: 1, width: '100%', color: '#e2e8f0', fontFamily: 'var(--font-mono)', whiteSpace: 'pre-wrap', lineHeight: '1.6', fontSize: '0.95rem', backgroundColor: '#0f172a', borderRadius: '8px', border: '1px solid var(--border-subtle)', textAlign: 'left' }}>
+                    {viewerLoading ? (
+                      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', color: 'var(--brand-primary)' }}>
+                        LOADING DOCUMENT TEXT...
+                      </div>
+                    ) : viewerText}
+                  </div>
                 ) : (
                   <iframe 
                     src={`${API_BASE}${encodePath(selectedDocument.path)}`}
                     title="Document Viewer"
-                    style={{ width: '100%', height: '100%', border: 'none', backgroundColor: '#e2e8f0' }}
+                    sandbox="allow-same-origin allow-scripts allow-popups allow-downloads"
+                    style={{ width: '100%', flex: 1, border: 'none', backgroundColor: '#e2e8f0' }}
                   />
                 )}
               </div>
@@ -3528,47 +4047,101 @@ function App() {
         </div>
       )}
 
-      {/* Settings Modal */}
-      {settingsOpen && (
+      {/* Floating Notepad Popup */}
+      {showNotepad && (
         <div style={{
-          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-          backgroundColor: 'rgba(0,0,0,0.85)',
-          zIndex: 10001,
-          display: 'flex', justifyContent: 'center', alignItems: 'center',
-          padding: '24px',
-          backdropFilter: 'blur(8px)'
+          position: 'fixed',
+          bottom: '20px',
+          right: '20px',
+          width: 'calc(100vw - 40px)',
+          maxWidth: '380px',
+          height: '420px',
+          zIndex: 10005,
+          display: 'flex',
+          flexDirection: 'column',
+          border: '1px solid var(--brand-primary)',
+          boxShadow: 'var(--glow-primary-strong)',
+          borderRadius: '8px',
+          backgroundColor: 'rgba(10, 13, 22, 0.95)',
+          backdropFilter: 'blur(10px)',
+          overflow: 'hidden',
+          fontFamily: 'var(--font-mono)'
         }}>
-          <div className="glass-panel" style={{ width: '100%', maxWidth: '460px', padding: '32px', position: 'relative', border: '1px solid var(--brand-primary)' }}>
-            <h2 style={{ color: 'var(--brand-primary)', marginTop: 0, marginBottom: '24px', fontSize: '1.6rem' }}>SOS SETTINGS</h2>
-            
-            <div style={{ marginBottom: '24px' }}>
-              <h3 style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '12px' }}>THEME ACCENT</h3>
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <button className="btn-tactical" style={{ borderColor: '#FFB700', color: '#FFB700', padding: '6px 12px', fontSize: '0.9rem' }} onClick={() => changeTheme('amber')}>AMBER</button>
-                <button className="btn-tactical" style={{ borderColor: '#00E5FF', color: '#00E5FF', padding: '6px 12px', fontSize: '0.9rem' }} onClick={() => changeTheme('cyan')}>CYAN</button>
-                <button className="btn-tactical" style={{ borderColor: '#00ff66', color: '#00ff66', padding: '6px 12px', fontSize: '0.9rem' }} onClick={() => changeTheme('green')}>GREEN</button>
-              </div>
-            </div>
-            
-            <div style={{ marginBottom: '24px' }}>
-              <h3 style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '8px' }}>CORE DATABASE PATH</h3>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem', color: 'var(--text-main)', wordBreak: 'break-all' }}>
-                C:\Users\Blair\Downloads\survival
-              </div>
-            </div>
+          {/* Header */}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: '12px 16px',
+            background: 'rgba(0, 242, 254, 0.05)',
+            borderBottom: '1px solid var(--border-subtle)'
+          }}>
+            <span style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--brand-primary)', letterSpacing: '1px' }}>
+              📝 OPERATOR NOTEBOOK
+            </span>
+            <button 
+              className="btn-tactical" 
+              onClick={() => setShowNotepad(false)}
+              style={{ padding: '2px 8px', fontSize: '0.75rem', borderColor: 'var(--brand-danger)', color: 'var(--brand-danger)' }}
+            >
+              CLOSE
+            </button>
+          </div>
+          
+          {/* Text Area */}
+          <div style={{ flex: 1, padding: '12px', display: 'flex', flexDirection: 'column' }}>
+            <textarea
+              value={notepadText}
+              onChange={(e) => setNotepadText(e.target.value)}
+              placeholder="Record observation notes, PDF page markers, guide details, or instructions here..."
+              style={{
+                flex: 1,
+                width: '100%',
+                background: 'rgba(0,0,0,0.5)',
+                border: '1px solid var(--border-subtle)',
+                borderRadius: '4px',
+                color: '#fff',
+                padding: '10px',
+                fontFamily: 'inherit',
+                fontSize: '0.85rem',
+                lineHeight: '1.4',
+                resize: 'none',
+                outline: 'none',
+                boxSizing: 'border-box'
+              }}
+            />
+          </div>
 
-            <div style={{ marginBottom: '32px' }}>
-              <h3 style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '8px' }}>NEURAL MODULES (OLLAMA)</h3>
-              <div style={{ fontSize: '0.8rem', color: 'var(--text-main)', lineHeight: '1.6' }}>
-                <div style={{ marginBottom: '4px' }}>LLM MODEL: <span style={{color: 'var(--brand-primary)', fontFamily: 'var(--font-mono)'}}>llama3.1:8b</span></div>
-                <div style={{ marginBottom: '4px' }}>EMBEDDING MODEL: <span style={{color: 'var(--brand-primary)', fontFamily: 'var(--font-mono)'}}>nomic-embed-text</span></div>
-                <div>STATUS: <span style={{color: '#00ff66', fontWeight: 'bold'}}>ONLINE</span></div>
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-              <button className="btn-tactical" style={{ padding: '8px 24px', fontSize: '0.95rem' }} onClick={() => setSettingsOpen(false)}>CLOSE</button>
-            </div>
+          {/* Footer controls */}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: '8px 12px',
+            borderTop: '1px solid rgba(255,255,255,0.05)',
+            background: 'rgba(0,0,0,0.2)'
+          }}>
+            <button 
+              className="btn-tactical-outline" 
+              onClick={() => {
+                navigator.clipboard.writeText(notepadText);
+                alert("Notes copied to clipboard!");
+              }}
+              style={{ fontSize: '0.75rem', padding: '4px 10px' }}
+            >
+              Copy All
+            </button>
+            <button 
+              className="btn-tactical-outline" 
+              onClick={() => {
+                if (confirm("Clear all notes? This cannot be undone.")) {
+                  setNotepadText('');
+                }
+              }}
+              style={{ fontSize: '0.75rem', padding: '4px 10px', color: 'var(--brand-danger)', borderColor: 'var(--brand-danger)' }}
+            >
+              Clear
+            </button>
           </div>
         </div>
       )}

@@ -109,7 +109,7 @@ test('SOS Material Boundary & Crawler Hardening Test Suite', async (t) => {
           return res.status(403).send("Access denied: Directory listing not allowed.");
         }
         
-        res.sendFile(absolutePath);
+        res.sendFile(absolutePath, { dotfiles: 'allow' });
       } catch (err) {
         res.status(403).send(`Access denied: ${err.message}`);
       }

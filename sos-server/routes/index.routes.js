@@ -4,12 +4,12 @@ const fs = require('fs');
 const path = require('path');
 const ai = require('../ai');
 const { auditIndex, repairIndex } = require('../services/indexIntegrityService');
-const { webPathToMaterialAbsolutePath, checkDocumentIndexedStatus } = require('../services/documentIndexingService');
+const { webPathToMaterialAbsolutePath, checkDocumentIndexedStatus, checkDocumentIndexedStatusAsync } = require('../services/documentIndexingService');
 
 const { MANIFEST_FILE } = require('../services/manifestService');
 
 // GET /api/index/status?path=/materials/...
-router.get('/status', (req, res) => {
+router.get('/status', async (req, res) => {
   try {
     const { path: webPath } = req.query;
     if (!webPath) return res.status(400).json({ error: "path parameter is required" });
@@ -17,10 +17,11 @@ router.get('/status', (req, res) => {
     // Traversal validation
     webPathToMaterialAbsolutePath(webPath);
     
-    const status = checkDocumentIndexedStatus(webPath);
+    const status = await checkDocumentIndexedStatusAsync(webPath);
     res.json(status);
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    console.error("[INDEX ROUTE] Status check failed:", err);
+    res.status(400).json({ error: "Invalid request or access denied." });
   }
 });
 
@@ -30,7 +31,7 @@ const performDocumentIndexing = async (webPath) => {
   const absolutePath = webPathToMaterialAbsolutePath(webPath);
   
   if (!fs.existsSync(absolutePath)) {
-    throw new Error(`File not found: ${absolutePath}`);
+    throw new Error(`File not found.`);
   }
 
   const result = await ai.indexFile(absolutePath);
@@ -74,7 +75,7 @@ router.post('/document', async (req, res) => {
     res.json(result);
   } catch (err) {
     console.error("[INDEX ROUTE] Error indexing document:", err);
-    res.status(400).json({ error: err.message });
+    res.status(400).json({ error: "Failed to index document." });
   }
 });
 
@@ -84,7 +85,8 @@ router.post('/audit', (req, res) => {
     const report = auditIndex();
     res.json(report);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error("[INDEX ROUTE] Audit failed:", err);
+    res.status(500).json({ error: "Failed to audit index." });
   }
 });
 
@@ -94,7 +96,8 @@ router.post('/repair-status', (req, res) => {
     const result = repairIndex();
     res.json(result);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error("[INDEX ROUTE] Repair failed:", err);
+    res.status(500).json({ error: "Failed to repair index." });
   }
 });
 
@@ -107,7 +110,8 @@ router.post('/', async (req, res) => {
     const result = await performDocumentIndexing(filePath);
     res.json(result);
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    console.error("[INDEX ROUTE] Compatibility index failed:", err);
+    res.status(400).json({ error: "Failed to index document." });
   }
 });
 

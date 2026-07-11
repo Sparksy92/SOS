@@ -1,16 +1,21 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Wheat, 
   AlertTriangle,
   Info,
-  CheckSquare
+  CheckSquare,
+  Utensils
 } from 'lucide-react';
 import { calculatePantryReserves, PANTRY_GUIDELINES } from '../../modules/food/pantryCalculations.js';
+import RecipeWizardPanel from './RecipeWizardPanel.jsx';
 
 export default function PantryPanel({ 
   profile, 
-  setProfile 
+  setProfile,
+  setViewMode,
+  setChatInput
 }) {
+  const [pantryTab, setPantryTab] = useState('inventory'); // 'inventory' or 'recipes'
   const stats = calculatePantryReserves(profile.pantry, profile.peopleCount, profile.targetWeeks);
 
   const handleUpdateStock = (category, val) => {
@@ -45,37 +50,57 @@ export default function PantryPanel({
         </div>
       </div>
 
-      {/* Configuration Controls */}
-      <div className="glass-panel" style={{ padding: '24px', display: 'flex', gap: '24px', flexWrap: 'wrap', alignItems: 'center' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', minWidth: '160px' }}>
-          <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', letterSpacing: '1px' }}>FAMILY SIZE (PEOPLE)</label>
-          <input 
-            type="number" 
-            className="search-input glass-panel" 
-            style={{ width: '100%', padding: '10px', fontSize: '1.1rem', fontFamily: 'var(--font-mono)' }}
-            min="1"
-            value={profile.peopleCount}
-            onChange={e => handleUpdateProfileField('peopleCount', e.target.value)}
-          />
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', minWidth: '160px' }}>
-          <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', letterSpacing: '1px' }}>TARGET DURATION (WEEKS)</label>
-          <input 
-            type="number" 
-            className="search-input glass-panel" 
-            style={{ width: '100%', padding: '10px', fontSize: '1.1rem', fontFamily: 'var(--font-mono)' }}
-            min="1"
-            value={profile.targetWeeks}
-            onChange={e => handleUpdateProfileField('targetWeeks', e.target.value)}
-          />
-        </div>
-        <div style={{ flex: 1, fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: '1.5', minWidth: '240px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--brand-primary)', marginBottom: '4px', fontWeight: 'bold' }}>
-            <Info size={14} /> SYSTEM CALCULATION CORE
-          </div>
-          Weekly food targets are evaluated against your homestead population and target coverage weeks. Deficits indicate categories requiring urgent replenishment.
-        </div>
+      {/* Sub-tab selectors */}
+      <div style={{ display: 'flex', gap: '12px', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '12px' }}>
+        <button
+          onClick={() => setPantryTab('inventory')}
+          className={`btn-tactical${pantryTab === 'inventory' ? '' : '-outline'}`}
+          style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 18px', fontSize: '0.85rem' }}
+        >
+          <Wheat size={16} /> PANTRY INVENTORY
+        </button>
+        <button
+          onClick={() => setPantryTab('recipes')}
+          className={`btn-tactical${pantryTab === 'recipes' ? '' : '-outline'}`}
+          style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 18px', fontSize: '0.85rem' }}
+        >
+          <Utensils size={16} /> RECIPE WIZARD
+        </button>
       </div>
+
+      {pantryTab === 'inventory' ? (
+        <>
+          {/* Configuration Controls */}
+          <div className="glass-panel" style={{ padding: '24px', display: 'flex', gap: '24px', flexWrap: 'wrap', alignItems: 'center' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', minWidth: '160px' }}>
+              <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', letterSpacing: '1px' }}>FAMILY SIZE (PEOPLE)</label>
+              <input 
+                type="number" 
+                className="search-input glass-panel" 
+                style={{ width: '100%', padding: '10px', fontSize: '1.1rem', fontFamily: 'var(--font-mono)' }}
+                min="1"
+                value={profile.peopleCount}
+                onChange={e => handleUpdateProfileField('peopleCount', e.target.value)}
+              />
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', minWidth: '160px' }}>
+              <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', letterSpacing: '1px' }}>TARGET DURATION (WEEKS)</label>
+              <input 
+                type="number" 
+                className="search-input glass-panel" 
+                style={{ width: '100%', padding: '10px', fontSize: '1.1rem', fontFamily: 'var(--font-mono)' }}
+                min="1"
+                value={profile.targetWeeks}
+                onChange={e => handleUpdateProfileField('targetWeeks', e.target.value)}
+              />
+            </div>
+            <div style={{ flex: 1, fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: '1.5', minWidth: '240px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--brand-primary)', marginBottom: '4px', fontWeight: 'bold' }}>
+                <Info size={14} /> SYSTEM CALCULATION CORE
+              </div>
+              Weekly food targets are evaluated against your homestead population and target coverage weeks. Deficits indicate categories requiring urgent replenishment.
+            </div>
+          </div>
 
       {/* Grid of category inventory items */}
       <div className="glass-panel" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -141,18 +166,64 @@ export default function PantryPanel({
                   </div>
                 </div>
 
-                {/* Edit Input */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>CURRENT STOCK (LBS):</span>
-                  <input 
-                    type="number" 
-                    className="search-input glass-panel" 
-                    style={{ width: '90px', padding: '8px', textAlign: 'center', fontSize: '0.95rem', fontFamily: 'var(--font-mono)' }}
-                    min="0"
-                    value={profile.pantry[category] === undefined ? '' : profile.pantry[category]}
-                    onChange={e => handleUpdateStock(category, e.target.value)}
-                  />
-                </div>
+                 {/* Edit Input */}
+                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                   <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>CURRENT STOCK (LBS):</span>
+                   <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                     <button 
+                       className="btn-tactical" 
+                       style={{ padding: '4px 8px', fontSize: '0.75rem' }}
+                       onClick={() => {
+                         const currentVal = profile.pantry[category] || 0;
+                         handleUpdateStock(category, Math.max(0, currentVal - 5));
+                       }}
+                       title="Decrease by 5 LBS"
+                     >
+                       -5
+                     </button>
+                     <button 
+                       className="btn-tactical" 
+                       style={{ padding: '4px 8px', fontSize: '0.75rem' }}
+                       onClick={() => {
+                         const currentVal = profile.pantry[category] || 0;
+                         handleUpdateStock(category, Math.max(0, currentVal - 1));
+                       }}
+                       title="Decrease by 1 LBS"
+                     >
+                       -1
+                     </button>
+                     <input 
+                       type="number" 
+                       className="search-input glass-panel" 
+                       style={{ width: '80px', padding: '8px', textAlign: 'center', fontSize: '0.95rem', fontFamily: 'var(--font-mono)' }}
+                       min="0"
+                       value={profile.pantry[category] === undefined ? '' : profile.pantry[category]}
+                       onChange={e => handleUpdateStock(category, e.target.value)}
+                     />
+                     <button 
+                       className="btn-tactical" 
+                       style={{ padding: '4px 8px', fontSize: '0.75rem' }}
+                       onClick={() => {
+                         const currentVal = profile.pantry[category] || 0;
+                         handleUpdateStock(category, currentVal + 1);
+                       }}
+                       title="Increase by 1 LBS"
+                     >
+                       +1
+                     </button>
+                     <button 
+                       className="btn-tactical" 
+                       style={{ padding: '4px 8px', fontSize: '0.75rem' }}
+                       onClick={() => {
+                         const currentVal = profile.pantry[category] || 0;
+                         handleUpdateStock(category, currentVal + 5);
+                       }}
+                       title="Increase by 5 LBS"
+                     >
+                       +5
+                     </button>
+                   </div>
+                 </div>
 
               </div>
             );
@@ -160,6 +231,14 @@ export default function PantryPanel({
         </div>
 
       </div>
+      </>
+      ) : (
+        <RecipeWizardPanel 
+          profile={profile}
+          setViewMode={setViewMode}
+          setChatInput={setChatInput}
+        />
+      )}
 
     </div>
   );

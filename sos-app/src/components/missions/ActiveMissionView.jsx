@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE } from '../../config.js';
 import { 
   ShieldAlert, Clock, Play, Pause, CheckCircle, Circle, 
   Plus, Trash2, Send, FileText, Download, Volume2, ExternalLink
@@ -46,7 +47,6 @@ const ActiveMissionView = ({ mission, onSendSuggestedPrompt, onUpdateState }) =>
     setReviewQueue(loadSourceReviewQueue().filter(x => x.missionId === mission.id));
 
     // Fetch materials manifest and metadata list from local API endpoints
-    const API_BASE = `http://${window.location.hostname}:3001`;
     Promise.all([
       fetch(`${API_BASE}/api/materials`).then(res => res.json()).catch(() => ({ categories: {} })),
       fetch(`${API_BASE}/api/metadata`).then(res => res.json()).catch(() => ({}))
@@ -127,7 +127,7 @@ const ActiveMissionView = ({ mission, onSendSuggestedPrompt, onUpdateState }) =>
       return pathString.split('/').map(segment => encodeURIComponent(segment)).join('/');
     };
     const encoded = encodePath(pathVal);
-    const url = `http://${window.location.hostname}:3001${encoded.startsWith('/') ? encoded : '/' + encoded}`;
+    const url = `${API_BASE}${encoded.startsWith('/') ? encoded : '/' + encoded}`;
     window.open(url, '_blank');
   };
 
@@ -237,7 +237,7 @@ const ActiveMissionView = ({ mission, onSendSuggestedPrompt, onUpdateState }) =>
   const handleIndexDocument = async (filePath) => {
     if (window.confirm(`Initialize Neural Index for this reference? This parses contents locally into the J.A.R.V.I.S. database.`)) {
       try {
-        const res = await fetch(`http://${window.location.hostname}:3001/api/index/document`, {
+        const res = await fetch(`${API_BASE}/api/index/document`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ filePath })
@@ -247,7 +247,6 @@ const ActiveMissionView = ({ mission, onSendSuggestedPrompt, onUpdateState }) =>
           alert(`Document successfully indexed. ${data.chunks || 0} chunks added.`);
           
           // Re-fetch materials list to update UI status immediately
-          const API_BASE = `http://${window.location.hostname}:3001`;
           const matRes = await fetch(`${API_BASE}/api/materials`);
           const matData = await matRes.json();
           const flattened = [];

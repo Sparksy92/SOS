@@ -139,7 +139,19 @@ def run_ocr(root_path):
                         print(f"Failed to process {file}: {e}")
 
 if __name__ == "__main__":
-    # Root folder is the parent of the scripts directory (project root)
-    script_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    print(f"Initializing OCR Pipeline on: {script_dir}")
-    run_ocr(script_dir)
+    if len(sys.argv) > 1:
+        target_path = sys.argv[1]
+        check_ollama()
+        if os.path.isdir(target_path):
+            run_ocr(target_path)
+        elif os.path.isfile(target_path) and target_path.lower().endswith('.pdf'):
+            process_pdf(target_path)
+        else:
+            print("Error: Target path must be a directory or a PDF file.")
+            sys.exit(1)
+    else:
+        # Default behavior: run on materials folder (fallback to project root)
+        script_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        materials_dir = os.environ.get("SOS_MATERIALS_DIR", script_dir)
+        print(f"Initializing OCR Pipeline on: {materials_dir}")
+        run_ocr(materials_dir)

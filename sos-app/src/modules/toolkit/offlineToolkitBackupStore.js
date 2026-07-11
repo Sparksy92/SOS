@@ -29,6 +29,8 @@ export const createOfflineToolkitBackup = () => {
   let missionsCount = 0;
   let notesCount = 0;
   let reportsCount = 0;
+  let waterCount = 0;
+  let polygonCount = 0;
 
   BACKUP_KEYS_REGISTRY.forEach(reg => {
     // Export the active key actually found in localStorage
@@ -48,6 +50,8 @@ export const createOfflineToolkitBackup = () => {
         if (reg.key === 'field_notes' && Array.isArray(parsed)) notesCount += parsed.length;
         if (reg.key === 'report_drafts' && Array.isArray(parsed)) reportsCount += parsed.length;
         if (reg.key === 'reports' && Array.isArray(parsed)) reportsCount += parsed.length;
+        if (reg.key === 'sos_water_containers' && Array.isArray(parsed)) waterCount = parsed.length;
+        if (reg.key === 'sos_map_polygons' && Array.isArray(parsed)) polygonCount = parsed.length;
       } catch (e) {
         // Carry on if unparsable
       }
@@ -69,7 +73,9 @@ export const createOfflineToolkitBackup = () => {
       allowlistRecords: allowlistCount,
       missions: missionsCount,
       notes: notesCount,
-      reports: reportsCount
+      reports: reportsCount,
+      waterContainers: waterCount,
+      mapPolygons: polygonCount
     },
     warnings: []
   };

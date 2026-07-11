@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE } from '../../config.js';
 import { 
   loadDismissedImports, 
   dismissImport, 
@@ -20,7 +21,7 @@ export default function ManualImportQueuePanel({ setViewMode, setToolkitSubTab }
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`http://${window.location.hostname}:3001/api/toolkit/staging`);
+      const res = await fetch(`${API_BASE}/api/toolkit/staging`);
       const data = await res.json();
       if (res.ok) {
         setStagedFiles(data.stagedFiles || []);

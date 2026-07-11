@@ -1,0 +1,8 @@
+# Python Dependencies for SurvivalOS Scripts
+
+# TTS Service
+kokoro-onnx==0.3.4
+soundfile==0.13.1
+
+# OCR and PDF parsing
+PyMuPDF==1.25.3

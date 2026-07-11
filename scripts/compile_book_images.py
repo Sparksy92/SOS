@@ -78,7 +78,7 @@ def main():
     if not input_dir:
         input_dir = default_input
         
-    output_dir = input(f"Enter target library folder for compiled PDFs\n[default: {output_dir}]: ").strip()
+    output_dir = input(f"Enter target library folder for compiled PDFs\n[default: {default_output}]: ").strip()
     if not output_dir:
         output_dir = default_output
         

@@ -95,9 +95,25 @@ router.get('/staging', (req, res) => {
 // 2. GET /api/toolkit/zim
 router.get('/zim', (req, res) => {
   try {
-    // Ignore req.query.folder completely. Only use process.env.SOS_ZIM_DIR if configured.
-    let targetFolder = process.env.SOS_ZIM_DIR;
+    let targetFolder = req.query.folder;
     let isFallback = false;
+
+    if (targetFolder) {
+      const normalized = targetFolder.toLowerCase();
+      const isTraversal = normalized.includes('..') || 
+                          normalized.includes('\\windows\\') || 
+                          normalized.includes('/etc/') || 
+                          normalized.includes('node_modules') || 
+                          normalized.includes('.git') ||
+                          normalized.includes('users');
+      if (isTraversal || !fs.existsSync(targetFolder)) {
+        targetFolder = null;
+      }
+    }
+
+    if (!targetFolder) {
+      targetFolder = process.env.SOS_ZIM_DIR;
+    }
 
     if (!targetFolder) {
       targetFolder = path.resolve(__dirname, '..', '..', 'import-staging', 'kiwix');

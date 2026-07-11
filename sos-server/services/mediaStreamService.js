@@ -1,10 +1,16 @@
 const fs = require('fs');
 const path = require('path');
-const { spawn, execSync } = require('child_process');
+const { spawn, execFileSync } = require('child_process');
 
 function isNativeCodec(absolutePath) {
   try {
-    const codec = execSync(`ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of csv=p=0 "${absolutePath}"`, { encoding: 'utf8' }).trim();
+    const codec = execFileSync('ffprobe', [
+      '-v', 'error',
+      '-select_streams', 'v:0',
+      '-show_entries', 'stream=codec_name',
+      '-of', 'csv=p=0',
+      absolutePath
+    ], { encoding: 'utf8' }).trim();
     // Native codecs universally supported by web browsers
     return ['h264', 'vp9', 'av1', 'vp8'].includes(codec.toLowerCase());
   } catch (e) {

@@ -73,7 +73,12 @@ export const saveQueueItem = (item) => {
     acquisitionStatus: status,
     operatorNotes: String(item.operatorNotes || '').trim(),
     createdAt: item.createdAt || new Date().toISOString(),
-    updatedAt: new Date().toISOString()
+    updatedAt: new Date().toISOString(),
+    filePath: item.filePath ? String(item.filePath).trim() : '',
+    currentPage: item.currentPage !== undefined ? Number(item.currentPage) : 0,
+    totalPages: item.totalPages !== undefined ? Number(item.totalPages) : 0,
+    progressPercent: item.progressPercent !== undefined ? Number(item.progressPercent) : 0,
+    lastReadAt: item.lastReadAt || null
   };
 
   if (existingIdx >= 0) {
@@ -139,7 +144,12 @@ export const validateAndImportQueue = (jsonStr) => {
         acquisitionStatus: status,
         operatorNotes: String(record.operatorNotes || '').trim(),
         createdAt: record.createdAt || new Date().toISOString(),
-        updatedAt: record.updatedAt || new Date().toISOString()
+        updatedAt: new Date().toISOString(),
+        filePath: record.filePath ? String(record.filePath).trim() : '',
+        currentPage: record.currentPage !== undefined ? Number(record.currentPage) : 0,
+        totalPages: record.totalPages !== undefined ? Number(record.totalPages) : 0,
+        progressPercent: record.progressPercent !== undefined ? Number(record.progressPercent) : 0,
+        lastReadAt: record.lastReadAt || null
       });
     }
 

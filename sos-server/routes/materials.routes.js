@@ -9,7 +9,7 @@ router.get('/', (req, res) => {
     res.json({ categories: manifest.categories });
   } catch (err) {
     console.error("[MATERIALS] Load failed:", err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: "Failed to load materials." });
   }
 });
 
@@ -24,7 +24,7 @@ router.post('/refresh', (req, res) => {
     });
   } catch (err) {
     console.error("[MATERIALS] Refresh failed:", err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: "Failed to refresh materials manifest." });
   }
 });
 

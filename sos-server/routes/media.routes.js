@@ -18,7 +18,8 @@ router.get('/stream', (req, res) => {
     
     streamVideo(req, res, absolutePath);
   } catch (err) {
-    return res.status(403).send(`Access denied: ${err.message}`);
+    console.error("[MEDIA STREAM] Access denied error:", err);
+    return res.status(403).send("Access denied.");
   }
 });
 

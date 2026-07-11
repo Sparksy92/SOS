@@ -44,7 +44,8 @@ function runCommand(command, args, opName, cwd = rootDir) {
   writeToLog(`[LAUNCHER] Working Directory: ${cwd}`);
   writeToLog(`[LAUNCHER] Running: ${command} ${args.join(' ')}`);
 
-  const child = spawn(command, args, { cwd, shell: true });
+  const useShell = process.platform === 'win32' && command === 'npm';
+  const child = spawn(command, args, { cwd, shell: useShell });
 
   child.stdout.on('data', (data) => {
     writeToLog(data.toString().trim());
@@ -193,6 +194,9 @@ router.get('/ollama-models', (req, res) => {
 router.post('/pull-model', (req, res) => {
   const { model } = req.body;
   if (!model) return res.status(400).json({ error: 'Model name is required' });
+  if (typeof model !== 'string' || !/^[a-zA-Z0-9._:/-]+$/.test(model)) {
+    return res.status(400).json({ error: 'Invalid model name format' });
+  }
 
   const started = runCommand('ollama', ['pull', model], 'ollama-pull');
   if (started) {
@@ -283,14 +287,22 @@ router.post('/start-app', (req, res) => {
         exec('netstat -ano | findstr :3000', (err, stdout) => {
           if (stdout) {
             const pids = new Set(stdout.trim().split('\n').map(line => line.trim().split(/\s+/).pop()));
-            pids.forEach(pid => exec(`taskkill /F /PID ${pid}`));
+            pids.forEach(pid => {
+              if (pid && /^\d+$/.test(pid)) {
+                exec(`taskkill /F /PID ${pid}`);
+              }
+            });
           }
           exec('netstat -ano | findstr :3001', (err2, stdout2) => {
             if (stdout2) {
               const pids = new Set(stdout2.trim().split('\n').map(line => line.trim().split(/\s+/).pop()));
               // Don't kill current PID!
               pids.delete(process.pid.toString());
-              pids.forEach(pid => exec(`taskkill /F /PID ${pid}`));
+              pids.forEach(pid => {
+                if (pid && /^\d+$/.test(pid)) {
+                  exec(`taskkill /F /PID ${pid}`);
+                }
+              });
             }
             resolve();
           });
@@ -349,13 +361,21 @@ router.post('/stop', (req, res) => {
     exec('netstat -ano | findstr :3000', (err, stdout) => {
       if (stdout) {
         const pids = new Set(stdout.trim().split('\n').map(line => line.trim().split(/\s+/).pop()));
-        pids.forEach(pid => exec(`taskkill /F /PID ${pid}`));
+        pids.forEach(pid => {
+          if (pid && /^\d+$/.test(pid)) {
+            exec(`taskkill /F /PID ${pid}`);
+          }
+        });
       }
       exec('netstat -ano | findstr :3001', (err2, stdout2) => {
         if (stdout2) {
           const pids = new Set(stdout2.trim().split('\n').map(line => line.trim().split(/\s+/).pop()));
           pids.delete(process.pid.toString());
-          pids.forEach(pid => exec(`taskkill /F /PID ${pid}`));
+          pids.forEach(pid => {
+            if (pid && /^\d+$/.test(pid)) {
+              exec(`taskkill /F /PID ${pid}`);
+            }
+          });
         }
         res.json({ status: 'stopped' });
       });

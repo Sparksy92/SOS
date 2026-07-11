@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Shield, ShieldAlert, CheckCircle, AlertTriangle, RefreshCw, Cpu, Database } from 'lucide-react';
+import { API_BASE } from '../../config.js';
 
 const IndexIntegrityPanel = ({ onRefreshManifest }) => {
   const [auditReport, setAuditReport] = useState(null);
@@ -7,8 +8,6 @@ const IndexIntegrityPanel = ({ onRefreshManifest }) => {
   const [repairing, setRepairing] = useState(false);
   const [repairResult, setRepairResult] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
-
-  const API_BASE = `http://${window.location.hostname}:3001`;
 
   const runRefresh = async () => {
     setRefreshing(true);

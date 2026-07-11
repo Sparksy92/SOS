@@ -282,7 +282,7 @@ function Start-ProductionMode {
     $env:NODE_ENV = "production"
     $env:PORT = "3001"
     $serverErrorLog = Join-Path $logsPath "sos-server-error.log"
-    Start-Process node -ArgumentList "index.js" -WorkingDirectory $serverPath -NoNewWindow -RedirectStandardOutput $serverLog -RedirectStandardError $serverErrorLog
+    Start-Process node -ArgumentList "--max-old-space-size=4096", "index.js" -WorkingDirectory $serverPath -NoNewWindow -RedirectStandardOutput $serverLog -RedirectStandardError $serverErrorLog
     
     Start-Sleep -Seconds 3
     
@@ -322,7 +322,7 @@ function Start-DevelopmentMode {
     $env:NODE_ENV = "development"
     $env:PORT = "3001"
     $serverErrorLog = Join-Path $logsPath "sos-server-error.log"
-    Start-Process node -ArgumentList "index.js" -WorkingDirectory $serverPath -NoNewWindow -RedirectStandardOutput $serverLog -RedirectStandardError $serverErrorLog
+    Start-Process node -ArgumentList "--max-old-space-size=4096", "index.js" -WorkingDirectory $serverPath -NoNewWindow -RedirectStandardOutput $serverLog -RedirectStandardError $serverErrorLog
     
     Write-Host "Launching Vite dev server on port 3000..." -ForegroundColor White
     $appLog = Join-Path $logsPath "sos-app-dev.log"
@@ -449,7 +449,7 @@ if ($cli) {
     $env:NODE_ENV = "production"
     $env:PORT = "3001"
     $serverErrorLog = Join-Path $logsPath "sos-server-error.log"
-    Start-Process node -ArgumentList "index.js" -WorkingDirectory $serverPath -NoNewWindow -RedirectStandardOutput $serverLog -RedirectStandardError $serverErrorLog
+    Start-Process node -ArgumentList "--max-old-space-size=4096", "index.js" -WorkingDirectory $serverPath -NoNewWindow -RedirectStandardOutput $serverLog -RedirectStandardError $serverErrorLog
 
     # 3. Wait for the server to bind
     Write-Host "Waiting for service to bind..." -ForegroundColor White

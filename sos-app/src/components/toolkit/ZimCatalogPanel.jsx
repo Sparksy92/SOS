@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Database, Search, FolderOpen, AlertTriangle } from 'lucide-react';
+import { API_BASE } from '../../config.js';
 
 export default function ZimCatalogPanel() {
   const [folderPath, setFolderPath] = useState(() => {
@@ -13,7 +14,7 @@ export default function ZimCatalogPanel() {
     setLoading(true);
     setError(null);
     try {
-      const url = `http://${window.location.hostname}:3001/api/toolkit/zim`;
+      const url = `${API_BASE}/api/toolkit/zim${customPath ? `?folder=${encodeURIComponent(customPath)}` : ''}`;
       const res = await fetch(url);
       const data = await res.json();
       if (res.ok) {

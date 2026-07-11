@@ -139,17 +139,8 @@ const MissionJarvisContextPanel = ({
           {prompts.map((pText, i) => (
             <button
               key={i}
-              className="btn-tactical"
+              className="btn-suggestive-text"
               onClick={() => onSendPrompt(pText)}
-              style={{
-                fontSize: '0.7rem',
-                padding: '6px 8px',
-                textAlign: 'left',
-                textTransform: 'none',
-                lineHeight: '1.3',
-                backgroundColor: 'transparent',
-                borderColor: 'rgba(255,255,255,0.05)'
-              }}
             >
               "{pText}"
             </button>

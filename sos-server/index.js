@@ -8,14 +8,66 @@ dotenv.config({ path: path.join(__dirname, '..', '.env') });
 const express = require('express');
 const cors = require('cors');
 const fs = require('fs');
+const createDOMPurify = require('dompurify');
+const { JSDOM } = require('jsdom');
+const domPurifyWindow = new JSDOM('').window;
+const DOMPurify = createDOMPurify(domPurifyWindow);
 const { spawn } = require('child_process');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const morgan = require('morgan');
+const compression = require('compression');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+const TTS_URL = process.env.SOS_TTS_URL || 'http://localhost:3002';
 
-// Enable CORS for frontend
-app.use(cors());
-app.use(express.json());
+// Security headers
+app.use(helmet({
+  contentSecurityPolicy: false,  // Disable CSP for now since the app uses inline styles
+  crossOriginEmbedderPolicy: false,
+}));
+
+// Response compression
+app.use(compression());
+
+// Request logging
+app.use(morgan('combined'));
+
+// General rate limiter
+const generalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,  // 15 minutes
+  max: 300,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests, please try again later.' },
+});
+app.use('/api/', generalLimiter);
+
+// Strict rate limiter for expensive AI/crawler operations
+const heavyLimiter = rateLimit({
+  windowMs: 60 * 1000,  // 1 minute
+  max: 10,
+  message: { error: 'Rate limit exceeded for this operation.' },
+});
+app.use('/api/chat', heavyLimiter);
+app.use('/api/crawler/start', heavyLimiter);
+app.use('/api/crawler/ocr', heavyLimiter);
+app.use('/api/launcher/', heavyLimiter);
+
+// Enable CORS for frontend - restricted to localhost/same-origin
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+      return callback(null, true);
+    }
+    callback(new Error('Not allowed by CORS'));
+  }
+}));
+
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
 const { resolveMaterialPath, getMaterialRoot } = require('./services/materialRootService');
 const MATERIALS_DIR = getMaterialRoot();
@@ -41,6 +93,7 @@ app.get(/^\/materials\/(.+)$/, (req, res) => {
       const mammoth = require("mammoth");
       return mammoth.convertToHtml({ path: absolutePath })
         .then(result => {
+          const cleanHtml = DOMPurify.sanitize(result.value);
           const html = `
             <!DOCTYPE html>
             <html>
@@ -65,7 +118,7 @@ app.get(/^\/materials\/(.+)$/, (req, res) => {
                 </style>
               </head>
               <body>
-                ${result.value}
+                ${cleanHtml}
               </body>
             </html>
           `;
@@ -73,13 +126,15 @@ app.get(/^\/materials\/(.+)$/, (req, res) => {
           res.send(html);
         })
         .catch(err => {
-          res.status(500).send(`Error converting docx: ${err.message}`);
+          console.error("Error converting docx:", err);
+          res.status(500).send("Error converting docx document.");
         });
     }
     
-    res.sendFile(absolutePath);
+    res.sendFile(absolutePath, { dotfiles: 'allow' });
   } catch (err) {
-    res.status(403).send(`Access denied: ${err.message}`);
+    console.error("Access denied:", err);
+    res.status(403).send("Access denied.");
   }
 });
 
@@ -103,6 +158,7 @@ const healthRoutes = require('./routes/health.routes');
 const indexRoutes = require('./routes/index.routes');
 const toolkitRoutes = require('./routes/toolkit.routes');
 const launcherRoutes = require('./routes/launcher.routes');
+const ebgRoutes = require('./routes/ebg.routes');
 
 app.use('/api/crawler', crawlerRoutes);
 app.use('/api/video', mediaRoutes);
@@ -111,6 +167,7 @@ app.use('/api/health', healthRoutes);
 app.use('/api/index', indexRoutes);
 app.use('/api/toolkit', toolkitRoutes);
 app.use('/api/launcher', launcherRoutes);
+app.use('/api/ebg', ebgRoutes);
 
 // Launcher UI HTML route
 app.get('/launcher', (req, res) => {
@@ -118,7 +175,6 @@ app.get('/launcher', (req, res) => {
 });
 
 // AI Chat Endpoint
-app.use(express.json()); // Add JSON parser for POST requests
 
 app.post('/api/chat', async (req, res) => {
   try {
@@ -187,7 +243,9 @@ app.post('/api/metadata/extract', async (req, res) => {
     if (fs.existsSync(METADATA_FILE)) {
       try {
         currentMeta = JSON.parse(fs.readFileSync(METADATA_FILE, 'utf8'));
-      } catch (e) {}
+      } catch (e) {
+        console.error('[metadata] Error parsing metadata cache:', e.message);
+      }
     }
     
     // If we already have a valid title, return it
@@ -195,8 +253,13 @@ app.post('/api/metadata/extract', async (req, res) => {
       return res.json(currentMeta[filePath]);
     }
     
-    // Resolve absolute path using the new MATERIALS_DIR
-    const absolutePath = path.join(MATERIALS_DIR, filePath.replace('/materials/', ''));
+    // Resolve absolute path using the resolveMaterialPath helper to prevent directory traversal
+    let absolutePath;
+    try {
+      absolutePath = resolveMaterialPath(filePath);
+    } catch (e) {
+      return res.status(403).json({ error: "Access denied" });
+    }
     if (!fs.existsSync(absolutePath)) return res.status(404).json({ error: "File not found" });
     
     const meta = await ai.extractMetadata(absolutePath);
@@ -206,7 +269,9 @@ app.post('/api/metadata/extract', async (req, res) => {
       if (fs.existsSync(METADATA_FILE)) {
         currentMeta = JSON.parse(fs.readFileSync(METADATA_FILE, 'utf8'));
       }
-    } catch (e) {}
+    } catch (e) {
+      console.error('[metadata] Error reloading metadata cache:', e.message);
+    }
     
     currentMeta[filePath] = meta;
     fs.writeFileSync(METADATA_FILE, JSON.stringify(currentMeta, null, 2));
@@ -214,7 +279,7 @@ app.post('/api/metadata/extract', async (req, res) => {
     res.json(meta);
   } catch (err) {
     console.error("Extraction Error:", err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: "Error extracting metadata from file." });
   }
 });
 
@@ -225,7 +290,12 @@ app.get('/api/document/text', async (req, res) => {
   if (!relPath) return res.status(400).json({ error: "Path query parameter is required." });
 
   try {
-    const absolutePath = path.join(MATERIALS_DIR, relPath.replace('/materials/', ''));
+    let absolutePath;
+    try {
+      absolutePath = resolveMaterialPath(relPath);
+    } catch (e) {
+      return res.status(403).json({ error: "Access denied" });
+    }
     if (!fs.existsSync(absolutePath)) {
       return res.status(404).json({ error: "File not found." });
     }
@@ -268,7 +338,33 @@ app.get('/api/document/text', async (req, res) => {
     return res.status(400).json({ error: "Unsupported file type for text extraction." });
   } catch (err) {
     console.error("Text extraction error:", err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: "Error extracting text from document." });
+  }
+});
+
+// Proxy route for local Neural TTS service
+app.get('/api/tts', async (req, res) => {
+  try {
+    const { text, voice } = req.query;
+    if (!text) return res.status(400).json({ error: "Text is required" });
+
+    const targetUrl = `${TTS_URL}/api/tts?text=${encodeURIComponent(text)}&voice=${encodeURIComponent(voice || 'af_sarah')}`;
+    const response = await fetch(targetUrl);
+    
+    if (!response.ok) {
+      const errText = await response.text();
+      return res.status(response.status).send(errText);
+    }
+
+    const arrayBuffer = await response.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    
+    res.setHeader('Content-Type', 'audio/wav');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.send(buffer);
+  } catch (err) {
+    console.error("[TTS PROXY] Error forwarding request:", err);
+    res.status(500).json({ error: "TTS proxy failed." });
   }
 });
 
@@ -292,5 +388,46 @@ if (process.env.NODE_ENV === 'production') {
 const server = app.listen(PORT, () => {
   console.log(`SOS Server running on http://localhost:${PORT}`);
 });
+
+// Global Express error handler
+app.use((err, req, res, next) => {
+  console.error('[UNHANDLED ERROR]', err);
+  if (res.headersSent) return next(err);
+  res.status(500).json({ error: 'Internal server error' });
+});
+
+// Process-level crash protection
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('[UNHANDLED REJECTION]', reason);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('[UNCAUGHT EXCEPTION]', err);
+  // Give time to finish in-flight requests, then exit
+  setTimeout(() => process.exit(1), 3000);
+});
+
+// Graceful shutdown handler
+function gracefulShutdown(signal) {
+  console.log(`\n[${signal}] Shutting down gracefully...`);
+  server.close(() => {
+    console.log('HTTP server closed.');
+    try {
+      const { closeDb } = require('./db');
+      closeDb();
+    } catch (e) {
+      console.error('Error closing DB during shutdown:', e.message);
+    }
+    process.exit(0);
+  });
+  // Force exit after 10 seconds
+  setTimeout(() => {
+    console.error('Forced shutdown after timeout.');
+    process.exit(1);
+  }, 10000);
+}
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
 module.exports = server;

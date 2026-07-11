@@ -47,4 +47,13 @@ test('SOS End-to-End API Integration Suite', async (t) => {
     const res = await fetch(`http://localhost:${testPort}/materials/non_existent_file_xyz.pdf`);
     assert.strictEqual(res.status, 404);
   });
+
+  await t.test('4. TTS proxy endpoint returning WAV audio', async () => {
+    const res = await fetch(`http://localhost:${testPort}/api/tts?text=Express+test+string&voice=af_sarah`);
+    assert.strictEqual(res.status, 200);
+    assert.strictEqual(res.headers.get('content-type'), 'audio/wav');
+    
+    const buffer = await res.arrayBuffer();
+    assert.ok(buffer.byteLength > 1000); // Verify we got actual binary data back
+  });
 });

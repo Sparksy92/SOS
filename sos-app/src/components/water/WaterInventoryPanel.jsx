@@ -204,9 +204,63 @@ export default function WaterInventoryPanel({
 
               {/* Progress */}
               <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '4px', fontFamily: 'var(--font-mono)' }}>
-                  <span>{c.currentLevel} / {c.capacity} GAL</span>
-                  <span>{fill.toFixed(0)}%</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '6px', fontFamily: 'var(--font-mono)' }}>
+                  <div style={{ display: 'flex', gap: '4px' }}>
+                    <button 
+                      className="btn-tactical" 
+                      style={{ padding: '2px 6px', fontSize: '0.7rem' }}
+                      onClick={() => {
+                        const updated = waterContainers.map(w => w.id === c.id ? { ...w, currentLevel: Math.max(0, Number(w.currentLevel) - 5) } : w);
+                        setWaterContainers(updated);
+                      }}
+                      title="Decrease by 5 Gallons"
+                    >
+                      -5
+                    </button>
+                    <button 
+                      className="btn-tactical" 
+                      style={{ padding: '2px 6px', fontSize: '0.7rem' }}
+                      onClick={() => {
+                        const updated = waterContainers.map(w => w.id === c.id ? { ...w, currentLevel: Math.max(0, Number(w.currentLevel) - 1) } : w);
+                        setWaterContainers(updated);
+                      }}
+                      title="Decrease by 1 Gallon"
+                    >
+                      -1
+                    </button>
+                  </div>
+
+                  <span style={{ fontSize: '0.85rem', color: '#fff', fontWeight: 'bold' }}>
+                    {c.currentLevel} / {c.capacity} GAL
+                  </span>
+
+                  <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                    <button 
+                      className="btn-tactical" 
+                      style={{ padding: '2px 6px', fontSize: '0.7rem' }}
+                      onClick={() => {
+                        const updated = waterContainers.map(w => w.id === c.id ? { ...w, currentLevel: Math.min(w.capacity, Number(w.currentLevel) + 1) } : w);
+                        setWaterContainers(updated);
+                      }}
+                      title="Increase by 1 Gallon"
+                    >
+                      +1
+                    </button>
+                    <button 
+                      className="btn-tactical" 
+                      style={{ padding: '2px 6px', fontSize: '0.7rem' }}
+                      onClick={() => {
+                        const updated = waterContainers.map(w => w.id === c.id ? { ...w, currentLevel: Math.min(w.capacity, Number(w.currentLevel) + 5) } : w);
+                        setWaterContainers(updated);
+                      }}
+                      title="Increase by 5 Gallons"
+                    >
+                      +5
+                    </button>
+                    <span style={{ marginLeft: '6px', color: fill <= 25 ? 'var(--brand-danger)' : '#00ff66', fontWeight: 'bold' }}>
+                      {fill.toFixed(0)}%
+                    </span>
+                  </div>
                 </div>
                 <div style={{ height: '6px', backgroundColor: 'rgba(255,255,255,0.02)', borderRadius: '3px', overflow: 'hidden' }}>
                   <div style={{ width: `${Math.min(fill, 100)}%`, height: '100%', backgroundColor: fill <= 25 ? 'var(--brand-danger)' : 'var(--brand-primary)' }} />

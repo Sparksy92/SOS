@@ -19,7 +19,6 @@ tmp/
 /2012_cdw3d_dvd_set/
 /CD3WD Extracted Manuals/
 /markdown_materials/
-/picked out material for app/
 
 # Large archives and model files at root
 *.zim
@@ -71,3 +70,10 @@ __pycache__/
 # Local Logs
 logs/
 *.log
+
+# Large model and voice files
+*.onnx
+*.bin
+
+# Python virtual environment
+venv/

@@ -11,6 +11,7 @@ const __dirname = dirname(__filename);
 const require = createRequire(import.meta.url);
 
 const { rebuildManifest, loadManifest, setMaterialsDir } = require('../services/manifestService');
+const { extractDocumentTextPages } = require('../services/documentIndexingService');
 
 test('SOS Quality & Data Format Validation Test Suite', async (t) => {
   const tempRootDir = path.join(__dirname, 'quality_temp_fixture');
@@ -86,5 +87,24 @@ test('SOS Quality & Data Format Validation Test Suite', async (t) => {
     assert.strictEqual(matches.length, 2);
     assert.strictEqual(matches[0], '<!-- PAGE 1 -->');
     assert.strictEqual(matches[1], '<!-- PAGE 2 -->');
+  });
+
+  await t.test('4. Markdown File Scanning and Indexing', async () => {
+    // 1. Create a mock Markdown file
+    const mdFilePath = path.join(tempRootDir, 'The Ark', 'guide.md');
+    fs.writeFileSync(mdFilePath, '# Off-Grid Bannock Bread\nIngredients: Flour, water, salt.\nMethod: Mix and bake over coals.');
+
+    // 2. Verify that manifest scanning picks up the .md file
+    const manifest = rebuildManifest();
+    const survivalCategoryFiles = manifest.categories['Survival, Firearm Tactics & Software'];
+    const mdRecord = survivalCategoryFiles.find(f => f.name === 'guide.md');
+    assert.ok(mdRecord);
+    assert.strictEqual(mdRecord.extension, '.md');
+
+    // 3. Verify that the indexing service can extract text from .md files
+    const pages = await extractDocumentTextPages(mdFilePath);
+    assert.strictEqual(pages.length, 1);
+    assert.ok(pages[0].includes('Off-Grid Bannock Bread'));
+    assert.ok(pages[0].includes('bake over coals'));
   });
 });

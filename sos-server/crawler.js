@@ -45,6 +45,24 @@ const runCmd = (cmd) => {
   });
 };
 
+// Bounded Promise Pool helper for concurrent execution
+async function mapConcurrent(array, concurrency, fn) {
+  let index = 0;
+  const results = [];
+  
+  async function worker() {
+    while (index < array.length) {
+      const i = index++;
+      const item = array[i];
+      results[i] = await fn(item, i);
+    }
+  }
+  
+  const workers = Array.from({ length: concurrency }, worker);
+  await Promise.all(workers);
+  return results;
+}
+
 // Recursive file scanner respecting materialRootService boundaries
 function scanDir(dir, filesList = { zips: [], docs: [] }) {
   try {
@@ -63,7 +81,7 @@ function scanDir(dir, filesList = { zips: [], docs: [] }) {
         const ext = path.extname(file).toLowerCase();
         if (ext === '.zip' && file !== 'sos-source-backup.zip') {
           filesList.zips.push(fullPath);
-        } else if (['.pdf', '.txt'].includes(ext)) {
+        } else if (['.pdf', '.txt', '.html', '.htm', '.md'].includes(ext)) {
           filesList.docs.push(fullPath);
         }
       }
@@ -75,18 +93,20 @@ function scanDir(dir, filesList = { zips: [], docs: [] }) {
 }
 
 // Index doc to SQLite FTS5 using unified service
-async function indexToSqlite(docPath, relativePath) {
+async function indexToSqlite(docPath, relativePath, pages = null) {
   const status = checkDocumentIndexedStatus(relativePath);
   if (status.indexed && status.chunks > 0) {
-    return true;
+    return false; // Skipped
   }
   
   try {
-    console.log(`[SQLITE] Reading content for FTS5 indexing: ${relativePath}`);
-    const pages = await extractDocumentTextPages(docPath);
+    console.log(`[SQLITE] Indexing content: ${relativePath}`);
+    if (!pages) {
+      pages = await extractDocumentTextPages(docPath);
+    }
     writeDocumentChunksToSqlite(relativePath, pages);
     console.log(`[SQLITE] Successfully indexed ${pages.length} pages/chunks for ${relativePath}`);
-    return true;
+    return true; // Actually indexed
   } catch (err) {
     console.error(`[SQLITE] Failed indexing for ${docPath}:`, err);
     return false;
@@ -100,6 +120,7 @@ async function start(options = { mode: 'inventory', confirmation: '', dryRun: fa
   const mode = options.mode || 'inventory';
   const confirmation = options.confirmation || '';
   const dryRun = options.dryRun === true;
+  const fastIndex = options.fastIndex === true || process.env.SOS_FAST_INDEX === 'true';
   
   status.isCrawling = true;
   status.mode = mode;
@@ -158,8 +179,23 @@ async function start(options = { mode: 'inventory', confirmation: '', dryRun: fa
         
         try {
           console.log(`[ZIP ${i+1}/${status.totalZips}] Extracting ${status.currentFile}...`);
-          // Extract using PowerShell with -LiteralPath to avoid wildcard parsing issues
-          await runCmd(`powershell -Command "Expand-Archive -LiteralPath '${zipPath.replace(/'/g, "''")}' -DestinationPath '${destExtractDir.replace(/'/g, "''")}' -Force"`);
+          // Cross-platform extraction: powershell on Windows, unzip on Unix/Linux
+          const { execFile } = require('child_process');
+          if (process.platform === 'win32') {
+            await new Promise((resolve, reject) => {
+              execFile('powershell', ['-NoProfile', '-NonInteractive', '-Command', `Expand-Archive -LiteralPath ([System.IO.Path]::GetFullPath($args[0])) -DestinationPath ([System.IO.Path]::GetFullPath($args[1])) -Force`, '--', zipPath, destExtractDir], (err, stdout, stderr) => {
+                if (err) reject(err);
+                else resolve(stdout);
+              });
+            });
+          } else {
+            await new Promise((resolve, reject) => {
+              execFile('unzip', ['-o', zipPath, '-d', destExtractDir], (err, stdout, stderr) => {
+                if (err) reject(err);
+                else resolve(stdout);
+              });
+            });
+          }
           
           // Move original ZIP to backup directory, preserving relative path structure
           const relativeZipPath = path.relative(materialsRoot, zipPath);
@@ -183,43 +219,81 @@ async function start(options = { mode: 'inventory', confirmation: '', dryRun: fa
     }
     
     if (mode === 'index') {
-      status.statusText = "Starting document indexing...";
-      
-      // Index and Metadata Extract
-      for (let i = 0; i < scanResults.docs.length; i++) {
-        const docPath = scanResults.docs[i];
+      // Index and Metadata Extract (configurable worker promise pool concurrency)
+      const CONCURRENCY_LIMIT = parseInt(process.env.SOS_INDEX_CONCURRENCY) || 4;
+      await mapConcurrent(scanResults.docs, CONCURRENCY_LIMIT, async (docPath, i) => {
         const relativePath = '/materials/' + path.relative(materialsRoot, docPath).replace(/\\/g, '/');
         const ext = path.extname(docPath).toLowerCase();
         
+        // Quick skip check if already indexed and has metadata
+        const indexedStatus = checkDocumentIndexedStatus(relativePath);
+        const hasMetadata = ext !== '.pdf' || (metadataCache[relativePath] && metadataCache[relativePath].title !== 'Unknown Document' && !metadataCache[relativePath].title?.startsWith("Error"));
+        
+        if (indexedStatus.indexed && indexedStatus.chunks > 0 && hasMetadata) {
+          status.processedDocs++;
+          return;
+        }
+
+        // Dynamically update status with active document name and counts
         status.currentFile = path.basename(docPath);
         status.statusText = `Syncing Document [${i+1}/${status.totalDocs}]`;
-        
-        // Step A: Extract Metadata (only for PDF)
-        if (ext === '.pdf') {
-          if (fs.existsSync(METADATA_FILE)) {
-            try {
-              metadataCache = JSON.parse(fs.readFileSync(METADATA_FILE, 'utf8'));
-            } catch(e){}
+
+        let didWork = false;
+        let pages = null;
+
+        // Parse content only if we actually need to do work (indexing or metadata)
+        try {
+          pages = await extractDocumentTextPages(docPath);
+        } catch (err) {
+          console.error(`[CRAWLER] Failed to parse file content for ${docPath}:`, err);
+        }
+
+        if (pages && pages.length > 0) {
+          // Step A: Extract Metadata (only for PDF)
+          if (ext === '.pdf') {
+            if (fs.existsSync(METADATA_FILE)) {
+              try {
+                // Reload cache before write to prevent concurrent overwrite race condition
+                metadataCache = JSON.parse(fs.readFileSync(METADATA_FILE, 'utf8'));
+              } catch (e) {
+                console.error('[crawler] Error loading metadata cache:', e.message);
+              }
+            }
+            
+            if (!metadataCache[relativePath] || metadataCache[relativePath].title === 'Unknown Document' || metadataCache[relativePath].title?.startsWith("Error")) {
+              try {
+                // In fastIndex mode, bypass LLM metadata extraction to avoid bottleneck
+                const meta = fastIndex
+                  ? { title: path.basename(docPath, ext), summary: "Fast-indexed survival document." }
+                  : await ai.extractMetadata(docPath, pages);
+                // Reload cache again just in case another concurrent worker wrote since last check
+                try {
+                  metadataCache = JSON.parse(fs.readFileSync(METADATA_FILE, 'utf8'));
+                } catch (e) {
+                  console.error('[crawler] Error reloading metadata cache:', e.message);
+                }
+                metadataCache[relativePath] = meta;
+                saveMetadataCache();
+                didWork = true;
+              } catch (err) {
+                console.error("AI metadata extraction failed for:", docPath, err);
+              }
+            }
           }
           
-          if (!metadataCache[relativePath] || metadataCache[relativePath].title === 'Unknown Document' || metadataCache[relativePath].title?.startsWith("Error")) {
-            try {
-              const meta = await ai.extractMetadata(docPath);
-              metadataCache[relativePath] = meta;
-              saveMetadataCache();
-            } catch (err) {
-              console.error("AI metadata extraction failed for:", docPath, err);
-            }
+          // Step B: Index document in SQLite FTS5 using pre-parsed pages
+          const indexed = await indexToSqlite(docPath, relativePath, pages);
+          if (indexed) {
+            didWork = true;
           }
         }
         
-        // Step B: Index document in SQLite FTS5
-        await indexToSqlite(docPath, relativePath);
-        
         status.processedDocs++;
-        // Sleep between files to prevent Disk I/O bottleneck
-        await new Promise(r => setTimeout(r, 100));
-      }
+        // Sleep between files only if we performed actual work (prevents disk/CPU bottleneck)
+        if (didWork) {
+          await new Promise(r => setTimeout(r, 100));
+        }
+      });
       
       status.statusText = "Database fully indexed.";
       status.currentFile = "None";

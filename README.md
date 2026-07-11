@@ -1,40 +1,117 @@
 # SurvivalOS (Survival Operations System)
 
-SurvivalOS is a local-only, off-grid command center designed to manage offline emergency materials, pantry/water resources, and guided survival mission checklist workflows.
-
-## Safety & Local-First Boundaries
-*   **No Auto-Downloads**: SurvivalOS never automatically downloads copyrighted material references.
-*   **No Cloud Integrations**: Backups are kept entirely local as profile JSON exports. No server sync or telemetry is uploaded.
-*   **Safety Limits**:
-    *   SurvivalOS does not call emergency services.
-    *   SurvivalOS does not provide medical diagnosis or treatment.
-    *   SurvivalOS does not provide offensive firearms guidance.
-    *   SurvivalOS does not back up raw material files, only configuration and checklist metadata.
+SurvivalOS is a local-first, off-grid command center designed for emergency preparedness, offline library resource indexing, inventory management, and tactical mission coordination. Built to run on minimal hardware in zero-connectivity environments, it integrates semantic search, local text-to-speech, rules-based safety auditing, and a structured operations center.
 
 ---
 
-## Quick Start (Local Runbook)
+## Key Core Modules
+
+### 🗺️ Tactical Command & Operations
+*   **Active Mission Control**: Launch structured missions from templates (e.g., *Foraging & Hydration*, *Structural Fire Response*, *Communications Outage*) or custom parameters. Track objectives and events on a live timeline.
+*   **Tactical Map Panel**: Browse local offline topographic tiles and pinpoint survival coordinates. Plugs directly into local Leaflet assets with zero internet requirements.
+*   **EBG Semantic Telemetry**: Monitors local telemetry and observations (e.g., soil moisture, battery levels) mapped onto a rules-based spreading activation simulator to alert operators when goals or survival safety conditions are threatened.
+*   **Mission Briefing Exporter**: Generates structured markdown and JSON reports documenting mission execution, notes, and resource consumption.
+
+### 📚 Local Data Core & Neural Index
+*   **J.A.R.V.I.S. Conversational Assistant**: Offline RAG (Retrieval-Augmented Generation) query system using local LLMs (Ollama) to extract survival guidelines, search manuals, and guide task steps without leaking data to external APIs.
+*   **Content Gap Analyzer**: Scans local documents and maps library completion status against survival milestones (e.g., First Aid, Water Harvesting, Animal Husbandry).
+*   **Manual Import Approval Ledger**: A structured governance dashboard to review staging files, log licensing/validity evidence, and authorize documents before indexing them into the neural data store.
+*   **OCR Scanning Tool**: Integrated PyMuPDF & local OCR extraction scripts to digitize scanned documents directly into full-text formats.
+
+### 🥫 Resource & Inventory Management
+*   **Water Reserve Calculator**: Audits local water containers, tracks daily consumption limits, and projects storage runtime survival metrics.
+*   **Pantry Tracker & Recipe Wizard**: Manages pantry items, checks calorie reserves, and suggests cookable recipes based on current ingredients.
+
+---
+
+## System Architecture
+
+```mermaid
+graph TD
+    Client[Vite / React SPA] <-->|REST API / CORS| Server[Node.js / Express Server]
+    Server <-->|Synchronous DB Sync| SQLite[(SQLite Data Store)]
+    Server <-->|LangChain / HNSWLib| VectorStore[(Vector Store)]
+    Server -->|Subprocess| PythonScripts[Python Services: OCR, TTS]
+    Server <-->|Local API| Ollama[Ollama LLM Server]
+```
+
+*   **Frontend SPA**: Single-page React application compiled using Vite, featuring a dark-mode theme, Leaflet maps, and an interactive command interface.
+*   **Backend Server**: Node.js API server using `node:sqlite`'s `DatabaseSync` for ACID-compliant metadata storage, plus LangChain community loaders for full-text vector storage.
+*   **Python Sidecars**: Supporting subprocesses for Optical Character Recognition (OCR) and high-quality local neural Text-to-Speech (TTS) utilizing ONNX runtimes.
+*   **LLM Connection**: Local Ollama instance serving `llama3.1:8b` for RAG reasoning and `nomic-embed-text` for semantic text embedding.
+
+---
+
+## Safety, Portability & Local-First Boundaries
+
+1.  **Strictly Offline**: No telemetry, cloud sync, analytics, or remote API endpoints. Google Fonts and Leaflet map markers are self-hosted locally within the application distribution.
+2.  **No Automatic Downloads**: The system does not automate downloads of external media; all material imports require manual staging and operator confirmation.
+3.  **Boundary Guards**: Safety checks block path traversal (null-byte sanitization and parent-directory restrictions), and sanitize Mammoth DOCX parses via DOMPurify to prevent XSS.
+4.  **Copyright Vetting**: The dashboard includes explicit disclosures reminding operators that allowlisting source URLs does not guarantee legal copyright clearance.
+
+---
+
+## Installation & Configuration
+
+### Prerequisites
+*   **Node.js**: `v22.5.0` or higher (required for `node:sqlite` synchronous drivers).
+*   **Ollama**: Installed and running locally on the system.
+*   **Python**: `v3.10` or higher (for TTS and OCR service scripts).
 
 ### 1. Install Dependencies
-Install packages for the backend and frontend. Run inside the root directory:
+Run package installation commands in both project folders:
 ```bash
-# Install backend packages
+# Install backend dependencies
 cd sos-server
 npm install
 
-# Install frontend packages
+# Install frontend dependencies
 cd ../sos-app
 npm install
 ```
 
-### 2. Configure Environment (Optional)
-Copy the example environment configuration:
+### 2. Set Up Python Virtual Environment
+Initialize a local virtual environment at the project root:
 ```bash
-cp .env.example .env
+cd /home/bs/projects/survival
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
 ```
-Inside `.env`, you can optionally configure `SOS_MATERIALS_DIR` to point to your offline libraries.
 
-### 3. Start the Server and App
+### 3. Environment Variables Configuration
+Configure environment parameters by copying `.env.example` to `.env` in both the server directory and the root directory.
+
+Key server configurations (`sos-server/.env`):
+```env
+# Path to your local offline materials library (leave blank to use app root)
+SOS_MATERIALS_DIR=/media/bs/SurvivalOS_Library
+
+# Disable automatic background crawling/indexing
+SOS_AUTO_CRAWL=false
+
+# Express server port
+PORT=3001
+
+# Ollama configuration
+OLLAMA_BASE_URL=http://localhost:11434
+SOS_EMBEDDING_MODEL=nomic-embed-text
+SOS_LLM_MODEL=llama3.1:8b
+
+# TTS service URL (if running the Python TTS service)
+SOS_TTS_URL=http://localhost:3002
+```
+
+Key frontend configurations (`sos-app/.env`):
+```env
+VITE_API_BASE=http://localhost:3001
+```
+
+---
+
+## Execution Guide
+
+### Launching the Application
 Use the pre-configured script from the root folder:
 ```bash
 # On Windows, run the launcher batch script:
@@ -44,33 +121,32 @@ launcher.bat
 chmod +x launcher.sh
 ./launcher.sh
 ```
-Alternatively, start the backend and frontend separately:
-```bash
-# Start backend API (Port 3001)
-cd sos-server
-node index.js
 
-# Start frontend development server (Port 3000)
+Alternatively, start the servers manually:
+```bash
+# Start backend API
+cd sos-server
+npm start
+
+# Start frontend development server
 cd sos-app
 npm run dev
 ```
 
-### 4. Run Release Check
-Open the application in your browser at `http://localhost:3000` (or the dev port shown). Select **RELEASE CHECK** from the sidebar list to verify connection and configuration status.
+---
 
-### 5. Verify Offline Toolkit & Backup Audits
-*   Navigate to **OFFLINE TOOLKIT** > **Backup** to execute a local storage integrity check.
-*   Confirm materials manifest file structure and index health.
+## Verification & Testing
 
-### 6. Run Automated Unit Tests
-Verify module correctness using the test runner inside the root folder:
+### Running Tests
+To run all automated unit and integration tests, run the following command from the **repository root** (using sequential execution to prevent SQLite database locks):
 ```bash
-node --test sos-server/tests/*.test.mjs
+node --test-concurrency=1 --test sos-server/tests/*.test.mjs
 ```
 
-### 7. Build Production Bundle
-To compile the frontend client:
+### Compiling Production Builds
+Build the minified frontend application:
 ```bash
 cd sos-app
 npm run build
 ```
+This updates the static assets inside the `dist/` directory for deployment on offline web servers.

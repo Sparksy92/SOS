@@ -93,7 +93,7 @@ router.get('/', async (req, res) => {
     manifestExists: fs.existsSync(MANIFEST_FILE),
     metadataExists: fs.existsSync(METADATA_FILE),
     ollama: ollamaReachable ? 'reachable' : 'unreachable',
-    appVersion: "1.0.0"
+    appVersion: release.appVersion
   });
 });
 

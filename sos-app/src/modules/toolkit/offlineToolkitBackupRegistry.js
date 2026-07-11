@@ -138,5 +138,75 @@ export const BACKUP_KEYS_REGISTRY = [
     expectedType: "array",
     versionIntroduced: "phase_11",
     description: "Operator document review recommendations."
+  },
+  {
+    key: "sos_water_containers",
+    legacyAliases: ["water_containers"],
+    label: "Water Containers Storage",
+    category: "homestead",
+    required: false,
+    expectedType: "array",
+    versionIntroduced: "phase_18",
+    description: "Tracks water storage containers and level indicators."
+  },
+  {
+    key: "sos_homestead_profile",
+    legacyAliases: ["homestead_profile"],
+    label: "Homestead Profile & Pantry Settings",
+    category: "homestead",
+    required: false,
+    expectedType: "object",
+    versionIntroduced: "phase_18",
+    description: "Stores people counts, target durations, and pantry inventory."
+  },
+  {
+    key: "sos_favorites",
+    legacyAliases: ["favorites"],
+    label: "Favorites Bookmarks",
+    category: "user_preferences",
+    required: false,
+    expectedType: "array",
+    versionIntroduced: "phase_18",
+    description: "Lists bookmarks and favorited reference items."
+  },
+  {
+    key: "sos_read_guides",
+    legacyAliases: ["read_guides"],
+    label: "Read Guides History",
+    category: "user_preferences",
+    required: false,
+    expectedType: "array",
+    versionIntroduced: "phase_18",
+    description: "Saved history of reference manuals read by the operator."
+  },
+  {
+    key: "sos_last_accessed",
+    legacyAliases: ["last_accessed"],
+    label: "Last Accessed Reference Document",
+    category: "user_preferences",
+    required: false,
+    expectedType: "object",
+    versionIntroduced: "phase_18",
+    description: "Stores metadata about the last reviewed document."
+  },
+  {
+    key: "sos_dashboard_widgets",
+    legacyAliases: ["dashboard_widgets"],
+    label: "Dashboard Widgets Configuration",
+    category: "user_preferences",
+    required: false,
+    expectedType: "object",
+    versionIntroduced: "phase_18",
+    description: "Toggles widget visual panels on the tactical dashboard."
+  },
+  {
+    key: "sos_map_polygons",
+    legacyAliases: ["map_polygons"],
+    label: "Tactical Map Polygons & Land Boundaries",
+    category: "mapping",
+    required: false,
+    expectedType: "array",
+    versionIntroduced: "phase_18",
+    description: "Polygons and coordinates representing operator land and markers."
   }
 ];

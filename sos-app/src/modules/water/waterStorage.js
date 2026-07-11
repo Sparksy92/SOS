@@ -30,7 +30,19 @@ const defaultContainers = [
 ];
 
 export const loadWaterContainers = () => {
-  return localStore.get(WATER_STORAGE_KEY, defaultContainers);
+  let val = localStore.get(WATER_STORAGE_KEY, null);
+  if (val === null && typeof localStorage !== 'undefined') {
+    const legacy = localStorage.getItem('water_containers');
+    if (legacy !== null) {
+      try {
+        const parsed = JSON.parse(legacy);
+        localStore.set(WATER_STORAGE_KEY, parsed);
+        localStorage.removeItem('water_containers');
+        val = parsed;
+      } catch (e) {}
+    }
+  }
+  return val || defaultContainers;
 };
 
 export const saveWaterContainers = (containers) => {

@@ -32,17 +32,87 @@ const defaultWidgets = {
   favorites: true
 };
 
-export const loadProfile = () => localStore.get(PROFILE_KEY, defaultProfile);
+export const loadProfile = () => {
+  let val = localStore.get(PROFILE_KEY, null);
+  if (val === null && typeof localStorage !== 'undefined') {
+    const legacy = localStorage.getItem('homestead_profile');
+    if (legacy !== null) {
+      try {
+        const parsed = JSON.parse(legacy);
+        localStore.set(PROFILE_KEY, parsed);
+        localStorage.removeItem('homestead_profile');
+        val = parsed;
+      } catch (e) {}
+    }
+  }
+  return val || defaultProfile;
+};
 export const saveProfile = (profile) => localStore.set(PROFILE_KEY, profile);
 
-export const loadFavorites = () => localStore.get(FAVORITES_KEY, []);
+export const loadFavorites = () => {
+  let val = localStore.get(FAVORITES_KEY, null);
+  if (val === null && typeof localStorage !== 'undefined') {
+    const legacy = localStorage.getItem('favorites');
+    if (legacy !== null) {
+      try {
+        const parsed = JSON.parse(legacy);
+        localStore.set(FAVORITES_KEY, parsed);
+        localStorage.removeItem('favorites');
+        val = parsed;
+      } catch (e) {}
+    }
+  }
+  return val || [];
+};
 export const saveFavorites = (favs) => localStore.set(FAVORITES_KEY, favs);
 
-export const loadReadGuides = () => localStore.get(READ_GUIDES_KEY, []);
+export const loadReadGuides = () => {
+  let val = localStore.get(READ_GUIDES_KEY, null);
+  if (val === null && typeof localStorage !== 'undefined') {
+    const legacy = localStorage.getItem('read_guides');
+    if (legacy !== null) {
+      try {
+        const parsed = JSON.parse(legacy);
+        localStore.set(READ_GUIDES_KEY, parsed);
+        localStorage.removeItem('read_guides');
+        val = parsed;
+      } catch (e) {}
+    }
+  }
+  return val || [];
+};
 export const saveReadGuides = (guides) => localStore.set(READ_GUIDES_KEY, guides);
 
-export const loadLastAccessed = () => localStore.get(LAST_ACCESSED_KEY, null);
+export const loadLastAccessed = () => {
+  let val = localStore.get(LAST_ACCESSED_KEY, null);
+  if (val === null && typeof localStorage !== 'undefined') {
+    const legacy = localStorage.getItem('last_accessed');
+    if (legacy !== null) {
+      try {
+        const parsed = JSON.parse(legacy);
+        localStore.set(LAST_ACCESSED_KEY, parsed);
+        localStorage.removeItem('last_accessed');
+        val = parsed;
+      } catch (e) {}
+    }
+  }
+  return val;
+};
 export const saveLastAccessed = (item) => localStore.set(LAST_ACCESSED_KEY, item);
 
-export const loadDashboardWidgets = () => localStore.get(WIDGETS_KEY, defaultWidgets);
+export const loadDashboardWidgets = () => {
+  let val = localStore.get(WIDGETS_KEY, null);
+  if (val === null && typeof localStorage !== 'undefined') {
+    const legacy = localStorage.getItem('dashboard_widgets');
+    if (legacy !== null) {
+      try {
+        const parsed = JSON.parse(legacy);
+        localStore.set(WIDGETS_KEY, parsed);
+        localStorage.removeItem('dashboard_widgets');
+        val = parsed;
+      } catch (e) {}
+    }
+  }
+  return val || defaultWidgets;
+};
 export const saveDashboardWidgets = (widgets) => localStore.set(WIDGETS_KEY, widgets);

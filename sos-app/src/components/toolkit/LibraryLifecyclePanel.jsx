@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { RefreshCw, Search, CheckCircle, XCircle, Play, ShieldAlert, Download, Clipboard } from 'lucide-react';
+import { API_BASE } from '../../config.js';
 
-export default function LibraryLifecyclePanel() {
-  const [categories, setCategories] = useState({});
+export default function LibraryLifecyclePanel({ categories = {}, updateCategories }) {
   const [loading, setLoading] = useState(false);
   const [indexingPath, setIndexingPath] = useState(null);
   const [search, setSearch] = useState('');
@@ -11,34 +11,18 @@ export default function LibraryLifecyclePanel() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 50;
 
-  const loadMaterials = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch(`http://${window.location.hostname}:3001/api/materials`);
-      if (res.ok) {
-        const data = await res.json();
-        setCategories(data.categories || {});
-      }
-    } catch (e) {
-      console.warn("Failed fetching materials:", e);
-    }
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    loadMaterials();
-  }, []);
-
   const triggerRefresh = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`http://${window.location.hostname}:3001/api/materials/refresh`, {
+      const res = await fetch(`${API_BASE}/api/materials/refresh`, {
         method: 'POST'
       });
       if (res.ok) {
         const data = await res.json();
         alert(`Manifest rebuilt successfully. Found ${data.totalFiles} files.`);
-        loadMaterials();
+        if (updateCategories) {
+          updateCategories(data.categories || {});
+        }
       }
     } catch (e) {
       alert("Failed to rebuild manifest: " + e.message);
@@ -49,7 +33,7 @@ export default function LibraryLifecyclePanel() {
   const handleIndexFile = async (filePath) => {
     setIndexingPath(filePath);
     try {
-      const res = await fetch(`http://${window.location.hostname}:3001/api/index/document`, {
+      const res = await fetch(`${API_BASE}/api/index/document`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ filePath })
@@ -58,19 +42,21 @@ export default function LibraryLifecyclePanel() {
         const data = await res.json();
         if (data.success) {
           alert(`Successfully indexed document to SQLite FTS5 database!`);
-          // Update local state flag
-          setCategories(prev => {
-            const updated = { ...prev };
-            Object.keys(updated).forEach(cat => {
-              updated[cat] = updated[cat].map(file => {
-                if (file.path === filePath) {
-                  return { ...file, indexed: true };
-                }
-                return file;
-              });
+          
+          // Re-build updated categories dictionary
+          const updated = { ...categories };
+          Object.keys(updated).forEach(cat => {
+            updated[cat] = updated[cat].map(file => {
+              if (file.path === filePath) {
+                return { ...file, indexed: true };
+              }
+              return file;
             });
-            return updated;
           });
+          
+          if (updateCategories) {
+            updateCategories(updated);
+          }
         } else {
           alert(`Indexing completed but returned warning: ${data.warning || 'Unknown error'}`);
         }

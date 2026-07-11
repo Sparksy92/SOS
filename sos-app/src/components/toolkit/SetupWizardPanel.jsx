@@ -60,6 +60,9 @@ export default function SetupWizardPanel({ setViewMode }) {
       case 8: // Report export
         setViewMode('reports-panel');
         break;
+      case 9: // Tactical map / boundaries
+        setViewMode('map');
+        break;
       case 10: // Kiwix/ZIM availability
         setViewMode('settings');
         break;
@@ -140,7 +143,7 @@ export default function SetupWizardPanel({ setViewMode }) {
         {stepsKeys.map(key => {
           const step = DEFAULT_STEPS[key];
           const isCompleted = progress[step.id] === true;
-          const hasAction = [2, 3, 4, 5, 6, 7, 8, 10].includes(step.id);
+          const hasAction = [2, 3, 4, 5, 6, 7, 8, 9, 10].includes(step.id);
 
           return (
             <div 
