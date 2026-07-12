@@ -355,7 +355,7 @@ router.post('/start-app', (req, res) => {
       const serverChild = spawn('node', ['index.js'], { cwd: serverCwd, env, detached: true, stdio: 'ignore' });
       serverChild.unref();
 
-      const appChild = spawn('npm', ['run', 'dev'], { cwd: appCwd, detached: true, stdio: 'ignore' });
+      const appChild = spawn('npm', ['run', 'dev'], { cwd: appCwd, detached: true, stdio: 'ignore', shell: process.platform === 'win32' });
       appChild.unref();
 
       writeToLog('✔ Development servers spawned successfully (backend 3001, frontend 3000).');

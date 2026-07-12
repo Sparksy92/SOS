@@ -32,6 +32,13 @@ wait_for_server() {
     local url=$1
     local label=$2
     local timeout=45
+    
+    if ! command -v curl >/dev/null 2>&1; then
+        echo -e "\n${YELLOW}Warning: curl is not installed. Defaulting to a blind wait of 8 seconds...${NC}"
+        sleep 8
+        return 0
+    fi
+
     echo -n "Waiting for $label to initialize (performing startup database audit)..."
     for ((i=1; i<=timeout; i++)); do
         if curl -s "$url" | grep -q '"ok":true'; then

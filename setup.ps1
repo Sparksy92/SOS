@@ -9,7 +9,7 @@ Write-Output "================================================"
 $nodeCheck = Get-Command node -ErrorAction SilentlyContinue
 if (!$nodeCheck) {
     Write-Warning "❌ Error: Node.js is not installed. Please download and install Node.js v22.5.0 or higher from https://nodejs.org"
-    Exit
+    return
 }
 
 $nodeVersion = node -v
