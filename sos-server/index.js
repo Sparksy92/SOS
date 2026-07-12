@@ -53,7 +53,11 @@ const heavyLimiter = rateLimit({
 app.use('/api/chat', heavyLimiter);
 app.use('/api/crawler/start', heavyLimiter);
 app.use('/api/crawler/ocr', heavyLimiter);
-app.use('/api/launcher/', heavyLimiter);
+app.use('/api/launcher/npm-install', heavyLimiter);
+app.use('/api/launcher/build', heavyLimiter);
+app.use('/api/launcher/pull-model', heavyLimiter);
+app.use('/api/launcher/start-app', heavyLimiter);
+app.use('/api/launcher/stop', heavyLimiter);
 
 // Enable CORS for frontend - restricted to localhost/same-origin
 app.use(cors({
