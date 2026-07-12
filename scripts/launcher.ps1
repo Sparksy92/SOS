@@ -284,11 +284,22 @@ function Start-ProductionMode {
     $serverErrorLog = Join-Path $logsPath "sos-server-error.log"
     Start-Process node -ArgumentList "--max-old-space-size=4096", "index.js" -WorkingDirectory $serverPath -NoNewWindow -RedirectStandardOutput $serverLog -RedirectStandardError $serverErrorLog
     
-    Start-Sleep -Seconds 3
-    
-    $health = try { Invoke-RestMethod -Uri "http://localhost:3001/api/health" -Method Get -TimeoutSec 2 -ErrorAction SilentlyContinue } catch { $null }
-    if ($health -and $health.ok) {
-        Write-Host "SurvivalOS backend started successfully." -ForegroundColor Green
+    # Wait for the server to bind and respond successfully (performing startup database check)
+    Write-Host "Waiting for backend service to initialize (performing startup database audit)..." -ForegroundColor White
+    $success = $false
+    for ($i = 1; $i -le 45; $i++) {
+        $health = try { Invoke-RestMethod -Uri "http://localhost:3001/api/health" -Method Get -TimeoutSec 1 -ErrorAction SilentlyContinue } catch { $null }
+        if ($health -and $health.ok) {
+            $success = $true
+            break
+        }
+        Write-Host -NoNewline "." -ForegroundColor Gray
+        Start-Sleep -Seconds 1
+    }
+    Write-Host ""
+
+    if ($success) {
+        Write-Host "✔ SurvivalOS backend started successfully." -ForegroundColor Green
         Write-Host "Serving app on http://localhost:3001" -ForegroundColor Green
         Start-Process "http://localhost:3001"
     } else {
@@ -329,11 +340,22 @@ function Start-DevelopmentMode {
     $appErrorLog = Join-Path $logsPath "sos-app-dev-error.log"
     Start-Process npm -ArgumentList "run dev" -WorkingDirectory $appPath -NoNewWindow -RedirectStandardOutput $appLog -RedirectStandardError $appErrorLog
     
-    Start-Sleep -Seconds 4
-    
-    $health = try { Invoke-RestMethod -Uri "http://localhost:3001/api/health" -Method Get -TimeoutSec 2 -ErrorAction SilentlyContinue } catch { $null }
-    if ($health -and $health.ok) {
-        Write-Host "SurvivalOS backend started successfully on port 3001." -ForegroundColor Green
+    # Wait for the server to bind and respond successfully (performing startup database check)
+    Write-Host "Waiting for backend service to initialize (performing startup database audit)..." -ForegroundColor White
+    $success = $false
+    for ($i = 1; $i -le 45; $i++) {
+        $health = try { Invoke-RestMethod -Uri "http://localhost:3001/api/health" -Method Get -TimeoutSec 1 -ErrorAction SilentlyContinue } catch { $null }
+        if ($health -and $health.ok) {
+            $success = $true
+            break
+        }
+        Write-Host -NoNewline "." -ForegroundColor Gray
+        Start-Sleep -Seconds 1
+    }
+    Write-Host ""
+
+    if ($success) {
+        Write-Host "✔ SurvivalOS backend started successfully on port 3001." -ForegroundColor Green
         Write-Host "Vite dev server running on port 3000." -ForegroundColor Green
         Start-Process "http://localhost:3000"
     } else {
@@ -451,13 +473,27 @@ if ($cli) {
     $serverErrorLog = Join-Path $logsPath "sos-server-error.log"
     Start-Process node -ArgumentList "--max-old-space-size=4096", "index.js" -WorkingDirectory $serverPath -NoNewWindow -RedirectStandardOutput $serverLog -RedirectStandardError $serverErrorLog
 
-    # 3. Wait for the server to bind
-    Write-Host "Waiting for service to bind..." -ForegroundColor White
-    Start-Sleep -Seconds 3
+    # 3. Wait for the server to bind and respond successfully (performing startup database check)
+    Write-Host "Waiting for service to bind (performing startup database audit)..." -ForegroundColor White
+    $success = $false
+    for ($i = 1; $i -le 45; $i++) {
+        $health = try { Invoke-RestMethod -Uri "http://localhost:3001/api/health" -Method Get -TimeoutSec 1 -ErrorAction SilentlyContinue } catch { $null }
+        if ($health -and $health.ok) {
+            $success = $true
+            break
+        }
+        Write-Host -NoNewline "." -ForegroundColor Gray
+        Start-Sleep -Seconds 1
+    }
+    Write-Host ""
 
     # 4. Open the browser to http://localhost:3001/launcher
-    Write-Host "Opening launcher control panel in your default browser..." -ForegroundColor Green
-    Start-Process "http://localhost:3001/launcher"
+    if ($success) {
+        Write-Host "Opening launcher control panel in your default browser..." -ForegroundColor Green
+        Start-Process "http://localhost:3001/launcher"
+    } else {
+        Write-Host "Timeout: Server failed to start in time. Check logs." -ForegroundColor Red
+    }
 
     Write-Host "==========================================================" -ForegroundColor Cyan
     Write-Host "       SURVIVALOS WEB LAUNCHER IS ONLINE & STREAMING      " -ForegroundColor Green

@@ -28,6 +28,23 @@ check_port() {
     ss -tlnp 2>/dev/null | grep -q ":$1 "
 }
 
+wait_for_server() {
+    local url=$1
+    local label=$2
+    local timeout=45
+    echo -n "Waiting for $label to initialize (performing startup database audit)..."
+    for ((i=1; i<=timeout; i++)); do
+        if curl -s "$url" | grep -q '"ok":true'; then
+            echo -e "\n${GREEN}✔ $label is online and responsive.${NC}"
+            return 0
+        fi
+        echo -n "."
+        sleep 1
+    done
+    echo -e "\n${RED}Timeout: $label failed to bind or respond. Check logs at $SERVER_LOG.${NC}"
+    return 1
+}
+
 kill_port_process() {
     local port=$1
     local label=$2
@@ -192,9 +209,7 @@ start_production() {
     echo -e "Launching server daemon on port 3001..."
     cd "$SERVER_DIR" || return
     NODE_ENV=production PORT=3001 node index.js > "$SERVER_LOG" 2>&1 &
-    sleep 3
-    
-    if curl -s http://localhost:3001/api/health | grep -q '"ok":true'; then
+    if wait_for_server "http://localhost:3001/api/health" "SurvivalOS Server"; then
         echo -e "${GREEN}✔ Production server started successfully on http://localhost:3001${NC}"
         if command -v xdg-open >/dev/null 2>&1; then
             xdg-open http://localhost:3001
@@ -221,8 +236,7 @@ start_development() {
     cd "$APP_DIR" || return
     npm run dev > "$LOGS_DIR/sos-app-dev.log" 2>&1 &
     
-    sleep 4
-    if curl -s http://localhost:3001/api/health | grep -q '"ok":true'; then
+    if wait_for_server "http://localhost:3001/api/health" "SurvivalOS Backend"; then
         echo -e "${GREEN}✔ Backend running on port 3001, Frontend dev server running on port 3000${NC}"
         if command -v xdg-open >/dev/null 2>&1; then
             xdg-open http://localhost:3000
@@ -334,13 +348,13 @@ else
         NODE_ENV=production PORT=3001 node index.js > "$SERVER_LOG" 2>&1 &
     fi
 
-    sleep 3
-
-    echo -e "${GREEN}Opening launcher control panel in your browser...${NC}"
-    if command -v xdg-open >/dev/null 2>&1; then
-        xdg-open http://localhost:3001/launcher
-    elif command -v open >/dev/null 2>&1; then
-        open http://localhost:3001/launcher
+    if wait_for_server "http://localhost:3001/api/health" "SurvivalOS Backend"; then
+        echo -e "${GREEN}Opening launcher control panel in your browser...${NC}"
+        if command -v xdg-open >/dev/null 2>&1; then
+            xdg-open http://localhost:3001/launcher
+        elif command -v open >/dev/null 2>&1; then
+            open http://localhost:3001/launcher
+        fi
     fi
 
     echo -e "${CYAN}==========================================================${NC}"
