@@ -99,7 +99,10 @@ router.get('/diagnostics', async (req, res) => {
   };
 
   const nodeVer = process.version;
-  const pythonVer = await checkCmd('python --version');
+  let pythonVer = await checkCmd('python3 --version');
+  if (!pythonVer.installed) {
+    pythonVer = await checkCmd('python --version');
+  }
   const gitVer = await checkCmd('git --version');
   const ollamaVer = await checkCmd('ollama --version');
 
