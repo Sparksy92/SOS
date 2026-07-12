@@ -29,6 +29,9 @@ export default function ProfileSettingsPanel({
   const [libraryPath, setLibraryPath] = React.useState('');
   const [isBrowsing, setIsBrowsing] = React.useState(false);
   const [saveStatus, setSaveStatus] = React.useState('');
+  const [llmModel, setLlmModel] = React.useState('');
+  const [embeddingModel, setEmbeddingModel] = React.useState('');
+  const [modelSaveStatus, setModelSaveStatus] = React.useState('');
 
   React.useEffect(() => {
     const updateVoices = () => {
@@ -51,7 +54,37 @@ export default function ProfileSettingsPanel({
         }
       })
       .catch(err => console.error("Failed to load settings path:", err));
+
+    fetch(`${API_BASE}/api/settings/models`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.llmModel) setLlmModel(data.llmModel);
+        if (data.embeddingModel) setEmbeddingModel(data.embeddingModel);
+      })
+      .catch(err => console.error("Failed to load settings models:", err));
   }, []);
+
+  const handleSaveModels = () => {
+    setModelSaveStatus('Saving...');
+    fetch(`${API_BASE}/api/settings/models`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ llmModel, embeddingModel })
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setModelSaveStatus('Saved successfully!');
+          setTimeout(() => setModelSaveStatus(''), 3000);
+        } else {
+          setModelSaveStatus('Error saving settings');
+        }
+      })
+      .catch(err => {
+        console.error("Save failed:", err);
+        setModelSaveStatus('Save request failed');
+      });
+  };
 
   const handleBrowseFolder = () => {
     setIsBrowsing(true);
@@ -281,6 +314,56 @@ export default function ProfileSettingsPanel({
             style={{ padding: '8px 20px', fontSize: '0.85rem' }}
           >
             SAVE LOCATION
+          </button>
+        </div>
+      </div>
+
+      {/* Local AI Model Configurations */}
+      <div className="glass-panel" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <h3 style={{ margin: 0, fontSize: '0.95rem', color: 'var(--brand-primary)', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Settings size={16} /> LOCAL AI MODEL SETTINGS
+        </h3>
+        <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: '1.4' }}>
+          Choose or specify the active Ollama models. Ensure you have pulled them via the Launcher or CLI before using.
+        </p>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <label style={{ fontSize: '0.8rem', color: '#fff' }}>LLM Chat Model</label>
+            <input 
+              type="text" 
+              placeholder="e.g. llama3.2:3b or deepseek-r1:8b" 
+              className="search-input glass-panel" 
+              style={{ padding: '8px' }}
+              value={llmModel}
+              onChange={e => setLlmModel(e.target.value)}
+            />
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <label style={{ fontSize: '0.8rem', color: '#fff' }}>Embedding Model</label>
+            <input 
+              type="text" 
+              placeholder="e.g. nomic-embed-text" 
+              className="search-input glass-panel" 
+              style={{ padding: '8px' }}
+              value={embeddingModel}
+              onChange={e => setEmbeddingModel(e.target.value)}
+            />
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' }}>
+          <span style={{ fontSize: '0.8rem', color: modelSaveStatus.includes('failed') ? 'var(--brand-danger)' : '#00ff66', fontFamily: 'var(--font-mono)' }}>
+            {modelSaveStatus}
+          </span>
+          <button 
+            type="button" 
+            className="btn-tactical" 
+            onClick={handleSaveModels}
+            style={{ padding: '8px 20px', fontSize: '0.85rem' }}
+          >
+            APPLY MODELS
           </button>
         </div>
       </div>

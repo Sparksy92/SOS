@@ -16,21 +16,34 @@ const ebgService = require('./services/ebgService');
 // Configuration
 const VECTOR_STORE_PATH = process.env.SOS_VECTOR_STORE_PATH || path.join(__dirname, 'vector_store');
 const OLLAMA_BASE_URL = process.env.OLLAMA_BASE_URL || "http://localhost:11434";
-const EMBEDDING_MODEL = process.env.SOS_EMBEDDING_MODEL || "nomic-embed-text";
-const LLM_MODEL = process.env.SOS_LLM_MODEL || "llama3.1:8b";
+
+function getLLMModel() {
+  try {
+    const row = db.prepare("SELECT value FROM settings WHERE key = ?").get('llm_model');
+    if (row && row.value) return row.value;
+  } catch (e) {}
+  return process.env.SOS_LLM_MODEL || "llama3.1:8b";
+}
+
+function getEmbeddingModel() {
+  try {
+    const row = db.prepare("SELECT value FROM settings WHERE key = ?").get('embedding_model');
+    if (row && row.value) return row.value;
+  } catch (e) {}
+  return process.env.SOS_EMBEDDING_MODEL || "nomic-embed-text";
+}
+
+const getEmbeddings = () => new OllamaEmbeddings({
+  model: getEmbeddingModel(),
+  baseUrl: OLLAMA_BASE_URL,
+});
+
+const getLlm = () => new Ollama({
+  model: getLLMModel(),
+  baseUrl: OLLAMA_BASE_URL,
+});
 
 let vectorStore = null;
-
-// Initialize embeddings and LLM
-const embeddings = new OllamaEmbeddings({
-  model: EMBEDDING_MODEL,
-  baseUrl: OLLAMA_BASE_URL,
-});
-
-const llm = new Ollama({
-  model: LLM_MODEL,
-  baseUrl: OLLAMA_BASE_URL,
-});
 
 function getAvailableZims() {
   try {
@@ -53,7 +66,7 @@ function getAvailableZims() {
  */
 const loadVectorStore = async () => {
   if (fs.existsSync(VECTOR_STORE_PATH)) {
-    return await HNSWLib.load(VECTOR_STORE_PATH, embeddings);
+    return await HNSWLib.load(VECTOR_STORE_PATH, getEmbeddings());
   }
   return null;
 };
@@ -128,7 +141,7 @@ const indexFile = async (filePath) => {
       if (vectorStore) {
         await vectorStore.addDocuments(splitDocs);
       } else {
-        vectorStore = await HNSWLib.fromDocuments(splitDocs, embeddings);
+        vectorStore = await HNSWLib.fromDocuments(splitDocs, getEmbeddings());
       }
       
       // 4. Save to disk
@@ -311,7 +324,7 @@ ANSWER:`;
     const prompt = PromptTemplate.fromTemplate(template);
     const chain = RunnableSequence.from([
       prompt,
-      llm,
+      getLlm(),
       new StringOutputParser(),
     ]);
 
@@ -389,7 +402,7 @@ ANSWER:`;
     const prompt = PromptTemplate.fromTemplate(template);
     const chain = RunnableSequence.from([
       prompt,
-      llm,
+      getLlm(),
       new StringOutputParser(),
     ]);
 
@@ -626,7 +639,7 @@ ANSWER:`;
   // 3. Generate Answer
   const chain = RunnableSequence.from([
     prompt,
-    llm,
+    getLlm(),
     new StringOutputParser(),
   ]);
 
@@ -738,7 +751,7 @@ TEXT:
 `;
 
     const prompt = PromptTemplate.fromTemplate(template);
-    const chain = RunnableSequence.from([prompt, llm, new StringOutputParser()]);
+    const chain = RunnableSequence.from([prompt, getLlm(), new StringOutputParser()]);
     
     const response = await chain.invoke({ text: sampleText });
     

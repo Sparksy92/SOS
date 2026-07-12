@@ -35,6 +35,44 @@ router.post('/library-path', (req, res) => {
   }
 });
 
+// GET /api/settings/models
+router.get('/models', (req, res) => {
+  try {
+    const llmRow = db.prepare("SELECT value FROM settings WHERE key = ?").get('llm_model');
+    const embedRow = db.prepare("SELECT value FROM settings WHERE key = ?").get('embedding_model');
+    
+    res.json({
+      llmModel: llmRow ? llmRow.value : (process.env.SOS_LLM_MODEL || "llama3.1:8b"),
+      embeddingModel: embedRow ? embedRow.value : (process.env.SOS_EMBEDDING_MODEL || "nomic-embed-text")
+    });
+  } catch (err) {
+    console.error("[SETTINGS ROUTE] Failed to get model settings:", err);
+    res.status(500).json({ error: "Failed to retrieve settings." });
+  }
+});
+
+// POST /api/settings/models
+router.post('/models', (req, res) => {
+  try {
+    const { llmModel, embeddingModel } = req.body;
+    
+    const stmt = db.prepare("INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)");
+    if (llmModel !== undefined) {
+      stmt.run('llm_model', llmModel);
+      console.log(`[SETTINGS ROUTE] Saved LLM model setting: ${llmModel}`);
+    }
+    if (embeddingModel !== undefined) {
+      stmt.run('embedding_model', embeddingModel);
+      console.log(`[SETTINGS ROUTE] Saved embedding model setting: ${embeddingModel}`);
+    }
+    
+    res.json({ success: true, llmModel, embeddingModel });
+  } catch (err) {
+    console.error("[SETTINGS ROUTE] Failed to save model settings:", err);
+    res.status(500).json({ error: "Failed to save settings." });
+  }
+});
+
 // POST /api/settings/browse-folder
 router.post('/browse-folder', (req, res) => {
   const ip = req.ip || req.connection.remoteAddress;
