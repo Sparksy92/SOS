@@ -34,6 +34,11 @@ app.use(compression());
 // Request logging
 app.use(morgan('combined'));
 
+const isLoopback = (req) => {
+  const ip = req.ip || req.connection.remoteAddress;
+  return ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1' || ip === 'localhost';
+};
+
 // General rate limiter
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,  // 15 minutes
@@ -41,6 +46,7 @@ const generalLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too many requests, please try again later.' },
+  skip: isLoopback,
 });
 app.use('/api/', generalLimiter);
 
@@ -49,6 +55,7 @@ const heavyLimiter = rateLimit({
   windowMs: 60 * 1000,  // 1 minute
   max: 10,
   message: { error: 'Rate limit exceeded for this operation.' },
+  skip: isLoopback,
 });
 app.use('/api/chat', heavyLimiter);
 app.use('/api/crawler/start', heavyLimiter);
