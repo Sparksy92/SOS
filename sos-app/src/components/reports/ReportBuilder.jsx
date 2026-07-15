@@ -290,7 +290,7 @@ const ReportBuilder = ({
             {/* Answers */}
             <div>
               <h4 style={{ margin: '0 0 6px 0', fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-                SAVED JARVIS ANSWERS ({savedAnswers.length})
+                SAVED RANGER ANSWERS ({savedAnswers.length})
               </h4>
               <div style={{ maxHeight: '120px', overflowY: 'auto', border: '1px solid var(--border-subtle)', borderRadius: '4px', padding: '6px' }}>
                 {savedAnswers.length === 0 ? (

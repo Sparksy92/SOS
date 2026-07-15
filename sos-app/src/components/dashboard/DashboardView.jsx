@@ -180,7 +180,7 @@ export default function DashboardView({
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '0.85rem', fontFamily: 'var(--font-mono)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <span style={{ color: 'var(--text-muted)' }}>KNOWLEDGE SYSTEM (AI):</span>
-              <span style={{ color: '#00ff66', fontWeight: 'bold' }}>J.A.R.V.I.S. (llama3.1:8b)</span>
+              <span style={{ color: '#00ff66', fontWeight: 'bold' }}>R.A.N.G.E.R. (llama3.1:8b)</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <span style={{ color: 'var(--text-muted)' }}>LOCAL TEXT INDEX:</span>

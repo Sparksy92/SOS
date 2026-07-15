@@ -206,7 +206,7 @@ const NotesReportsPanel = ({ callSign = 'Operator' }) => {
             SAVED LOGS & SESSION REPORTS
           </h2>
           <p style={{ margin: '4px 0 0 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-            Access and compile saved library source citations, Jarvis logs, and manual observations.
+            Access and compile saved library source citations, Ranger logs, and manual observations.
           </p>
         </div>
         

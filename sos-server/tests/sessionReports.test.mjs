@@ -117,7 +117,7 @@ test('Session Notes and Reports Test Suite', async (t) => {
     assert.ok(md.includes('**OPERATOR CALLSIGN:** HOMESTEAD ALPHA'));
     assert.ok(md.includes('Checking winter fuel reserve logistics.'));
     assert.ok(md.includes('## SECTION 2: OPERATOR LOG NOTES'));
-    assert.ok(md.includes('## SECTION 3: JARVIS VERIFIED ANSWERS'));
+    assert.ok(md.includes('## SECTION 3: RANGER VERIFIED ANSWERS'));
     assert.ok(md.includes('## SECTION 4: FIELD NOTES & OBSERVATIONS'));
     assert.ok(md.includes('## SECTION 5: LOCAL SOURCES UTILIZED'));
     

@@ -8,7 +8,7 @@ import { generateMissionMarkdownReport, downloadFile } from '../../modules/repor
 import { loadSavedAnswers, loadSavedSources, loadFieldNotes } from '../../modules/session/sessionStore.js';
 import { buildMissionRelatedData } from '../../modules/missions/missionUtils.js';
 
-const MissionJarvisContextPanel = ({ 
+const MissionRangerContextPanel = ({ 
   mission, 
   onSendPrompt, 
   onOpenFieldMode,
@@ -177,4 +177,4 @@ const MissionJarvisContextPanel = ({
   );
 };
 
-export default MissionJarvisContextPanel;
+export default MissionRangerContextPanel;

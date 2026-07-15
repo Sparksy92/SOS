@@ -125,7 +125,7 @@ export const scoreMaterialForMission = (material, mission, options = {}) => {
   // Index status boost
   if (material.indexed) {
     score += 8;
-    reasons.push('Indexed document (Ready for J.A.R.V.I.S. RAG)');
+    reasons.push('Indexed document (Ready for R.A.N.G.E.R. RAG)');
   }
 
   // PDF extension boost

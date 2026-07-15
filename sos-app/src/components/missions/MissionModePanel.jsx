@@ -118,7 +118,7 @@ const MissionModePanel = ({ callSign = 'Operator', onSendSuggestedPrompt }) => {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
         <div>
           <h2 style={{ margin: 0, fontSize: '1.4rem', fontFamily: 'var(--font-mono)', fontWeight: 'bold', color: 'var(--brand-primary)', letterSpacing: '1px' }}>
-            JARVIS FIELD OPERATIONS CONTROL
+            RANGER FIELD OPERATIONS CONTROL
           </h2>
           <p style={{ margin: '4px 0 0 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
             Launch user-guided offline checklists, timeline logs, and situation reports for active field operations.

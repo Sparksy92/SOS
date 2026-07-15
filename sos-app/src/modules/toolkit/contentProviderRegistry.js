@@ -34,7 +34,7 @@ export const CONTENT_PROVIDERS = [
     setupChecklist: [
       "Download Kiwix Desktop or Mobile app.",
       "Obtain official ZIM files (e.g. Wikipedia Medicine) from Kiwix Library Catalog.",
-      "Specify your ZIM directory path in settings to let J.A.R.V.I.S. know what references you have."
+      "Specify your ZIM directory path in settings to let R.A.N.G.E.R. know what references you have."
     ],
     officialLinks: ["https://www.kiwix.org"]
   },

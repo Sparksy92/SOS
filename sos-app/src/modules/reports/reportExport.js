@@ -26,11 +26,11 @@ export const generateMarkdownReport = (report) => {
     md += `${manualNotes}\n\n`;
   }
 
-  // Section: Jarvis Verified Answers
-  md += `## SECTION 3: JARVIS VERIFIED ANSWERS\n`;
+  // Section: Ranger Verified Answers
+  md += `## SECTION 3: RANGER VERIFIED ANSWERS\n`;
   const answers = report.includedAnswers || [];
   if (answers.length === 0) {
-    md += `*No Jarvis answers were appended to this report.*\n\n`;
+    md += `*No Ranger answers were appended to this report.*\n\n`;
   } else {
     answers.forEach((ans, idx) => {
       md += `### Answer #${idx + 1}: ${ans.title || 'Query'}\n`;
@@ -196,10 +196,10 @@ export const generateMissionMarkdownReport = (mission, relatedData) => {
   }
 
   // Attached Answers
-  md += `## SECTION 6: ATTACHED JARVIS ANSWERS\n`;
+  md += `## SECTION 6: ATTACHED RANGER ANSWERS\n`;
   const answers = relatedData.includedAnswers || [];
   if (answers.length === 0) {
-    md += `*No Jarvis answers attached to this mission.*\n\n`;
+    md += `*No Ranger answers attached to this mission.*\n\n`;
   } else {
     answers.forEach((ans, idx) => {
       md += `### Answer #${idx + 1}: ${ans.title || 'Query'}\n`;

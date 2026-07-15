@@ -79,7 +79,7 @@ import NotesReportsPanel from './components/reports/NotesReportsPanel.jsx';
 import RiskSaveConfirmation from './components/common/RiskSaveConfirmation.jsx';
 import FieldNoteEditor from './components/notes/FieldNoteEditor.jsx';
 import MissionModePanel from './components/missions/MissionModePanel.jsx';
-import MissionJarvisContextPanel from './components/missions/MissionJarvisContextPanel.jsx';
+import MissionRangerContextPanel from './components/missions/MissionRangerContextPanel.jsx';
 import IndexIntegrityPanel from './components/library/IndexIntegrityPanel.jsx';
 import EbgGraphPanel from './components/toolkit/EbgGraphPanel.jsx';
 import { 
@@ -165,8 +165,8 @@ function App() {
       btnText: "Next Tab"
     },
     {
-      title: "3. J.A.R.V.I.S. Local AI 🤖",
-      text: "Type any question in natural language. J.A.R.V.I.S. retrieves exact passages from your indexed manuals to give safe, verified offline answers with page citations.",
+      title: "3. R.A.N.G.E.R. Local AI 🤖",
+      text: "Type any question in natural language. R.A.N.G.E.R. retrieves exact passages from your indexed manuals to give safe, verified offline answers with page citations.",
       action: () => setViewMode('chat'),
       btnText: "Next Tab"
     },
@@ -200,7 +200,7 @@ function App() {
   const [activeCategory, setActiveCategory] = useState(null);
   const [currentPath, setCurrentPath] = useState([]);
   
-  // J.A.R.V.I.S. Voice Settings State
+  // R.A.N.G.E.R. Voice Settings State
   const [voiceSettings, setVoiceSettings] = useState(() => {
     try {
       const saved = localStorage.getItem('sos-voice-settings');
@@ -270,7 +270,7 @@ function App() {
   };
   
   // Chat state
-  const [messages, setMessages] = useState([{ role: 'ai', text: 'J.A.R.V.I.S. Protocol Online. I have access to your survival database. What do you need to know?' }]);
+  const [messages, setMessages] = useState([{ role: 'ai', text: 'R.A.N.G.E.R. Protocol Online. I have access to your survival database. What do you need to know?' }]);
   const [chatInput, setChatInput] = useState('');
   const [chatLoading, setChatLoading] = useState(false);
   const messagesEndRef = useRef(null);
@@ -515,7 +515,7 @@ function App() {
       riskCategory: getRiskySourceCategory(msg.sources) || getRiskLevel({ name: msg.text, path: '' }).category,
       body: msg.text,
       content: msg.text,
-      tags: ['jarvis']
+      tags: ['ranger']
     });
     alert("Answer saved successfully!");
   };
@@ -592,9 +592,9 @@ function App() {
       title: `Observation on ${userQuery.substring(0, 30)}`,
       noteType: 'research note',
       riskCategory: riskCat || '',
-      body: `Jarvis Response Excerpt:\n"${msg.text.substring(0, 300)}..."`,
+      body: `Ranger Response Excerpt:\n"${msg.text.substring(0, 300)}..."`,
       relatedSourcePaths: msg.sources?.map(s => s.source).join(', ') || '',
-      relatedJarvisAnswer: msg.text
+      relatedRangerAnswer: msg.text
     };
 
     setNoteEditorPrefill(prefill);
@@ -614,7 +614,7 @@ function App() {
         riskCategory: riskCat,
         body: msg.text,
         content: msg.text,
-        tags: ['jarvis']
+        tags: ['ranger']
       });
       attachSavedAnswerToMission(activeMission.id, newItem.id);
       setActiveMission(loadActiveMission());
@@ -682,9 +682,9 @@ function App() {
       title: `Observation on ${userQuery.substring(0, 30)}`,
       noteType: 'research note',
       riskCategory: riskCat || '',
-      body: `Jarvis Response Excerpt:\n"${msg.text.substring(0, 300)}..."`,
+      body: `Ranger Response Excerpt:\n"${msg.text.substring(0, 300)}..."`,
       relatedSourcePaths: msg.sources?.map(s => s.source).join(', ') || '',
-      relatedJarvisAnswer: msg.text,
+      relatedRangerAnswer: msg.text,
       missionId: activeMission.id
     };
 
@@ -698,7 +698,7 @@ function App() {
       missionId: activeMission.id,
       sourcePath: s.source || s.documentPath,
       title: getSourceTitle(s.source || s.documentPath),
-      reason: s.matchLabel || 'Related source reference from Jarvis chat',
+      reason: s.matchLabel || 'Related source reference from Ranger chat',
       riskCategory: s.riskCategory || null,
       status: 'queued'
     });
@@ -832,7 +832,7 @@ function App() {
     const savedTheme = localStorage.getItem('sos-theme') || 'amber';
     changeTheme(savedTheme);
 
-    // Setup Web Speech API for J.A.R.V.I.S. Voice and Commands
+    // Setup Web Speech API for R.A.N.G.E.R. Voice and Commands
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (SpeechRecognition) {
       const rec = new SpeechRecognition();
@@ -1062,7 +1062,7 @@ function App() {
       setIndexProgress(i + 1);
     }
     setIsIndexingBatch(false);
-    alert(`Successfully indexed ${files.length} documents into J.A.R.V.I.S. Memory.`);
+    alert(`Successfully indexed ${files.length} documents into R.A.N.G.E.R. Memory.`);
   };
 
   const decodeCategory = async () => {
@@ -1426,7 +1426,7 @@ function App() {
       stopListening();
     } else {
       setIsVoiceChatActive(true);
-      speakText("J.A.R.V.I.S. Voice interface online. Standing by for instructions.", () => {
+      speakText("R.A.N.G.E.R. Voice interface online. Standing by for instructions.", () => {
         startListening();
       });
     }
@@ -1503,13 +1503,13 @@ function App() {
           filterChangeDate: '',
           lastTestDate: '',
           lastTestResult: 'Safe',
-          notes: 'Automatically logged via J.A.R.V.I.S. action request.'
+          notes: 'Automatically logged via R.A.N.G.E.R. action request.'
         };
         setWaterContainers(prev => [...prev, newContainer]);
       } 
       else if (action === 'save_note') {
         const noteData = {
-          title: `J.A.R.V.I.S. Note (${params.category ? params.category.toUpperCase() : 'GENERAL'})`,
+          title: `R.A.N.G.E.R. Note (${params.category ? params.category.toUpperCase() : 'GENERAL'})`,
           content: params.content,
           category: params.category || 'general',
           timestamp: new Date().toISOString()
@@ -1760,7 +1760,7 @@ function App() {
       const isKiwixVerified = progress["10"] === true;
       let text = `### **Kiwix / ZIM Setup Status**\n`;
       text += `Step 10 of the Setup Wizard: *'Confirm Kiwix/ZIM library availability'* is currently **${isKiwixVerified ? 'VERIFIED ✓' : 'NOT YET VERIFIED ✗'}**.\n\n`;
-      text += `Kiwix permits reading compressed encyclopedia ZIM packages offline. You can configure and scan ZIM archive directories metadata under the **ZIM Catalog** tab in the **OFFLINE TOOLKIT** view. J.A.R.V.I.S. checks metadata only and does not index ZIM binary contents directly.`;
+      text += `Kiwix permits reading compressed encyclopedia ZIM packages offline. You can configure and scan ZIM archive directories metadata under the **ZIM Catalog** tab in the **OFFLINE TOOLKIT** view. R.A.N.G.E.R. checks metadata only and does not index ZIM binary contents directly.`;
 
       setMessages(prev => [...prev, {
         role: 'ai',
@@ -1802,7 +1802,7 @@ function App() {
       text += `Open RELEASE CHECK to verify backend, materials, index, toolkit state, and backup status.\n`;
       text += `Start the backend and frontend using the commands in the README.\n`;
       text += `Create a local JSON backup before major changes.\n\n`;
-      text += `*Safety Policy:* J.A.R.V.I.S. runs local health checks only. I do not automatically fix your setup, scan your drive, upload logs, sync data to a cloud, download libraries, or index files in the background without explicit manual instruction.`;
+      text += `*Safety Policy:* R.A.N.G.E.R. runs local health checks only. I do not automatically fix your setup, scan your drive, upload logs, sync data to a cloud, download libraries, or index files in the background without explicit manual instruction.`;
 
       setMessages(prev => [...prev, {
         role: 'ai',
@@ -2528,7 +2528,7 @@ function App() {
               onClick={() => { setViewMode('chat'); setSidebarOpen(false); }}
             >
               <Cpu size={18} className={viewMode === 'chat' ? 'text-glow' : ''}/>
-              <span style={{color: viewMode === 'chat' ? 'var(--brand-primary)' : ''}}>J.A.R.V.I.S. (LOCAL AI)</span>
+              <span style={{color: viewMode === 'chat' ? 'var(--brand-primary)' : ''}}>R.A.N.G.E.R. (LOCAL AI)</span>
             </div>
 
             <div style={{ margin: '16px 0 8px 16px', fontSize: '0.75rem', color: 'var(--brand-primary)', letterSpacing: '1px', textTransform: 'uppercase' }}>
@@ -3075,7 +3075,7 @@ function App() {
                 )}
                 <div className="category-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: '16px' }}>
                   <div>
-                    <h2 className="category-title">J.A.R.V.I.S. TERMINAL</h2>
+                    <h2 className="category-title">R.A.N.G.E.R. TERMINAL</h2>
                     <div style={{color: 'var(--text-muted)'}}>RAG PROTOCOL // OFFLINE AI</div>
                   </div>
                   <div style={{ display: 'flex', gap: '12px' }}>
@@ -3117,7 +3117,7 @@ function App() {
                       }}>
                         <div style={{ marginBottom: '8px', fontSize: '0.8rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                           {msg.role === 'user' ? <Terminal size={14}/> : <Cpu size={14}/>}
-                          {msg.role === 'user' ? 'USER' : 'J.A.R.V.I.S.'}
+                          {msg.role === 'user' ? 'USER' : 'R.A.N.G.E.R.'}
                         </div>
                         
                         {isLiveGuide && steps.length > 0 && isLatestAiMessage ? (
@@ -3178,7 +3178,7 @@ function App() {
                                       gap: '10px'
                                     }}>
                                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--brand-primary)', fontSize: '0.85rem', fontWeight: 'bold' }}>
-                                        <CheckSquare size={14} /> J.A.R.V.I.S. PROPOSED ACTION
+                                        <CheckSquare size={14} /> R.A.N.G.E.R. PROPOSED ACTION
                                       </div>
                                       
                                       <div style={{ fontSize: '0.82rem', color: '#e0e0e0', lineHeight: '1.4' }}>
@@ -3509,7 +3509,7 @@ function App() {
                             </div>
                             
                             <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: '1.4' }}>
-                              Jarvis could not verify enough facts inside your local library to answer this query. Select an alternative protocol:
+                              Ranger could not verify enough facts inside your local library to answer this query. Select an alternative protocol:
                             </p>
 
                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '4px' }}>
@@ -3573,7 +3573,7 @@ function App() {
                                       }}
                                       style={{ padding: '8px 12px', fontSize: '0.75rem', borderColor: 'var(--brand-primary)' }}
                                     >
-                                      ASK JARVIS WITHOUT LOCAL SOURCES
+                                      ASK RANGER WITHOUT LOCAL SOURCES
                                     </button>
                                   );
                                 }
@@ -3586,7 +3586,7 @@ function App() {
                               if (!isQueryRisky) {
                                 return (
                                   <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontStyle: 'italic', marginTop: '2px' }}>
-                                    ⚠️ WARNING: Requesting an answer "Without Local Sources" will rely on Jarvis's pre-trained weights. This output is not checked or cited against your local survival books.
+                                    ⚠️ WARNING: Requesting an answer "Without Local Sources" will rely on Ranger's pre-trained weights. This output is not checked or cited against your local survival books.
                                   </div>
                                 );
                               } else {
@@ -3630,7 +3630,7 @@ function App() {
                 </div>
 
                 {activeMission && (
-                  <MissionJarvisContextPanel 
+                  <MissionRangerContextPanel 
                     mission={activeMission}
                     onSendPrompt={(pText) => {
                       setChatInput(pText);
@@ -4311,7 +4311,7 @@ function App() {
                 )}
               </div>
 
-              {/* J.A.R.V.I.S. Audiobook Reader HUD */}
+              {/* R.A.N.G.E.R. Audiobook Reader HUD */}
               {showAudioHUD && (
                 <div className="glass-panel" style={{
                   flex: 0.4,
@@ -4328,7 +4328,7 @@ function App() {
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--brand-primary)', marginBottom: '16px', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '12px' }}>
                     <Cpu size={20} className="status-dot-active" />
-                    <span style={{ letterSpacing: '2px', fontSize: '0.9rem', fontWeight: 'bold' }}>J.A.R.V.I.S. AUDIO READER</span>
+                    <span style={{ letterSpacing: '2px', fontSize: '0.9rem', fontWeight: 'bold' }}>R.A.N.G.E.R. AUDIO READER</span>
                   </div>
 
                   {isAudioLoading ? (

@@ -36,7 +36,7 @@ export default function SetupWizardPanel({ setViewMode }) {
   // Manual actions mapping to help direct user
   const handleStepAction = (stepId) => {
     switch (stepId) {
-      case 2: // Jarvis/Ollama
+      case 2: // Ranger/Ollama
         setViewMode('settings');
         break;
       case 3: // SOS_MATERIALS_DIR

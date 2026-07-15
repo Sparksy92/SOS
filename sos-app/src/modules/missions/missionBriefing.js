@@ -13,7 +13,7 @@ export const calculateReadinessScore = (mission, relatedAnswers = [], relatedSou
   if (answersCount > 0) {
     const points = Math.min(20, answersCount * 10);
     score += points;
-    reasons.push(`+${points} points: Attached ${answersCount} Jarvis answers.`);
+    reasons.push(`+${points} points: Attached ${answersCount} Ranger answers.`);
   }
 
   // 2. Attached Sources: +10 each (max 20)

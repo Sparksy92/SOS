@@ -168,7 +168,7 @@ export const attachSavedAnswerToMission = (missionId, answerId) => {
       const updatedMission = addTimelineEvent(
         { ...mission, savedAnswerIds, updatedAt: new Date().toISOString() },
         'answer_added',
-        'Jarvis chat answer attached to session log.',
+        'Ranger chat answer attached to session log.',
         { answerId }
       );
       list[idx] = updatedMission;

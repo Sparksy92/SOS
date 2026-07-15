@@ -143,7 +143,7 @@ test('SOS Mission Mode Test Suite', async (t) => {
     assert.ok(markdown.includes('## SECTION 3: CHECKLIST & LOGISTICS TASKS'));
     assert.ok(markdown.includes('## SECTION 5: OPERATOR OBSERVATION SCRATCHPAD'));
     assert.ok(markdown.includes('Batteries verified at 80% charge level.'));
-    assert.ok(markdown.includes('## SECTION 6: ATTACHED JARVIS ANSWERS'));
+    assert.ok(markdown.includes('## SECTION 6: ATTACHED RANGER ANSWERS'));
     assert.ok(markdown.includes('Solar charge calculations'));
     assert.ok(markdown.includes('## SECTION 7: ATTACHED SOURCES REFERENCE'));
     assert.ok(markdown.includes('Homestead Energy Handbook'));

@@ -10,7 +10,7 @@ export const OFFLINE_TOOLKIT_CATALOG = [
     id: "ollama",
     title: "Ollama",
     description: "Run large language models locally on your workstation.",
-    offlineImportance: "Powers J.A.R.V.I.S. conversational assistance, document summarization, and query processing completely offline.",
+    offlineImportance: "Powers R.A.N.G.E.R. conversational assistance, document summarization, and query processing completely offline.",
     difficulty: "Medium",
     platformNotes: "Available for Windows, macOS, and Linux. Requires a modern GPU/CPU with sufficient VRAM.",
     storagePowerNotes: "Models range from 2GB to 40GB+ of storage. Increases CPU/GPU power consumption during generation.",

@@ -39,7 +39,7 @@ export default function RecipeWizardPanel({ profile, setViewMode, setChatInput }
     }));
   };
 
-  const handleAskJarvis = (recipe) => {
+  const handleAskRanger = (recipe) => {
     if (!recipe) return;
     const query = `Provide detailed off-grid culinary advice and substitution tips for the recipe "${recipe.title}". Critical items: ${recipe.ingredients.filter(i=>i.critical).map(i=>i.name).join(', ')}.`;
     setChatInput(query);
@@ -230,9 +230,9 @@ export default function RecipeWizardPanel({ profile, setViewMode, setChatInput }
             </ol>
           </div>
 
-          {/* Ask Jarvis button */}
+          {/* Ask Ranger button */}
           <button
-            onClick={() => handleAskJarvis(activeRecipe)}
+            onClick={() => handleAskRanger(activeRecipe)}
             style={{
               width: '100%',
               padding: '12px',
@@ -250,7 +250,7 @@ export default function RecipeWizardPanel({ profile, setViewMode, setChatInput }
               transition: 'background-color 0.2s'
             }}
           >
-            <MessageSquare size={16} /> DEPLOY CULINARY SUBSTITUTION BRIEFING VIA J.A.R.V.I.S.
+            <MessageSquare size={16} /> DEPLOY CULINARY SUBSTITUTION BRIEFING VIA R.A.N.G.E.R.
           </button>
 
         </div>

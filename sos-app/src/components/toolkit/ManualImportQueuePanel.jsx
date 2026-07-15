@@ -169,7 +169,7 @@ export default function ManualImportQueuePanel({ setViewMode, setToolkitSubTab }
         <ol style={{ margin: 0, paddingLeft: '20px', fontSize: '0.85rem', color: '#bbb', lineHeight: '1.4' }}>
           <li style={{ marginBottom: '6px' }}>Verify the document license clearance status in the checklist below.</li>
           <li style={{ marginBottom: '6px' }}>Copy the file manually from `import-staging/offline-library/` to your configured materials directory.</li>
-          <li style={{ marginBottom: '6px' }}>Click <strong style={{ color: 'var(--brand-primary)', cursor: 'pointer' }} onClick={() => setViewMode('index-integrity')}>Go to Index Integrity</strong> to rebuild your materials manifest so J.A.R.V.I.S. and search can detect the new file.</li>
+          <li style={{ marginBottom: '6px' }}>Click <strong style={{ color: 'var(--brand-primary)', cursor: 'pointer' }} onClick={() => setViewMode('index-integrity')}>Go to Index Integrity</strong> to rebuild your materials manifest so R.A.N.G.E.R. and search can detect the new file.</li>
           <li>Once finished, manually delete the staged copy from the staging folder or dismiss it from this UI.</li>
         </ol>
       </div>

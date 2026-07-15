@@ -26,7 +26,7 @@ function parseActionTag(text) {
   };
 }
 
-test('J.A.R.V.I.S. AI Action Parser Suite', async (t) => {
+test('R.A.N.G.E.R. AI Action Parser Suite', async (t) => {
   await t.test('1. Parsers a valid log_water tag correctly', () => {
     const text = 'Here is the command: [ACTION: log_water volume=20 type=drinking location=kitchen]';
     const result = parseActionTag(text);

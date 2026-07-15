@@ -235,7 +235,7 @@ const ActiveMissionView = ({ mission, onSendSuggestedPrompt, onUpdateState }) =>
   };
 
   const handleIndexDocument = async (filePath) => {
-    if (window.confirm(`Initialize Neural Index for this reference? This parses contents locally into the J.A.R.V.I.S. database.`)) {
+    if (window.confirm(`Initialize Neural Index for this reference? This parses contents locally into the R.A.N.G.E.R. database.`)) {
       try {
         const res = await fetch(`${API_BASE}/api/index/document`, {
           method: 'POST',
@@ -530,7 +530,7 @@ const ActiveMissionView = ({ mission, onSendSuggestedPrompt, onUpdateState }) =>
           </div>
         </div>
 
-        {/* Third column: J.A.R.V.I.S. Mission Briefing Intel */}
+        {/* Third column: R.A.N.G.E.R. Mission Briefing Intel */}
         <div>
           <MissionBriefingPanel 
             mission={mission}
@@ -543,14 +543,14 @@ const ActiveMissionView = ({ mission, onSendSuggestedPrompt, onUpdateState }) =>
 
       </div>
 
-      {/* Suggested Jarvis prompts & Searches */}
-      {mission.suggestedJarvisPrompts && mission.suggestedJarvisPrompts.length > 0 && (
+      {/* Suggested Ranger prompts & Searches */}
+      {mission.suggestedRangerPrompts && mission.suggestedRangerPrompts.length > 0 && (
         <div className="glass-panel" style={{ padding: '20px' }}>
           <h3 style={{ margin: '0 0 12px 0', fontSize: '0.9rem', color: 'var(--brand-primary)', fontFamily: 'var(--font-mono)' }}>
-            SUGGESTED NEURAL ASSISTANCE (J.A.R.V.I.S.)
+            SUGGESTED NEURAL ASSISTANCE (R.A.N.G.E.R.)
           </h3>
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-            {mission.suggestedJarvisPrompts.map((promptText, i) => (
+            {mission.suggestedRangerPrompts.map((promptText, i) => (
               <button 
                 key={i} 
                 className="btn-tactical" 
@@ -585,7 +585,7 @@ const ActiveMissionView = ({ mission, onSendSuggestedPrompt, onUpdateState }) =>
         
         {related.includedAnswers.length > 0 && (
           <div style={{ marginBottom: '16px' }}>
-            <h4 style={{ margin: '0 0 8px 0', fontSize: '0.8rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>SAVED JARVIS LOGS</h4>
+            <h4 style={{ margin: '0 0 8px 0', fontSize: '0.8rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>SAVED RANGER LOGS</h4>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {related.includedAnswers.map(ans => (
                 <div key={ans.id} className="glass-panel" style={{ padding: '10px', fontSize: '0.8rem', backgroundColor: 'rgba(255,255,255,0.01)' }}>

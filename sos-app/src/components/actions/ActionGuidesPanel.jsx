@@ -25,12 +25,12 @@ export default function ActionGuidesPanel({
     }));
   };
 
-  const handleAskJarvis = (guide, stepText = null) => {
+  const handleAskRanger = (guide, stepText = null) => {
     const query = stepText 
       ? `Provide detailed offline homestead guidance on this checklist step for "${guide.title}": "${stepText}"`
       : `Provide a detailed offline briefing for the homestead action guide: "${guide.title}". Detail steps for: ${guide.steps.join(', ')}`;
     
-    // Set chat input and switch view mode to J.A.R.V.I.S.
+    // Set chat input and switch view mode to R.A.N.G.E.R.
     setChatInput(query);
     setViewMode('chat');
   };
@@ -141,9 +141,9 @@ export default function ActionGuidesPanel({
                   </label>
                   <button 
                     className="btn-tactical" 
-                    onClick={() => handleAskJarvis(selectedGuide, step)}
+                    onClick={() => handleAskRanger(selectedGuide, step)}
                     style={{ padding: '6px 10px', fontSize: '0.7rem', display: 'flex', alignItems: 'center', gap: '4px' }}
-                    title="Ask Jarvis about this step"
+                    title="Ask Ranger about this step"
                   >
                     <MessageSquare size={12} /> ASK AI
                   </button>
@@ -152,10 +152,10 @@ export default function ActionGuidesPanel({
             })}
           </div>
 
-          {/* General Ask Jarvis Button */}
+          {/* General Ask Ranger Button */}
           <button 
             className="btn-tactical" 
-            onClick={() => handleAskJarvis(selectedGuide)}
+            onClick={() => handleAskRanger(selectedGuide)}
             style={{ 
               width: '100%', 
               padding: '12px', 
@@ -168,7 +168,7 @@ export default function ActionGuidesPanel({
               marginTop: '10px'
             }}
           >
-            <MessageSquare size={16} /> DEPLOY FULL BRIEFING VIA J.A.R.V.I.S.
+            <MessageSquare size={16} /> DEPLOY FULL BRIEFING VIA R.A.N.G.E.R.
           </button>
 
         </div>

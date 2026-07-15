@@ -8,7 +8,7 @@ const FieldNoteEditor = ({ initialData = {}, onSave, onCancel, onSaveAndAddToRep
   const [tags, setTags] = useState(initialData.tags ? (Array.isArray(initialData.tags) ? initialData.tags.join(', ') : initialData.tags) : '');
   const [body, setBody] = useState(initialData.body || initialData.content || '');
   const [relatedSourcePaths, setRelatedSourcePaths] = useState(initialData.relatedSourcePaths || '');
-  const [relatedJarvisAnswer, setRelatedJarvisAnswer] = useState(initialData.relatedJarvisAnswer || '');
+  const [relatedRangerAnswer, setRelatedRangerAnswer] = useState(initialData.relatedRangerAnswer || '');
 
   // Auto-detect risk category if prefilled or derived from text
   useEffect(() => {
@@ -27,7 +27,7 @@ const FieldNoteEditor = ({ initialData = {}, onSave, onCancel, onSaveAndAddToRep
       tags: tags.split(',').map(t => t.trim()).filter(Boolean),
       body: body.trim(),
       relatedSourcePaths: relatedSourcePaths.trim(),
-      relatedJarvisAnswer: relatedJarvisAnswer.trim(),
+      relatedRangerAnswer: relatedRangerAnswer.trim(),
       type: 'note'
     };
   };

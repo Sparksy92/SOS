@@ -186,7 +186,7 @@ export default function CrawlerControls({
               </button>
             </div>
             <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: '1.4' }}>
-              Parses local reference documents page-by-page to generate text RAG chunks for J.A.R.V.I.S. Chat. <strong>Does not extract zips.</strong> Deep Rebuild wipes database chunks first.
+              Parses local reference documents page-by-page to generate text RAG chunks for R.A.N.G.E.R. Chat. <strong>Does not extract zips.</strong> Deep Rebuild wipes database chunks first.
             </span>
           </div>
 

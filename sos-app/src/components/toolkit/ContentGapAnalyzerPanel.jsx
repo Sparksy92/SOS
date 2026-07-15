@@ -573,7 +573,7 @@ export default function ContentGapAnalyzerPanel({
                         onClick={() => handleQuickApprove(item)}
                         style={{ padding: '4px 10px', fontSize: '0.75rem', backgroundColor: 'var(--brand-primary)', color: '#000', fontWeight: 'bold' }}
                       >
-                        Quick Approve (Unlock for J.A.R.V.I.S.)
+                        Quick Approve (Unlock for R.A.N.G.E.R.)
                       </button>
                     )}
                     {setToolkitSubTab && (

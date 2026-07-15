@@ -123,7 +123,7 @@ test('API Health endpoint safety checks', () => {
   assert.ok(routeContent.includes("processedZips:"), "Health API must return processedZips");
 });
 
-test('Jarvis Release Guidance Matches & Boundaries', () => {
+test('Ranger Release Guidance Matches & Boundaries', () => {
   const appPath = path.resolve('sos-app', 'src', 'App.jsx');
   const appContent = fs.readFileSync(appPath, 'utf8');
 
@@ -138,15 +138,15 @@ test('Jarvis Release Guidance Matches & Boundaries', () => {
     "is my local setup healthy?"
   ];
   prompts.forEach(p => {
-    assert.ok(appContent.includes(p), `Jarvis must intercept prompt: ${p}`);
+    assert.ok(appContent.includes(p), `Ranger must intercept prompt: ${p}`);
   });
 
   // Verify allowed responses wording
-  assert.ok(appContent.includes("Open RELEASE CHECK to verify backend, materials, index, toolkit state, and backup status."), "Jarvis must direct to Release Check");
-  assert.ok(appContent.includes("commands in the README"), "Jarvis must mention README commands");
+  assert.ok(appContent.includes("Open RELEASE CHECK to verify backend, materials, index, toolkit state, and backup status."), "Ranger must direct to Release Check");
+  assert.ok(appContent.includes("commands in the README"), "Ranger must mention README commands");
 
   // Verify forbidden words (auto-fixes / file modifications)
-  const forbiddenJarvis = [
+  const forbiddenRanger = [
     "I fixed your setup automatically",
     "I scanned your drive",
     "I uploaded logs",
@@ -154,8 +154,8 @@ test('Jarvis Release Guidance Matches & Boundaries', () => {
     "I downloaded your library",
     "I indexed your files automatically"
   ];
-  forbiddenJarvis.forEach(w => {
-    assert.ok(!appContent.includes(w), `Jarvis must not reply with forbidden wording: ${w}`);
+  forbiddenRanger.forEach(w => {
+    assert.ok(!appContent.includes(w), `Ranger must not reply with forbidden wording: ${w}`);
   });
 });
 

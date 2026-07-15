@@ -312,8 +312,8 @@ const askQuestion = async (query, isLiveGuide = false, useGeneralKnowledge = fal
   const isGreeting = greetings.some(g => cleanedQuery === g || cleanedQuery.startsWith(g + ' '));
 
   if (isGreeting) {
-    console.log(`[LLM] Greeting detected: "${query}". Bypassing RAG and routing to J.A.R.V.I.S. greeting template.`);
-    let template = `You are J.A.R.V.I.S., the offline tactical AI assistant for this Survival Operating System. 
+    console.log(`[LLM] Greeting detected: "${query}". Bypassing RAG and routing to R.A.N.G.E.R. greeting template.`);
+    let template = `You are R.A.N.G.E.R., the offline tactical AI assistant for this Survival Operating System. 
 Respond to the user's greeting or small talk in a helpful, conversational, and slightly sophisticated persona. Keep it brief (maximum 3 sentences).
 
 QUESTION:
@@ -388,7 +388,7 @@ ANSWER:`;
     }
 
     console.log(`[LLM] General knowledge query: "${sanitizedQuery}"`);
-    let template = `You are the SOS (Survival Operating System) AI Assistant, running as J.A.R.V.I.S.
+    let template = `You are the SOS (Survival Operating System) AI Assistant, running as R.A.N.G.E.R.
 You are answering the user's question using your general pre-trained knowledge base because no verified local sources were requested.
 Clearly advise the user that this answer is general knowledge and has not been verified against their offline survival library.
 
@@ -600,7 +600,7 @@ ANSWER:`;
   const contextText = matches.map(m => m.content).join("\n\n---\n\n");
   
   // 2. Construct Prompt
-  let template = `You are the SOS (Survival Operating System) AI Assistant, running as J.A.R.V.I.S.
+  let template = `You are the SOS (Survival Operating System) AI Assistant, running as R.A.N.G.E.R.
 You must answer the user's question based strictly on the provided Context and the Cognitive Data Layer (CDL) state. 
 If the answer is not contained within the context, state that you do not have the information. Do not invent answers.
 If the context does not contain enough information to answer the question, respond with exactly: "I do not have enough verified local information to answer this query."

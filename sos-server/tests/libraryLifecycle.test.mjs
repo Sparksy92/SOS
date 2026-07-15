@@ -164,7 +164,7 @@ test('Lifecycle UI Guardrails & Export safety', () => {
   assert.ok(panelContent.includes("triggerExportMarkdown"), "Lifecycle Panel must support Markdown export");
 });
 
-test('Jarvis Lifecycle Guidance Checks', () => {
+test('Ranger Lifecycle Guidance Checks', () => {
   const appPath = path.resolve('sos-app', 'src', 'App.jsx');
   const appContent = fs.readFileSync(appPath, 'utf8');
 
@@ -178,10 +178,10 @@ test('Jarvis Lifecycle Guidance Checks', () => {
   assert.ok(appContent.includes("what should i do next for my library?"));
 
   // Check forbidden answers
-  assert.ok(!appContent.includes('text += "I downloaded'), "Jarvis must not say 'I downloaded'");
-  assert.ok(!appContent.includes('text += "I imported'), "Jarvis must not say 'I imported'");
-  assert.ok(!appContent.includes('text += "I indexed'), "Jarvis must not say 'I indexed'");
-  assert.ok(!appContent.includes('text += "I verified copyright'), "Jarvis must not say 'I verified copyright'");
+  assert.ok(!appContent.includes('text += "I downloaded'), "Ranger must not say 'I downloaded'");
+  assert.ok(!appContent.includes('text += "I imported'), "Ranger must not say 'I imported'");
+  assert.ok(!appContent.includes('text += "I indexed'), "Ranger must not say 'I indexed'");
+  assert.ok(!appContent.includes('text += "I verified copyright'), "Ranger must not say 'I verified copyright'");
 });
 
 test('manifestChecked Fallback Rules', () => {

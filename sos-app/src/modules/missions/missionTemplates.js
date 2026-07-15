@@ -22,7 +22,7 @@ export const missionTemplates = [
       'Set fridge/freezer preservation plan (minimize door openings).',
       'Establish family communications plan using local UHF/VHF frequencies.'
     ],
-    suggestedJarvisPrompts: [
+    suggestedRangerPrompts: [
       'What are the critical safety steps to take before starting a fuel generator?',
       'How long can food stay safe in a closed refrigerator during a blackout?',
       'What is the recommended layout for a homestead emergency power backup system?'
@@ -53,7 +53,7 @@ export const missionTemplates = [
       'Verify date codes on gravity and active charcoal filters.',
       'Consult local chemical sanitation reference charts before treatment.'
     ],
-    suggestedJarvisPrompts: [
+    suggestedRangerPrompts: [
       'What is the safe chemical dosage ratio for chlorinating emergency drinking water?',
       'How do I build a sand and gravel gravity water filter in the field?',
       'What are the safety indicators that show water requires boiling?'
@@ -84,7 +84,7 @@ export const missionTemplates = [
       'Inspect first aid kit and replace expired supplies.',
       'Review localized evacuation maps and shelter guides manually.'
     ],
-    suggestedJarvisPrompts: [
+    suggestedRangerPrompts: [
       'What items are essential for a 72-hour storm emergency shelter kit?',
       'How do I secure residential structures against high wind damage?',
       'What are the guidelines for setting up storm shelter spaces?'
@@ -115,7 +115,7 @@ export const missionTemplates = [
       'Perform visual inspection of fluids only when engine is cold.',
       'Gather manuals and reference guides from offline library.'
     ],
-    suggestedJarvisPrompts: [
+    suggestedRangerPrompts: [
       'How do I diagnose a standard vehicle engine starter failure?',
       'What safety precautions are necessary when jacking up a vehicle in the field?',
       'What is the torque specification range for standard wheel lug nuts?'
@@ -146,7 +146,7 @@ export const missionTemplates = [
       'Check physical water meter counts.',
       'Assess progress on overdue energy tasks.'
     ],
-    suggestedJarvisPrompts: [
+    suggestedRangerPrompts: [
       'What pantry items have the longest shelf life for emergency homestead storage?',
       'How do I calculate emergency daily calorie requirements for a family of four?',
       'What are the core components of a homestead readiness audit?'
@@ -177,7 +177,7 @@ export const missionTemplates = [
       'Log location and status of all medical trauma kits.',
       'Verify emergency contact details are printed physically.'
     ],
-    suggestedJarvisPrompts: [
+    suggestedRangerPrompts: [
       'What are the standard guidelines for treating minor burns in the field?',
       'What items should be included in an advanced trauma kit?',
       'How do I perform basic CPR according to current guidelines?'

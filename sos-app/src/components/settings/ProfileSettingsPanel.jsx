@@ -130,7 +130,7 @@ export default function ProfileSettingsPanel({
 
   const handleTestVoice = () => {
     if (speakText) {
-      speakText("J.A.R.V.I.S. Audio synthesis online. Standby for instructions.");
+      speakText("R.A.N.G.E.R. Audio synthesis online. Standby for instructions.");
     }
   };
   const handleUpdateProfileField = (field, val) => {
@@ -391,13 +391,13 @@ export default function ProfileSettingsPanel({
         </div>
       </div>
 
-      {/* J.A.R.V.I.S. Voice Configuration */}
+      {/* R.A.N.G.E.R. Voice Configuration */}
       <div className="glass-panel" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
         <h3 style={{ margin: 0, fontSize: '0.95rem', color: 'var(--brand-primary)', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Volume2 size={16} /> J.A.R.V.I.S. VOICE CONFIGURATION
+          <Volume2 size={16} /> R.A.N.G.E.R. VOICE CONFIGURATION
         </h3>
         <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: '1.4' }}>
-          Configure text-to-speech audio feedback parameters. Selecting a British English voice (if installed on your system) is recommended to approximate the default JARVIS persona.
+          Configure text-to-speech audio feedback parameters. Selecting a British English voice (if installed on your system) is recommended to approximate the default RANGER persona.
         </p>
         
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -438,7 +438,7 @@ export default function ProfileSettingsPanel({
                 <option value="af_heart" style={{ background: '#121212', color: '#ffffff' }}>af_heart (Female US - Warm & Natural)</option>
                 <option value="af_nicole" style={{ background: '#121212', color: '#ffffff' }}>af_nicole (Female US - Clear & Focused)</option>
                 <option value="af_sky" style={{ background: '#121212', color: '#ffffff' }}>af_sky (Female US - Bright & Direct)</option>
-                <option value="bm_lewis" style={{ background: '#121212', color: '#ffffff' }}>bm_lewis (Male UK - Tactical / J.A.R.V.I.S. style)</option>
+                <option value="bm_lewis" style={{ background: '#121212', color: '#ffffff' }}>bm_lewis (Male UK - Tactical / R.A.N.G.E.R. style)</option>
                 <option value="bm_george" style={{ background: '#121212', color: '#ffffff' }}>bm_george (Male UK - Deep & Steady)</option>
                 <option value="am_michael" style={{ background: '#121212', color: '#ffffff' }}>am_michael (Male US - Narrative / Audio-book)</option>
                 <option value="am_adam" style={{ background: '#121212', color: '#ffffff' }}>am_adam (Male US - Direct & Serious)</option>

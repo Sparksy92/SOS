@@ -367,7 +367,7 @@ test('Integrity Audit Auditing Rules', () => {
   assert.ok(auditDupes.findings.some(f => f.message.includes("Unknown localStorage key beginning with sos_")));
 });
 
-test('Backup UI & Jarvis safety audits', () => {
+test('Backup UI & Ranger safety audits', () => {
   const uiPath = path.resolve('sos-app', 'src', 'components', 'toolkit', 'OfflineToolkitBackupPanel.jsx');
   const uiContent = fs.readFileSync(uiPath, 'utf8');
 
@@ -377,12 +377,12 @@ test('Backup UI & Jarvis safety audits', () => {
   assert.ok(!uiContent.includes("Upload"));
   assert.ok(!uiContent.includes("Download Materials"));
 
-  // Jarvis guidance checks
+  // Ranger guidance checks
   const appPath = path.resolve('sos-app', 'src', 'App.jsx');
   const appContent = fs.readFileSync(appPath, 'utf8');
   assert.ok(appContent.includes("backup my offline toolkit"));
   assert.ok(appContent.includes("run toolkit integrity audit"));
-  assert.ok(!appContent.includes('text += "I synced'), "Jarvis must not say 'I synced'");
+  assert.ok(!appContent.includes('text += "I synced'), "Ranger must not say 'I synced'");
 });
 
 test('Demo Data & Reset Profile Hardening Checks', () => {

@@ -205,18 +205,18 @@ test('Manual Import Local Updates Only', () => {
   assert.ok(manualContent.includes("Queue status: manually staged candidate detected"), "Staged indicators must match hints");
 });
 
-test('Jarvis Conversational Guidance Safety Check', () => {
+test('Ranger Conversational Guidance Safety Check', () => {
   const appPath = path.resolve('sos-app', 'src', 'App.jsx');
   const appContent = fs.readFileSync(appPath, 'utf8');
 
-  // Jarvis intercepts are guidance-only
+  // Ranger intercepts are guidance-only
   assert.ok(appContent.includes("what is in my acquisition queue?"));
   assert.ok(appContent.includes("what sources are allowlisted?"));
   assert.ok(appContent.includes("what should i acquire next?"));
   assert.ok(appContent.includes("planned acquisition records"));
 
-  // Check forbidden actions in Jarvis answers
-  assert.ok(!appContent.includes('text += "I downloaded'), "Jarvis must not say 'I downloaded'");
-  assert.ok(!appContent.includes('text += "I fetched'), "Jarvis must not say 'I fetched'");
-  assert.ok(!appContent.includes('text += "I verified copyright'), "Jarvis must not say 'I verified copyright'");
+  // Check forbidden actions in Ranger answers
+  assert.ok(!appContent.includes('text += "I downloaded'), "Ranger must not say 'I downloaded'");
+  assert.ok(!appContent.includes('text += "I fetched'), "Ranger must not say 'I fetched'");
+  assert.ok(!appContent.includes('text += "I verified copyright'), "Ranger must not say 'I verified copyright'");
 });
