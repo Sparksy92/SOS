@@ -13,7 +13,7 @@ SurvivalOS is a local-first, off-grid command center designed for emergency prep
 *   **Mission Briefing Exporter**: Generates structured markdown and JSON reports documenting mission execution, notes, and resource consumption.
 
 ### 📚 Local Data Core & Neural Index
-*   **J.A.R.V.I.S. Conversational Assistant**: Offline RAG (Retrieval-Augmented Generation) query system using local LLMs (Ollama) to extract survival guidelines, search manuals, and guide task steps without leaking data to external APIs.
+*   **R.A.N.G.E.R. Conversational Assistant**: Offline RAG (Retrieval-Augmented Generation) query system using local LLMs (Ollama) to extract survival guidelines, search manuals, and guide task steps without leaking data to external APIs.
 *   **Content Gap Analyzer**: Scans local documents and maps library completion status against survival milestones (e.g., First Aid, Water Harvesting, Animal Husbandry).
 *   **Manual Import Approval Ledger**: A structured governance dashboard to review staging files, log licensing/validity evidence, and authorize documents before indexing them into the neural data store.
 *   **OCR Scanning Tool**: Integrated PyMuPDF & local OCR extraction scripts to digitize scanned documents directly into full-text formats.

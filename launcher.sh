@@ -28,9 +28,23 @@ check_port() {
     ss -tlnp 2>/dev/null | grep -q ":$1 "
 }
 
+get_pid_on_port() {
+    local port=$1
+    local pid=""
+    if command -v lsof >/dev/null 2>&1; then
+        pid=$(lsof -t -i:"$port" 2>/dev/null)
+    elif command -v fuser >/dev/null 2>&1; then
+        pid=$(fuser "$port/tcp" 2>/dev/null | awk '{print $NF}')
+    else
+        pid=$(ss -tlnp "sport = :$port" 2>/dev/null | grep -o 'pid=[0-9]*' | cut -d= -f2 | head -n1)
+    fi
+    echo "$pid"
+}
+
 wait_for_server() {
     local url=$1
     local label=$2
+    local server_pid=$3
     local timeout=45
     
     if ! command -v curl >/dev/null 2>&1; then
@@ -41,6 +55,12 @@ wait_for_server() {
 
     echo -n "Waiting for $label to initialize (performing startup database audit)..."
     for ((i=1; i<=timeout; i++)); do
+        # Check if the process died early
+        if [ -n "$server_pid" ] && ! kill -0 "$server_pid" 2>/dev/null; then
+            echo -e "\n${RED}❌ Process $server_pid terminated early. Check logs at $SERVER_LOG.${NC}"
+            return 1
+        fi
+
         if curl -s "$url" | grep -q '"ok":true'; then
             echo -e "\n${GREEN}✔ $label is online and responsive.${NC}"
             return 0
@@ -60,7 +80,7 @@ kill_port_process() {
         read -rp "Stop process listening on port $port? (y/n): " confirm
         if [[ "$confirm" =~ ^[Yy]$ ]]; then
             local pid
-            pid=$(lsof -t -i:"$port" 2>/dev/null)
+            pid=$(get_pid_on_port "$port")
             if [ -n "$pid" ]; then
                 echo -e "Stopping $label (PID: $pid)..."
                 kill "$pid" 2>/dev/null
@@ -216,7 +236,8 @@ start_production() {
     echo -e "Launching server daemon on port 3001..."
     cd "$SERVER_DIR" || return
     NODE_ENV=production PORT=3001 node index.js > "$SERVER_LOG" 2>&1 &
-    if wait_for_server "http://localhost:3001/api/health" "SurvivalOS Server"; then
+    local server_pid=$!
+    if wait_for_server "http://localhost:3001/api/health" "SurvivalOS Server" "$server_pid"; then
         echo -e "${GREEN}✔ Production server started successfully on http://localhost:3001${NC}"
         if command -v xdg-open >/dev/null 2>&1; then
             xdg-open http://localhost:3001
@@ -238,12 +259,13 @@ start_development() {
     echo -e "Launching backend Node server on port 3001..."
     cd "$SERVER_DIR" || return
     NODE_ENV=development PORT=3001 node index.js > "$SERVER_LOG" 2>&1 &
+    local server_pid=$!
     
     echo -e "Launching Vite dev server on port 3000..."
     cd "$APP_DIR" || return
     npm run dev > "$LOGS_DIR/sos-app-dev.log" 2>&1 &
     
-    if wait_for_server "http://localhost:3001/api/health" "SurvivalOS Backend"; then
+    if wait_for_server "http://localhost:3001/api/health" "SurvivalOS Backend" "$server_pid"; then
         echo -e "${GREEN}✔ Backend running on port 3001, Frontend dev server running on port 3000${NC}"
         if command -v xdg-open >/dev/null 2>&1; then
             xdg-open http://localhost:3000
@@ -290,10 +312,10 @@ cleanup_services() {
     log_msg "Shutting down launcher background services"
     # Find PIDs on 3000/3001 and kill
     local p3000
-    p3000=$(lsof -t -i:3000 2>/dev/null)
+    p3000=$(get_pid_on_port 3000)
     if [ -n "$p3000" ]; then kill -9 "$p3000" 2>/dev/null; fi
     local p3001
-    p3001=$(lsof -t -i:3001 2>/dev/null)
+    p3001=$(get_pid_on_port 3001)
     if [ -n "$p3001" ]; then kill -9 "$p3001" 2>/dev/null; fi
 }
 
@@ -347,15 +369,17 @@ else
         npm install
     fi
 
+    local server_pid=""
     if check_port "3001"; then
         echo -e "${GREEN}Launcher service already running on port 3001.${NC}"
     else
         echo -e "Starting server daemon on port 3001..."
         cd "$SERVER_DIR" || exit 1
         NODE_ENV=production PORT=3001 node index.js > "$SERVER_LOG" 2>&1 &
+        server_pid=$!
     fi
 
-    if wait_for_server "http://localhost:3001/api/health" "SurvivalOS Backend"; then
+    if wait_for_server "http://localhost:3001/api/health" "SurvivalOS Backend" "$server_pid"; then
         echo -e "${GREEN}Opening launcher control panel in your browser...${NC}"
         if command -v xdg-open >/dev/null 2>&1; then
             xdg-open http://localhost:3001/launcher

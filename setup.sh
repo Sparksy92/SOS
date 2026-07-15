@@ -10,7 +10,19 @@ echo "================================================"
 
 # 1. Verify Node.js version
 if ! command -v node &> /dev/null; then
-    echo "❌ Error: Node.js is not installed. Please install Node.js v22.5.0 or higher."
+    echo "❌ Error: Node.js is not installed."
+    echo "SurvivalOS requires Node.js v22.5.0 or higher."
+    echo ""
+    echo "To install on Debian/Ubuntu-based systems (Ubuntu, Mint, Debian):"
+    echo "   curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -"
+    echo "   sudo apt-get install -y nodejs"
+    echo ""
+    echo "To install on RHEL/Fedora-based systems:"
+    echo "   sudo dnf install -y nodejs"
+    echo ""
+    echo "To install on Arch Linux:"
+    echo "   sudo pacman -S nodejs npm"
+    echo ""
     exit 1
 fi
 
@@ -63,15 +75,33 @@ echo -e "\n🐍 Preparing Python virtual environment for OCR/TTS..."
 if ! command -v python3 &> /dev/null; then
     echo "⚠️ Warning: python3 not found. OCR and local TTS services will require Python installation."
 else
+    SKIP_PYTHON_VENV=false
     if [ ! -d venv ]; then
-        python3 -m venv venv
-        echo "✓ Virtual environment 'venv/' created."
+        if python3 -m venv venv 2>/dev/null; then
+            echo "✓ Virtual environment 'venv/' created."
+        else
+            echo "⚠️ Warning: Failed to automatically create Python virtual environment."
+            echo "On Debian/Ubuntu-based systems, you may need to install the python3-venv module first:"
+            echo "   sudo apt install -y python3-venv"
+            echo "The installation will continue, but Python OCR/TTS sidecars will not be configured."
+            SKIP_PYTHON_VENV=true
+        fi
     fi
-    echo "Installing Python requirements..."
-    source venv/bin/activate
-    pip install --upgrade pip
-    pip install -r requirements.txt
-    echo "✓ Python dependencies successfully installed."
+
+    if [ "$SKIP_PYTHON_VENV" != "true" ]; then
+        echo "Installing Python requirements..."
+        if source venv/bin/activate 2>/dev/null; then
+            pip install --upgrade pip || echo "⚠️ Warning: Failed to upgrade pip. Proceeding..."
+            if pip install -r requirements.txt; then
+                echo "✓ Python dependencies successfully installed."
+            else
+                echo "⚠️ Warning: Python requirements installation failed."
+                echo "Some local sidecar features (such as OCR and local voice TTS) may be unavailable until dependencies are resolved manually."
+            fi
+        else
+            echo "⚠️ Warning: Failed to activate Python virtual environment."
+        fi
+    fi
 fi
 
 echo -e "\n================================================"
