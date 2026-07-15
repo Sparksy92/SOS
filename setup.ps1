@@ -66,14 +66,27 @@ if (!$pythonCheck) {
 if (!$pythonCheck) {
     Write-Warning "⚠️ Warning: Python was not found on your system PATH. OCR and local TTS services will require Python installation."
 } else {
+    $skipPython = $false
     if (!(Test-Path venv)) {
-        & $pythonCheck -m venv venv
-        Write-Output "✓ Virtual environment 'venv/' created."
+        try {
+            Start-Process -FilePath $pythonCheck.Source -ArgumentList "-m venv venv" -NoNewWindow -Wait -ErrorAction Stop
+            Write-Output "✓ Virtual environment 'venv/' created."
+        } catch {
+            Write-Warning "⚠️ Warning: Failed to automatically create Python virtual environment."
+            Write-Warning "The installation will continue, but Python OCR/TTS sidecars will not be configured."
+            $skipPython = $true
+        }
     }
-    Write-Output "Installing Python requirements..."
-    & .\venv\Scripts\pip.exe install --upgrade pip
-    & .\venv\Scripts\pip.exe install -r requirements.txt
-    Write-Output "✓ Python dependencies successfully installed."
+    if (!$skipPython) {
+        Write-Output "Installing Python requirements..."
+        try {
+            & .\venv\Scripts\pip.exe install --upgrade pip
+            & .\venv\Scripts\pip.exe install -r requirements.txt
+            Write-Output "✓ Python dependencies successfully installed."
+        } catch {
+            Write-Warning "⚠️ Warning: Python dependencies installation failed. Some features might not be available."
+        }
+    }
 }
 
 Write-Output "`n================================================"
