@@ -68,11 +68,8 @@ chmod +x setup.sh
 ```
 
 **On Windows:**
-Open PowerShell as Administrator and run:
-```powershell
-Set-ExecutionPolicy Bypass -Scope Process -Force
-.\setup.ps1
-```
+Simply double-click `setup.bat` in the root folder.
+*(Alternatively, open PowerShell and run `.\setup.ps1`)*
 
 The script automatically:
 *   Initializes root and sub-project `.env` configuration files.
@@ -116,14 +113,13 @@ VITE_API_BASE=http://localhost:3001
 
 ### Launching the Application
 Use the pre-configured script from the root folder:
-```bash
-# On Windows, run the launcher batch script:
-launcher.bat
 
-# On Linux, run the launcher bash script:
-chmod +x launcher.sh
-./launcher.sh
-```
+*   **On Windows:** Double-click `launcher.bat` (or run `launcher.bat` from your terminal).
+*   **On Linux/macOS:** Open a terminal in the root folder and run:
+    ```bash
+    chmod +x launcher.sh
+    ./launcher.sh
+    ```
 
 Alternatively, start the servers manually:
 ```bash
