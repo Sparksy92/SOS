@@ -1,5 +1,8 @@
 # SurvivalOS (Survival Operations System)
 
+<p align="center">
+  <img src="./logo.jpg" width="250" alt="SurvivalOS Logo">
+</p>
 SurvivalOS is a local-first, off-grid command center designed for emergency preparedness, offline library resource indexing, inventory management, and tactical mission coordination. Built to run on minimal hardware in zero-connectivity environments, it integrates semantic search, local text-to-speech, rules-based safety auditing, and a structured operations center.
 
 ---
