@@ -128,6 +128,9 @@ test('SOS Material Boundary & Crawler Hardening Test Suite', async (t) => {
     });
 
     const server = app.listen(0);
+    if (!server.listening) {
+      await new Promise(resolve => server.once('listening', resolve));
+    }
     const port = server.address().port;
     const baseUrl = `http://localhost:${port}`;
 
