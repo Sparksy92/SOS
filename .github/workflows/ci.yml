@@ -33,7 +33,10 @@ jobs:
       - name: Run Backend Logic Tests
         timeout-minutes: 5
         run: |
-          node --test-concurrency=1 --test sos-server/tests/*.test.mjs
+          for test_file in sos-server/tests/*.test.mjs; do
+            echo "=== RUNNING TEST: $test_file ==="
+            node --test "$test_file"
+          done
 
       - name: Clean up test artifacts
         run: |
