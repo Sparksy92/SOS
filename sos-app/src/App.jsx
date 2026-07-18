@@ -3310,44 +3310,7 @@ function App() {
                           </div>
                         )}
 
-                        {(() => {
-                          let riskyCategory = getRiskySourceCategory(msg.sources);
-                          if (!riskyCategory && msg.role === 'ai') {
-                            // Re-evaluate query and answer text for high-risk categories
-                            const itemToCheck = { name: msg.text, path: '' };
-                            const risk = getRiskLevel(itemToCheck);
-                            if (risk.risk === 'HIGH') {
-                              riskyCategory = risk.category;
-                            }
-                          }
 
-                          if (!riskyCategory) return null;
-                          return (
-                            <div style={{
-                              marginTop: '16px',
-                              padding: '16px',
-                              border: '1px solid var(--brand-danger)',
-                              borderRadius: '8px',
-                              backgroundColor: 'rgba(255, 0, 0, 0.05)',
-                              color: 'var(--brand-danger)',
-                              fontSize: '0.85rem',
-                              lineHeight: '1.5',
-                              fontFamily: 'var(--font-mono)',
-                              boxShadow: '0 0 10px rgba(255,0,0,0.1)'
-                            }}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold', marginBottom: '8px' }}>
-                                <ShieldAlert size={18} />
-                                <span>CRITICAL SAFETY ADVISORY // CATEGORY: {riskyCategory.toUpperCase()}</span>
-                              </div>
-                              <p style={{ margin: '0 0 8px 0' }}>
-                                This response contains information regarding high-risk logistical operations. This advice is generated from offline local manual excerpts and should be cross-verified with physical books or verified checklists.
-                              </p>
-                              <strong style={{ display: 'block', borderTop: '1px dashed rgba(255,0,0,0.2)', paddingTop: '8px' }}>
-                                ⚠️ DO NOT treat this advice as a substitute for professional emergency, medical, electrical, chemical, mechanical, or legal expertise. Recommend professional verification before proceeding.
-                              </strong>
-                            </div>
-                          );
-                        })()}
 
                         {msg.sources && msg.sources.length > 0 && (
                           <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px dashed var(--border-subtle)' }}>

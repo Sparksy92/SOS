@@ -84,14 +84,6 @@ export default function FirstAidPanel({ onTriggerSearch }) {
               <Activity size={14} />
             </button>
           ))}
-
-          {/* Safety warning banner */}
-          <div style={{ marginTop: '16px', padding: '14px', backgroundColor: 'rgba(255, 69, 0, 0.05)', border: '1px solid rgba(255, 69, 0, 0.2)', borderRadius: '6px', display: 'flex', gap: '10px' }}>
-            <AlertCircle size={16} style={{ color: 'var(--brand-danger)', flexShrink: 0, marginTop: '2px' }} />
-            <div style={{ fontSize: '0.76rem', color: '#ff5533', lineHeight: '1.4' }}>
-              <strong>MEDICAL DISCLAIMER:</strong> This tool provides reference checklists derived from standard survival manuals. In case of severe injury, always consult a professional medical provider if available.
-            </div>
-          </div>
         </div>
 
         {/* Action Protocols & Library Search */}
