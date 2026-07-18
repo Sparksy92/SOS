@@ -34,7 +34,18 @@ test('SOS End-to-End API Integration Suite', async (t) => {
 
     // Wait for the server to be listening to avoid connection race conditions
     if (server && !server.listening) {
-      await new Promise(resolve => server.once('listening', resolve));
+      await new Promise((resolve, reject) => {
+        const onListening = () => {
+          server.off('error', onError);
+          resolve();
+        };
+        const onError = (err) => {
+          server.off('listening', onListening);
+          reject(err);
+        };
+        server.once('listening', onListening);
+        server.once('error', onError);
+      });
     }
   });
 

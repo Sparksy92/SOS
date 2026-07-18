@@ -16,7 +16,18 @@ test('Offline Network Scanner & Nginx Generator Route Suite', async (t) => {
 
   const server = app.listen(0);
   if (!server.listening) {
-    await new Promise(resolve => server.once('listening', resolve));
+    await new Promise((resolve, reject) => {
+      const onListening = () => {
+        server.off('error', onError);
+        resolve();
+      };
+      const onError = (err) => {
+        server.off('listening', onListening);
+        reject(err);
+      };
+      server.once('listening', onListening);
+      server.once('error', onError);
+    });
   }
   const port = server.address().port;
   const baseUrl = `http://localhost:${port}`;
