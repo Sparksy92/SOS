@@ -331,6 +331,15 @@ function getZimFolder(req) {
 // 2a. GET /api/toolkit/zim/status
 router.get('/zim/status', (req, res) => {
   const isWin = process.platform === 'win32';
+  const localPath = path.join(__dirname, '..', '..', 'bin', isWin ? 'kiwix-serve.exe' : 'kiwix-serve');
+  if (fs.existsSync(localPath)) {
+    return res.json({
+      installed: true,
+      running: activeKiwixProcess !== null,
+      port: 3008
+    });
+  }
+
   const checkCmd = isWin ? 'where kiwix-serve' : 'which kiwix-serve';
   exec(checkCmd, (err, stdout, stderr) => {
     const installed = !err && stdout.trim().length > 0;
@@ -380,9 +389,12 @@ router.post('/zim/start', (req, res) => {
 
     // Start new kiwix-serve process on port 3008
     const port = 3008;
-    console.log(`[KIWIX] Spawning kiwix-serve for ${filename} on port ${port}...`);
+    const isWin = process.platform === 'win32';
+    const localPath = path.join(__dirname, '..', '..', 'bin', isWin ? 'kiwix-serve.exe' : 'kiwix-serve');
+    const kiwixPath = fs.existsSync(localPath) ? localPath : 'kiwix-serve';
+    console.log(`[KIWIX] Spawning kiwix-serve from ${kiwixPath} for ${filename} on port ${port}...`);
     
-    activeKiwixProcess = spawn('kiwix-serve', ['--port', port.toString(), fullPath]);
+    activeKiwixProcess = spawn(kiwixPath, ['--port', port.toString(), fullPath]);
 
     activeKiwixProcess.stdout.on('data', (data) => {
       console.log(`[KIWIX STDOUT] ${data}`);
