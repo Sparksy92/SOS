@@ -17,7 +17,7 @@ This is not a toy. It's a structured operations center combining military-grade 
 ## 🌟 Why You Need SurvivalOS
 
 ### 🧠 Your Personal Offline AI (R.A.N.G.E.R.)
-Forget relying on the cloud. SurvivalOS features **R.A.N.G.E.R.**—a fully integrated conversational assistant powered by a local LLM (Ollama). Ask a question like *"How do I treat severe bleeding?"* and R.A.N.G.E.R. instantly scours your personal offline library of manuals, returning precise, life-saving answers. All processing happens right on your machine. Complete privacy, total independence.
+Forget relying on the cloud. SurvivalOS features **R.A.N.G.E.R.** (Resource And Neural Guidance Engine Responder)—a fully integrated conversational assistant powered by a local LLM (Ollama). Ask a question like *"How do I treat severe bleeding?"* and R.A.N.G.E.R. instantly scours your personal offline library of manuals, returning precise, life-saving answers. All processing happens right on your machine. Complete privacy, total independence.
 
 ### 🗺️ Tactical Command & Operations
 Turn chaos into structured action.

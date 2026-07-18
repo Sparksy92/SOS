@@ -281,7 +281,7 @@ function App() {
   };
   
   // Chat state
-  const [messages, setMessages] = useState([{ role: 'ai', text: 'R.A.N.G.E.R. Protocol Online. I have access to your survival database. What do you need to know?' }]);
+  const [messages, setMessages] = useState([{ role: 'ai', text: 'R.A.N.G.E.R. (Resource And Neural Guidance Engine Responder) Protocol Online. I have access to your survival database. What do you need to know?' }]);
   const [chatInput, setChatInput] = useState('');
   const [chatLoading, setChatLoading] = useState(false);
   const messagesEndRef = useRef(null);
