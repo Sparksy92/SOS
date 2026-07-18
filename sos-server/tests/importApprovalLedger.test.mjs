@@ -109,8 +109,8 @@ test('Approval Ledger Store Namespace & CRUD', () => {
 
 test('Ledger Validation Rules (Absolute Paths & Injection URL schemes)', () => {
   // Path checks
-  assert.ok(isAbsolutePath("C:\\Users\\Blair\\Downloads\\File.pdf"));
-  assert.ok(isAbsolutePath("/home/blair/survival/File.pdf"));
+  assert.ok(isAbsolutePath("C:\\Users\\operator\\Downloads\\File.pdf"));
+  assert.ok(isAbsolutePath("/home/operator/survival/File.pdf"));
   assert.ok(isAbsolutePath("D:/materials/book.pdf"));
   assert.ok(isAbsolutePath("[IMPORT_STAGING]/D:/materials/book.pdf"), "embedded windows drive paths anywhere in string are absolute");
   assert.ok(!isAbsolutePath("[IMPORT_STAGING]/FM_21-76_Survival_Manual.pdf"));
@@ -121,12 +121,12 @@ test('Ledger Validation Rules (Absolute Paths & Injection URL schemes)', () => {
   assert.ok(isValidUrl("http://mirror.org/survival/"));
   assert.ok(!isValidUrl("javascript:alert(1)"));
   assert.ok(!isValidUrl("data:text/html,<script>alert(1)</script>"));
-  assert.ok(!isValidUrl("file:///C:/Users/Blair/secret.txt"));
+  assert.ok(!isValidUrl("file:///C:/Users/operator/secret.txt"));
   assert.ok(!isValidUrl("ftp://ftp.server.com/"));
 
   // Validation rejections for filename
   assert.throws(() => saveRecord({
-    filename: "C:/Users/Blair/secret.pdf",
+    filename: "C:/Users/operator/secret.pdf",
     sanitizedPath: "[IMPORT_STAGING]/secret.pdf",
     operatorDecision: "pending"
   }), /Absolute file paths are not allowed/);
@@ -138,7 +138,7 @@ test('Ledger Validation Rules (Absolute Paths & Injection URL schemes)', () => {
   }), /Absolute file paths are not allowed/);
 
   assert.throws(() => saveRecord({
-    filename: "/home/blair/book.pdf",
+    filename: "/home/operator/book.pdf",
     sanitizedPath: "[IMPORT_STAGING]/book.pdf",
     operatorDecision: "pending"
   }), /Absolute file paths are not allowed/);

@@ -7,7 +7,7 @@
 
 ### 1. Path Validator Cleanup (`isAbsolutePath` refinement)
 *   Refine `isAbsolutePath` in `importApprovalLedgerStore.js` to strip `https?://` prefixes (already done in Phase 14) and also specifically bypass matching URL path segments like `/home/` when part of a URL scheme. 
-*   Add unit tests confirming that `https://example.org/home/survival-guide.pdf` is allowed while `/home/blair/book.pdf` is rejected.
+*   Add unit tests confirming that `https://example.org/home/survival-guide.pdf` is allowed while `/home/operator/book.pdf` is rejected.
 
 ### 2. Library Lifecycle Analyzer (`libraryLifecycleAnalyzer.js`)
 *   Synthesizes metadata from `GAP_ANALYSIS_DATA`, `loadLedger()`, `loadQueue()`, `loadAllowlist()`, and staging endpoints.

@@ -136,7 +136,7 @@ test('Backup Validation Logic (Rejections & Path Rules)', () => {
     records: {
       sos_import_approval_ledger: [
         {
-          filename: "C:/Users/Blair/secret.pdf",
+          filename: "C:/Users/operator/secret.pdf",
           operatorDecision: "approved"
         }
       ]

@@ -54,7 +54,7 @@ This document details the unified components, storage structures, routes, and sa
 
 ### Automated Tests
 Node unit tests verify store key rules, catalog boundaries, provider registry safety, gap analyzer classifications, path sanitization, and route handlers:
-*   Test File Path: [`sos-server/tests/toolkitProgress.test.mjs`](file:///c:/Users/Blair/Downloads/survival/sos-server/tests/toolkitProgress.test.mjs)
+*   Test File Path: [`sos-server/tests/toolkitProgress.test.mjs`](file:///c:/Users/operator/Downloads/survival/sos-server/tests/toolkitProgress.test.mjs)
 ```bash
 node --test sos-server/tests/toolkitProgress.test.mjs
 # tests 7

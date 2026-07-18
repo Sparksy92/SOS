@@ -185,7 +185,7 @@ test('Release Documentation and Config Verification', () => {
   assert.ok(fs.existsSync(envPath), "Root .env.example must exist");
   const envContent = fs.readFileSync(envPath, 'utf8');
   assert.ok(!envContent.includes('C:/'), ".env.example must not contain real local paths");
-  assert.ok(!envContent.includes('blair'), ".env.example must not contain real usernames");
+  assert.ok(!envContent.includes('operator'), ".env.example must not contain real usernames");
 
   // Dotenv runtime loading checks
   const pkgPath = path.resolve('sos-server', 'package.json');

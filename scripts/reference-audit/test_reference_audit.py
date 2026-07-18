@@ -24,11 +24,11 @@ class TestReferenceAudit(unittest.TestCase):
         self.assertEqual(normalize_title(""), "")
 
     def test_sanitize_path(self):
-        materials_root = "C:\\Users\\Blair\\Downloads\\survival\\sos-materials"
-        raw_path = "C:\\Users\\Blair\\Downloads\\survival\\sos-materials\\farming\\soil.pdf"
+        materials_root = "C:\\Users\\operator\\Downloads\\survival\\sos-materials"
+        raw_path = "C:\\Users\\operator\\Downloads\\survival\\sos-materials\\farming\\soil.pdf"
         sanitized = sanitize_path(raw_path, materials_root)
         self.assertTrue("[MATERIALS_ROOT]" in sanitized)
-        self.assertFalse("Blair" in sanitized)
+        self.assertFalse("operator" in sanitized)
 
         user_home_path = "C:\\Users\\john_doe\\secret_file.pdf"
         sanitized_home = sanitize_path(user_home_path, materials_root)

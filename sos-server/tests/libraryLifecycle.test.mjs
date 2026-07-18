@@ -31,12 +31,12 @@ test('Path Validator Cleanups', () => {
   assert.strictEqual(isAbsolutePath("http://example.org/home/guide.pdf"), false);
 
   // Local /home/... paths must be rejected
-  assert.strictEqual(isAbsolutePath("/home/blair/book.pdf"), true);
+  assert.strictEqual(isAbsolutePath("/home/operator/book.pdf"), true);
 
   // Windows drive letter roots must be rejected
-  assert.strictEqual(isAbsolutePath("C:/Users/Blair/file.pdf"), true);
+  assert.strictEqual(isAbsolutePath("C:/Users/operator/file.pdf"), true);
   assert.strictEqual(isAbsolutePath("D:/materials/book.pdf"), true);
-  assert.strictEqual(isAbsolutePath("file:///C:/Users/Blair/file.pdf"), true);
+  assert.strictEqual(isAbsolutePath("file:///C:/Users/operator/file.pdf"), true);
 
   // Embedded Windows drive letters must be rejected
   assert.strictEqual(isAbsolutePath("[IMPORT_STAGING]/D:/materials/book.pdf"), true);

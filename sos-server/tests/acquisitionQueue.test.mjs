@@ -79,7 +79,7 @@ test('Acquisition Queue Validation (Absolute Paths & URL Schemes)', () => {
   // Rejections for filenameHint
   assert.throws(() => saveQueueItem({
     title: "Safe Title",
-    filenameHint: "C:/Users/Blair/secret.pdf",
+    filenameHint: "C:/Users/operator/secret.pdf",
     acquisitionStatus: "planned"
   }), /Absolute file paths are not allowed/);
 
@@ -94,7 +94,7 @@ test('Acquisition Queue Validation (Absolute Paths & URL Schemes)', () => {
   assert.throws(() => saveQueueItem({
     title: "Safe Title",
     filenameHint: "book.pdf",
-    officialSourceUrl: "C:\\Users\\Blair\\secret.pdf",
+    officialSourceUrl: "C:\\Users\\operator\\secret.pdf",
     acquisitionStatus: "planned"
   }), /Absolute file paths are not allowed/);
 
@@ -169,7 +169,7 @@ test('Backup Import/Export Security Checks', () => {
   assert.throws(() => validateAndImportQueue(badJson1), /Invalid status/);
 
   // Import absolute path rejection
-  const badJson2 = JSON.stringify([{ title: "C:/Users/Blair/secret.pdf", acquisitionStatus: "planned" }]);
+  const badJson2 = JSON.stringify([{ title: "C:/Users/operator/secret.pdf", acquisitionStatus: "planned" }]);
   assert.throws(() => validateAndImportQueue(badJson2), /Absolute paths not allowed/);
 });
 

@@ -1,7 +1,7 @@
 # Phase 12A Implementation Notes (Deprecated)
 
 > [!IMPORTANT]
-> Phase 12A was an internal implementation slice. The final project feature is **[Phase 12 — Offline Toolkit & Content Gap Analyzer](file:///c:/Users/Blair/Downloads/survival/docs/phase-12-implementation-notes.md)**. Please refer to that file for complete implementation logs.
+> Phase 12A was an internal implementation slice. The final project feature is **[Phase 12 — Offline Toolkit & Content Gap Analyzer](file:///c:/Users/operator/Downloads/survival/docs/phase-12-implementation-notes.md)**. Please refer to that file for complete implementation logs.
 
 ## Components and Stores Added
 
@@ -32,7 +32,7 @@
 
 ### Automated Tests
 Node unit tests verify store persistence, direct `sos_setup_progress`/`sos_toolkit_checkmarks` keys writes, and link safety limits:
-*   Test File Path: [`sos-server/tests/toolkitProgress.test.mjs`](file:///c:/Users/Blair/Downloads/survival/sos-server/tests/toolkitProgress.test.mjs)
+*   Test File Path: [`sos-server/tests/toolkitProgress.test.mjs`](file:///c:/Users/operator/Downloads/survival/sos-server/tests/toolkitProgress.test.mjs)
 ```bash
 node --test sos-server/tests/toolkitProgress.test.mjs
 # tests 3

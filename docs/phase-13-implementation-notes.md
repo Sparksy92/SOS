@@ -52,7 +52,7 @@ This document details the ledger store properties, safety checks, UI tabs, manua
 
 ### Automated Tests
 Node unit tests verify store namespace, path validations, script url rejections, import schemas, Markdown exports, and route catch-block generic mappings:
-*   Test File Path: [`sos-server/tests/importApprovalLedger.test.mjs`](file:///c:/Users/Blair/Downloads/survival/sos-server/tests/importApprovalLedger.test.mjs)
+*   Test File Path: [`sos-server/tests/importApprovalLedger.test.mjs`](file:///c:/Users/operator/Downloads/survival/sos-server/tests/importApprovalLedger.test.mjs)
 ```bash
 node --test sos-server/tests/importApprovalLedger.test.mjs
 # tests 4

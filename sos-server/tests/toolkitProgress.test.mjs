@@ -240,7 +240,7 @@ test('Toolkit Routes Handler Metadata-Only Verification', () => {
       fs.writeFileSync(testZim, 'dummy zim binary');
 
       // Send a fake folder query parameter. The ZIM handler MUST ignore it.
-      const { req, res } = mockReqRes({ query: { folder: 'C:/Users/Blair/FakeSensitivePath' } }, (result) => {
+      const { req, res } = mockReqRes({ query: { folder: 'C:/Users/operator/FakeSensitivePath' } }, (result) => {
         try {
           assert.strictEqual(result.statusCode, 200);
           assert.strictEqual(result.body.zimFolder, '[ZIM_FOLDER]');
@@ -274,7 +274,7 @@ test('Toolkit Routes Handler Metadata-Only Verification', () => {
     return new Promise((resolve, reject) => {
       // Set target env path to something non-existent
       const oldEnv = process.env.SOS_ZIM_DIR;
-      process.env.SOS_ZIM_DIR = 'C:/Users/Blair/Downloads/SomeNonExistentFolderKey';
+      process.env.SOS_ZIM_DIR = 'C:/Users/operator/Downloads/SomeNonExistentFolderKey';
 
       const { req, res } = mockReqRes({}, (result) => {
         try {

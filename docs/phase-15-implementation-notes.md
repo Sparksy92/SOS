@@ -43,7 +43,7 @@ This document outlines the design, implementation, and verification details for 
 
 ### Automated Tests
 Node unit tests verify store namespaces, validator updates, stage derivations, matches, UI strings, and Jarvis checks:
-*   Test File Path: [`sos-server/tests/libraryLifecycle.test.mjs`](file:///c:/Users/Blair/Downloads/survival/sos-server/tests/libraryLifecycle.test.mjs)
+*   Test File Path: [`sos-server/tests/libraryLifecycle.test.mjs`](file:///c:/Users/operator/Downloads/survival/sos-server/tests/libraryLifecycle.test.mjs)
 ```bash
 node --test sos-server/tests/libraryLifecycle.test.mjs
 # tests 5

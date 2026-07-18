@@ -47,7 +47,7 @@ This document details the acquisition queue and source allowlist stores, UI pane
 
 ### Automated Tests
 Node unit tests verify store key namespaces, creation helpers, persistence, import validations, UI strings, ledger gating, and Jarvis prompts:
-*   Test File Path: [`sos-server/tests/acquisitionQueue.test.mjs`](file:///c:/Users/Blair/Downloads/survival/sos-server/tests/acquisitionQueue.test.mjs)
+*   Test File Path: [`sos-server/tests/acquisitionQueue.test.mjs`](file:///c:/Users/operator/Downloads/survival/sos-server/tests/acquisitionQueue.test.mjs)
 ```bash
 node --test sos-server/tests/acquisitionQueue.test.mjs
 # tests 8

@@ -1,6 +1,6 @@
 # Manual Import Workflow Design
 
-To ensure copyright compliance and protect Blair's local-first system boundaries, the import system uses a dedicated staging zone. SOS does not auto-download or auto-move items.
+To ensure copyright compliance and protect operator's local-first system boundaries, the import system uses a dedicated staging zone. SOS does not auto-download or auto-move items.
 
 ## Staging Zone
 All candidates prepared for manual import must be placed in:

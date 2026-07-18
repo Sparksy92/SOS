@@ -181,7 +181,7 @@ export default function ZimCatalogPanel() {
             <FolderOpen size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#888' }} />
             <input
               type="text"
-              placeholder="e.g. C:/Users/Blair/Downloads/Kiwix"
+              placeholder="e.g. /media/storage/kiwix"
               value={folderPath}
               onChange={(e) => setFolderPath(e.target.value)}
               className="search-input glass-panel"
