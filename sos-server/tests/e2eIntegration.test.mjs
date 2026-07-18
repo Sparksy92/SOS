@@ -26,7 +26,12 @@ test('SOS End-to-End API Integration Suite', async (t) => {
           arrayBuffer: async () => new Uint8Array(2000).buffer
         };
       }
-      return originalFetch(url, options);
+      const modifiedOptions = { ...options };
+      modifiedOptions.headers = {
+        ...modifiedOptions.headers,
+        'Connection': 'close'
+      };
+      return originalFetch(url, modifiedOptions);
     };
 
     // Require index.js which boots the Express server on process.env.PORT

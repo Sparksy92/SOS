@@ -145,6 +145,16 @@ test('SOS Material Boundary & Crawler Hardening Test Suite', async (t) => {
     const port = server.address().port;
     const baseUrl = `http://localhost:${port}`;
 
+    const originalFetch = global.fetch;
+    global.fetch = async (url, options) => {
+      const modifiedOptions = { ...options };
+      modifiedOptions.headers = {
+        ...modifiedOptions.headers,
+        'Connection': 'close'
+      };
+      return originalFetch(url, modifiedOptions);
+    };
+
     try {
       // 4.1. Served allowed fixture file
       const res1 = await fetch(`${baseUrl}/materials/safety_guide.txt`);
@@ -161,6 +171,7 @@ test('SOS Material Boundary & Crawler Hardening Test Suite', async (t) => {
       assert.ok(res3.status === 403 || res3.status === 404);
     } finally {
       server.close();
+      global.fetch = originalFetch;
     }
   });
 

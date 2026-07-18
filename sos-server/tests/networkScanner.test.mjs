@@ -10,6 +10,16 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 test('Offline Network Scanner & Nginx Generator Route Suite', async (t) => {
+  const originalFetch = global.fetch;
+  global.fetch = async (url, options) => {
+    const modifiedOptions = { ...options };
+    modifiedOptions.headers = {
+      ...modifiedOptions.headers,
+      'Connection': 'close'
+    };
+    return originalFetch(url, modifiedOptions);
+  };
+
   const app = express();
   app.use(express.json());
   app.use('/api/network', networkRouter);
@@ -95,4 +105,5 @@ test('Offline Network Scanner & Nginx Generator Route Suite', async (t) => {
 
   // Close server at the end of the suite
   server.close();
+  global.fetch = originalFetch;
 });
