@@ -70,11 +70,9 @@ Double-click `setup.bat` (or run `.\setup.ps1` in PowerShell).
 The script automatically provisions your local environment, installs all dependencies, and creates isolated Python virtual environments.
 
 ### 🔌 Easy Configuration
-Copy the default environment files:
-```bash
-cp .env.example .env
-```
-Point `SOS_MATERIALS_DIR` in `sos-server/.env` to the folder holding your offline survival manuals. That's it!
+Simply place all of your PDF manuals, books, and offline survival resources into the root directory of this folder.
+
+The system will automatically detect them and ingest them into your local command center. That's it! No configuration files or technical setup required.
 
 ---
 
