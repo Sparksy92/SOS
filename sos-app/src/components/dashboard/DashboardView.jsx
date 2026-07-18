@@ -60,13 +60,13 @@ export default function DashboardView({
             LOCAL SURVIVAL DASHBOARD // ACTIVE MONITOR
           </div>
         </div>
-        <div style={{ color: 'var(--brand-primary)', fontFamily: 'var(--font-mono)', fontSize: '0.9rem', backgroundColor: 'rgba(255,183,0,0.05)', padding: '8px 16px', border: '1px solid var(--border-subtle)', borderRadius: '4px' }}>
+        <div className="dashboard-header-badge">
           POPULATION: {profile.peopleCount} PAX // TARGET RESERVES: {profile.targetWeeks} WEEKS
         </div>
       </div>
 
       {/* Main Stats Row */}
-      <div className="file-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
+      <div className="dashboard-stats-grid">
         
         {/* Readiness Panel */}
         <div className="glass-panel" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px', border: `1px solid ${statusColor}`, boxShadow: `0 0 12px ${statusColor}1a`, position: 'relative', overflow: 'hidden' }}>
@@ -170,7 +170,7 @@ export default function DashboardView({
       </div>
 
       {/* System Infrastructure Details & Warnings */}
-      <div className="file-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '20px' }}>
+      <div className="dashboard-infra-grid">
         
         {/* Infrastructure Panel */}
         <div className="glass-panel" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -257,7 +257,7 @@ export default function DashboardView({
           </h3>
           <ClipboardList size={18} style={{ color: 'var(--brand-primary)' }} />
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '16px' }}>
+        <div className="dashboard-wizards-grid">
           {ACTION_MODULES.slice(0, 4).map(guide => (
             <div 
               key={guide.id}

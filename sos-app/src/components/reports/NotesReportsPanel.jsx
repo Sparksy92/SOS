@@ -262,7 +262,7 @@ const NotesReportsPanel = ({ callSign = 'Operator' }) => {
       </div>
 
       {/* Tabs */}
-      <div style={{ display: 'flex', borderBottom: '1px solid var(--border-subtle)', gap: '4px' }}>
+      <div style={{ display: 'flex', borderBottom: '1px solid var(--border-subtle)', gap: '4px', overflowX: 'auto', whiteSpace: 'nowrap', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}>
         <button 
           onClick={() => { setActiveTab('answers'); reloadData(); }}
           style={{
@@ -274,7 +274,8 @@ const NotesReportsPanel = ({ callSign = 'Operator' }) => {
             fontFamily: 'var(--font-mono)',
             fontSize: '0.85rem',
             fontWeight: 'bold',
-            cursor: 'pointer'
+            cursor: 'pointer',
+            flexShrink: 0
           }}
         >
           SAVED ANSWERS ({answers.length})
@@ -290,7 +291,8 @@ const NotesReportsPanel = ({ callSign = 'Operator' }) => {
             fontFamily: 'var(--font-mono)',
             fontSize: '0.85rem',
             fontWeight: 'bold',
-            cursor: 'pointer'
+            cursor: 'pointer',
+            flexShrink: 0
           }}
         >
           SAVED SOURCES ({sources.length})
@@ -306,7 +308,8 @@ const NotesReportsPanel = ({ callSign = 'Operator' }) => {
             fontFamily: 'var(--font-mono)',
             fontSize: '0.85rem',
             fontWeight: 'bold',
-            cursor: 'pointer'
+            cursor: 'pointer',
+            flexShrink: 0
           }}
         >
           FIELD NOTES ({notes.length})
@@ -322,7 +325,8 @@ const NotesReportsPanel = ({ callSign = 'Operator' }) => {
             fontFamily: 'var(--font-mono)',
             fontSize: '0.85rem',
             fontWeight: 'bold',
-            cursor: 'pointer'
+            cursor: 'pointer',
+            flexShrink: 0
           }}
         >
           REPORTS ({reports.length})
@@ -392,7 +396,7 @@ const NotesReportsPanel = ({ callSign = 'Operator' }) => {
             No saved entries matched your filters. Start saving content from your conversations or create new field notes.
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '16px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
             {filteredItems.map((item) => {
               const dateStr = new Date(item.createdAt || item.savedAt).toLocaleDateString();
               const isHighRisk = !!item.riskCategory;

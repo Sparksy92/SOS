@@ -73,6 +73,27 @@ router.post('/models', (req, res) => {
   }
 });
 
+// GET /api/settings/ollama-models
+router.get('/ollama-models', async (req, res) => {
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 2000);
+
+    const response = await fetch('http://localhost:11434/api/tags', { signal: controller.signal });
+    clearTimeout(timeoutId);
+
+    if (response.ok) {
+      const data = await response.json();
+      const models = (data.models || []).map(m => m.name);
+      return res.json({ success: true, models });
+    }
+    
+    res.json({ success: false, models: [], message: `Ollama status: ${response.status}` });
+  } catch (err) {
+    res.json({ success: false, models: [], error: err.message });
+  }
+});
+
 // POST /api/settings/browse-folder
 router.post('/browse-folder', (req, res) => {
   const ip = req.ip || req.connection.remoteAddress;

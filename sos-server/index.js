@@ -26,6 +26,7 @@ const TTS_URL = process.env.SOS_TTS_URL || 'http://localhost:3002';
 app.use(helmet({
   contentSecurityPolicy: false,  // Disable CSP for now since the app uses inline styles
   crossOriginEmbedderPolicy: false,
+  frameguard: false,             // Allow iframe document previews from different local ports (3000 vs 3001)
 }));
 
 // Response compression
@@ -71,6 +72,10 @@ app.use(cors({
   origin: function (origin, callback) {
     if (!origin) return callback(null, true);
     if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+      return callback(null, true);
+    }
+    // Allow tunnel connections in production mode
+    if (process.env.NODE_ENV === 'production') {
       return callback(null, true);
     }
     callback(new Error('Not allowed by CORS'));
@@ -173,6 +178,7 @@ const ebgRoutes = require('./routes/ebg.routes');
 const settingsRoutes = require('./routes/settings.routes');
 const meshtasticRoutes = require('./routes/meshtastic.routes');
 const networkRoutes = require('./routes/network.routes');
+const guidesRoutes = require('./routes/guides.routes');
 
 app.use('/api/crawler', crawlerRoutes);
 app.use('/api/video', mediaRoutes);
@@ -180,6 +186,7 @@ app.use('/api/materials', materialsRoutes);
 app.use('/api/health', healthRoutes);
 app.use('/api/index', indexRoutes);
 app.use('/api/toolkit', toolkitRoutes);
+app.use('/api/toolkit/guides', guidesRoutes);
 app.use('/api/launcher', launcherRoutes);
 app.use('/api/ebg', ebgRoutes);
 app.use('/api/settings', settingsRoutes);

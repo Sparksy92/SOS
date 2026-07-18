@@ -218,11 +218,14 @@ export default function TacticalMapPanel() {
       if (m.type === 'water') color = '#00f2fe';
       if (m.type === 'power') color = '#ffd700';
       if (m.type === 'firstaid') color = '#ff4500';
+      if (m.type === 'storage') color = '#00ff7f';
 
+      // High visibility tactical icon with inner letter badge
+      const char = m.type ? m.type.charAt(0).toUpperCase() : 'M';
       const customIcon = L.divIcon({
         className: 'custom-div-icon',
-        html: `<div style="background-color: ${color}; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 10px rgba(0,0,0,0.5);"></div>`,
-        iconSize: [12, 12]
+        html: `<div style="background-color: ${color}; width: 20px; height: 20px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 1.5px #000, 0 0 10px ${color}; display: flex; align-items: center; justify-content: center; color: ${m.type === 'power' ? '#000' : '#fff'}; font-size: 11px; font-weight: bold; font-family: var(--font-mono); text-shadow: ${m.type === 'power' ? 'none' : '0 1px 2px rgba(0,0,0,0.8)'};">${char}</div>`,
+        iconSize: [20, 20]
       });
 
       const leafletMarker = L.marker([m.lat, m.lng], { icon: customIcon });
@@ -230,13 +233,13 @@ export default function TacticalMapPanel() {
       activeMarkersLayer.current.addLayer(leafletMarker);
     });
 
-    // 2. Render Meshtastic nodes (Neon pink style)
+    // 2. Render Meshtastic nodes (Neon pink style with blinking pulse)
     meshNodes.forEach(node => {
       const color = '#ff007f';
       const customIcon = L.divIcon({
         className: 'custom-div-icon',
-        html: `<div style="background-color: ${color}; width: 14px; height: 14px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 12px ${color}; display: flex; align-items: center; justify-content: center;"><span style="color: white; font-size: 8px; font-weight: bold;">M</span></div>`,
-        iconSize: [14, 14]
+        html: `<div style="background-color: ${color}; width: 24px; height: 24px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 2px #000, 0 0 15px ${color}; display: flex; align-items: center; justify-content: center; color: white; font-size: 11px; font-weight: bold; font-family: var(--font-mono); text-shadow: 0 1px 2px rgba(0,0,0,0.8);">M</div>`,
+        iconSize: [24, 24]
       });
 
       const leafletMarker = L.marker([node.latitude, node.longitude], { icon: customIcon });
@@ -367,12 +370,17 @@ export default function TacticalMapPanel() {
       <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', minHeight: '520px' }}>
         
         {/* Sidebar Controls */}
-        <div className="glass-panel" style={{ flex: '1 1 250px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <h3 style={{ margin: 0, fontSize: '0.85rem', color: 'var(--brand-primary)', letterSpacing: '1px', fontFamily: 'var(--font-mono)' }}>
+        <div className="glass-panel" style={{ flex: '1 1 250px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px', backgroundColor: 'rgba(10, 10, 12, 0.98)', border: '1px solid var(--border-subtle)', boxShadow: '0 8px 32px rgba(0, 0, 0, 0.8)' }}>
+          <h3 style={{ margin: 0, fontSize: '0.85rem', color: 'var(--brand-primary)', letterSpacing: '1.5px', fontFamily: 'var(--font-mono)' }}>
             OPERATOR DIRECTIVES
           </h3>
 
-          <button className="btn-tactical" onClick={handleLocateOperator} disabled={useGridFallback} style={{ width: '100%', fontSize: '0.8rem', display: 'flex', justifyContent: 'center', gap: '8px' }}>
+          <button 
+            className="btn-tactical" 
+            onClick={handleLocateOperator} 
+            disabled={useGridFallback} 
+            style={{ width: '100%', fontSize: '0.82rem', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', padding: '10px 14px', fontFamily: 'var(--font-mono)', fontWeight: 'bold' }}
+          >
             <Compass size={14} /> LOCATE OPERATOR
           </button>
 
@@ -380,19 +388,23 @@ export default function TacticalMapPanel() {
 
           {/* Polygon drawing buttons */}
           <div>
-            <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', display: 'block', marginBottom: '8px' }}>PERIMETERS</span>
+            <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'block', marginBottom: '8px', fontFamily: 'var(--font-mono)' }}>PERIMETERS</span>
             {isDrawing ? (
               <div style={{ display: 'flex', gap: '6px' }}>
-                <button className="btn-tactical" onClick={useGridFallback ? handleFinishGridDrawing : handleFinishDrawing} style={{ flex: 1, padding: '8px', fontSize: '0.75rem', backgroundColor: '#00ff7f', color: '#000', borderColor: '#00ff7f' }}>
+                <button className="btn-tactical" onClick={useGridFallback ? handleFinishGridDrawing : handleFinishDrawing} style={{ flex: 1, padding: '10px', fontSize: '0.8rem', backgroundColor: '#00ff7f', color: '#000', borderColor: '#00ff7f', fontWeight: 'bold', fontFamily: 'var(--font-mono)' }}>
                   <Check size={12} /> SAVE
                 </button>
-                <button className="btn-tactical-outline" onClick={() => { setIsDrawing(false); setDrawPoints([]); setGridDrawPoints([]); }} style={{ flex: 1, padding: '8px', fontSize: '0.75rem', borderColor: 'var(--brand-danger)', color: 'var(--brand-danger)' }}>
+                <button className="btn-tactical-outline" onClick={() => { setIsDrawing(false); setDrawPoints([]); setGridDrawPoints([]); }} style={{ flex: 1, padding: '10px', fontSize: '0.8rem', borderColor: 'var(--brand-danger)', color: 'var(--brand-danger)', fontWeight: 'bold', fontFamily: 'var(--font-mono)', backgroundColor: 'rgba(10, 10, 12, 0.85)' }}>
                   <X size={12} /> CANCEL
                 </button>
               </div>
             ) : (
-              <button className="btn-tactical-outline" onClick={() => { setIsDrawing(true); setIsPlacingMarker(null); }} style={{ width: '100%', fontSize: '0.8rem', display: 'flex', justifyContent: 'center', gap: '6px' }}>
-                <Plus size={14} /> DRAW LAND BOUNDARY
+              <button 
+                className="btn-tactical-outline" 
+                onClick={() => { setIsDrawing(true); setIsPlacingMarker(null); }} 
+                style={{ width: '100%', fontSize: '0.82rem', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px', padding: '10px 14px', borderColor: 'var(--border-strong)', color: '#ffffff', backgroundColor: 'rgba(20, 20, 25, 0.95)', fontFamily: 'var(--font-mono)', fontWeight: 'bold' }}
+              >
+                <Plus size={14} color="var(--brand-primary)" /> DRAW LAND BOUNDARY
               </button>
             )}
           </div>
@@ -401,40 +413,111 @@ export default function TacticalMapPanel() {
 
           {/* Marker placement list */}
           <div>
-            <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', display: 'block', marginBottom: '8px' }}>TACTICAL MARKERS</span>
+            <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'block', marginBottom: '8px', fontFamily: 'var(--font-mono)' }}>TACTICAL MARKERS</span>
             <div style={{ display: 'grid', gap: '8px' }}>
               <button 
-                onClick={() => { setIsPlacingMarker('water'); setIsDrawing(false); }}
-                className={isPlacingMarker === 'water' ? 'btn-tactical' : 'btn-tactical-outline'}
-                style={{ fontSize: '0.78rem', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '8px', borderColor: '#00f2fe', color: isPlacingMarker === 'water' ? '#000' : '#00f2fe' }}
+                onClick={() => { setIsPlacingMarker(m => m === 'water' ? null : 'water'); setIsDrawing(false); }}
+                style={{ 
+                  fontSize: '0.82rem', 
+                  textAlign: 'left', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '10px', 
+                  width: '100%',
+                  padding: '10px 14px',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontFamily: 'var(--font-mono)',
+                  fontWeight: 'bold',
+                  border: `1.5px solid ${isPlacingMarker === 'water' ? '#00f2fe' : 'rgba(0, 242, 254, 0.3)'}`,
+                  backgroundColor: isPlacingMarker === 'water' ? '#00f2fe' : 'rgba(20, 20, 25, 0.95)',
+                  color: isPlacingMarker === 'water' ? '#000000' : '#ffffff',
+                  boxShadow: isPlacingMarker === 'water' ? '0 0 12px rgba(0, 242, 254, 0.3)' : 'none',
+                  transition: 'all 0.15s ease'
+                }}
               >
-                <MapPin size={12} /> Plot Water Resource
+                <MapPin size={14} color={isPlacingMarker === 'water' ? '#000000' : '#00f2fe'} fill={isPlacingMarker === 'water' ? 'none' : '#00f2fe'} style={{ flexShrink: 0 }} />
+                <span>Plot Water Resource</span>
               </button>
+
               <button 
-                onClick={() => { setIsPlacingMarker('power'); setIsDrawing(false); }}
-                className={isPlacingMarker === 'power' ? 'btn-tactical' : 'btn-tactical-outline'}
-                style={{ fontSize: '0.78rem', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '8px', borderColor: '#ffd700', color: isPlacingMarker === 'power' ? '#000' : '#ffd700' }}
+                onClick={() => { setIsPlacingMarker(m => m === 'power' ? null : 'power'); setIsDrawing(false); }}
+                style={{ 
+                  fontSize: '0.82rem', 
+                  textAlign: 'left', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '10px', 
+                  width: '100%',
+                  padding: '10px 14px',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontFamily: 'var(--font-mono)',
+                  fontWeight: 'bold',
+                  border: `1.5px solid ${isPlacingMarker === 'power' ? '#ffd700' : 'rgba(255, 215, 0, 0.3)'}`,
+                  backgroundColor: isPlacingMarker === 'power' ? '#ffd700' : 'rgba(20, 20, 25, 0.95)',
+                  color: isPlacingMarker === 'power' ? '#000000' : '#ffffff',
+                  boxShadow: isPlacingMarker === 'power' ? '0 0 12px rgba(255, 215, 0, 0.3)' : 'none',
+                  transition: 'all 0.15s ease'
+                }}
               >
-                <MapPin size={12} /> Plot Generator / Power
+                <MapPin size={14} color={isPlacingMarker === 'power' ? '#000000' : '#ffd700'} fill={isPlacingMarker === 'power' ? 'none' : '#ffd700'} style={{ flexShrink: 0 }} />
+                <span>Plot Generator / Power</span>
               </button>
+
               <button 
-                onClick={() => { setIsPlacingMarker('storage'); setIsDrawing(false); }}
-                className={isPlacingMarker === 'storage' ? 'btn-tactical' : 'btn-tactical-outline'}
-                style={{ fontSize: '0.78rem', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '8px', borderColor: '#00ff7f', color: isPlacingMarker === 'storage' ? '#000' : '#00ff7f' }}
+                onClick={() => { setIsPlacingMarker(m => m === 'storage' ? null : 'storage'); setIsDrawing(false); }}
+                style={{ 
+                  fontSize: '0.82rem', 
+                  textAlign: 'left', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '10px', 
+                  width: '100%',
+                  padding: '10px 14px',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontFamily: 'var(--font-mono)',
+                  fontWeight: 'bold',
+                  border: `1.5px solid ${isPlacingMarker === 'storage' ? '#00ff7f' : 'rgba(0, 255, 127, 0.3)'}`,
+                  backgroundColor: isPlacingMarker === 'storage' ? '#00ff7f' : 'rgba(20, 20, 25, 0.95)',
+                  color: isPlacingMarker === 'storage' ? '#000000' : '#ffffff',
+                  boxShadow: isPlacingMarker === 'storage' ? '0 0 12px rgba(0, 255, 127, 0.3)' : 'none',
+                  transition: 'all 0.15s ease'
+                }}
               >
-                <MapPin size={12} /> Plot Shed / Storage
+                <MapPin size={14} color={isPlacingMarker === 'storage' ? '#000000' : '#00ff7f'} fill={isPlacingMarker === 'storage' ? 'none' : '#00ff7f'} style={{ flexShrink: 0 }} />
+                <span>Plot Shed / Storage</span>
               </button>
+
               <button 
-                onClick={() => { setIsPlacingMarker('firstaid'); setIsDrawing(false); }}
-                className={isPlacingMarker === 'firstaid' ? 'btn-tactical' : 'btn-tactical-outline'}
-                style={{ fontSize: '0.78rem', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '8px', borderColor: '#ff4500', color: isPlacingMarker === 'firstaid' ? '#000' : '#ff4500' }}
+                onClick={() => { setIsPlacingMarker(m => m === 'firstaid' ? null : 'firstaid'); setIsDrawing(false); }}
+                style={{ 
+                  fontSize: '0.82rem', 
+                  textAlign: 'left', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '10px', 
+                  width: '100%',
+                  padding: '10px 14px',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontFamily: 'var(--font-mono)',
+                  fontWeight: 'bold',
+                  border: `1.5px solid ${isPlacingMarker === 'firstaid' ? '#ff4500' : 'rgba(255, 69, 0, 0.3)'}`,
+                  backgroundColor: isPlacingMarker === 'firstaid' ? '#ff4500' : 'rgba(20, 20, 25, 0.95)',
+                  color: isPlacingMarker === 'firstaid' ? '#000000' : '#ffffff',
+                  boxShadow: isPlacingMarker === 'firstaid' ? '0 0 12px rgba(255, 69, 0, 0.3)' : 'none',
+                  transition: 'all 0.15s ease'
+                }}
               >
-                <MapPin size={12} /> Plot First Aid Station
+                <MapPin size={14} color={isPlacingMarker === 'firstaid' ? '#000000' : '#ff4500'} fill={isPlacingMarker === 'firstaid' ? 'none' : '#ff4500'} style={{ flexShrink: 0 }} />
+                <span>Plot First Aid Station</span>
               </button>
             </div>
             {isPlacingMarker && (
-              <span style={{ fontSize: '0.72rem', color: '#ffd700', display: 'block', marginTop: '8px', textAlign: 'center' }}>
-                💡 Click on the map to drop the marker.
+              <span style={{ fontSize: '0.72rem', color: '#ffd700', display: 'block', marginTop: '10px', textAlign: 'center', fontFamily: 'var(--font-mono)' }}>
+                💡 CLICK ON THE MAP TO DROP MARKER
               </span>
             )}
           </div>
@@ -445,7 +528,7 @@ export default function TacticalMapPanel() {
           <button 
             className="btn-tactical-outline" 
             onClick={() => setUseGridFallback(prev => !prev)} 
-            style={{ width: '100%', fontSize: '0.8rem', display: 'flex', justifyContent: 'center', gap: '6px' }}
+            style={{ width: '100%', fontSize: '0.82rem', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px', padding: '10px 14px', borderColor: 'rgba(255,255,255,0.2)', color: '#ffffff', backgroundColor: 'rgba(20, 20, 25, 0.95)', fontFamily: 'var(--font-mono)', fontWeight: 'bold' }}
           >
             <Grid size={14} /> {useGridFallback ? 'Switch to Map Layer' : 'Switch to Canvas Grid'}
           </button>
@@ -527,10 +610,22 @@ export default function TacticalMapPanel() {
                     if (m.type === 'firstaid') color = '#ff4500';
                     if (m.type === 'storage') color = '#00ff7f';
 
+                    const char = m.type ? m.type.charAt(0).toUpperCase() : 'M';
                     return (
-                      <g key={m.id}>
-                        <circle cx={m.x} cy={m.y} r={6} fill={color} stroke="#fff" strokeWidth={1} />
-                        <text x={m.x + 10} y={m.y + 4} fill={color} fontSize="10" fontFamily="var(--font-mono)">
+                      <g key={m.id} style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.8))' }}>
+                        <circle cx={m.x} cy={m.y} r={10} fill={color} stroke="#fff" strokeWidth={1.5} />
+                        <text 
+                          x={m.x} 
+                          y={m.y + 3.5} 
+                          fill={m.type === 'power' ? '#000' : '#fff'} 
+                          fontSize="10" 
+                          fontWeight="bold" 
+                          textAnchor="middle" 
+                          fontFamily="var(--font-mono)"
+                        >
+                          {char}
+                        </text>
+                        <text x={m.x + 14} y={m.y + 4} fill={color} fontSize="10" fontWeight="bold" fontFamily="var(--font-mono)">
                           {m.label}
                         </text>
                       </g>

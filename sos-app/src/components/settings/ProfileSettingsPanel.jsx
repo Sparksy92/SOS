@@ -21,6 +21,8 @@ export default function ProfileSettingsPanel({
   speakText,
   currentTheme,
   changeTheme,
+  colorMode,
+  setColorMode,
   simpleMode,
   setSimpleMode
 }) {
@@ -32,6 +34,9 @@ export default function ProfileSettingsPanel({
   const [llmModel, setLlmModel] = React.useState('');
   const [embeddingModel, setEmbeddingModel] = React.useState('');
   const [modelSaveStatus, setModelSaveStatus] = React.useState('');
+  const [installedModels, setInstalledModels] = React.useState([]);
+  const [showCustomLlm, setShowCustomLlm] = React.useState(false);
+  const [showCustomEmbed, setShowCustomEmbed] = React.useState(false);
 
   React.useEffect(() => {
     const updateVoices = () => {
@@ -55,11 +60,26 @@ export default function ProfileSettingsPanel({
       })
       .catch(err => console.error("Failed to load settings path:", err));
 
-    fetch(`${API_BASE}/api/settings/models`)
-      .then(res => res.json())
-      .then(data => {
-        if (data.llmModel) setLlmModel(data.llmModel);
-        if (data.embeddingModel) setEmbeddingModel(data.embeddingModel);
+    Promise.all([
+      fetch(`${API_BASE}/api/settings/models`).then(res => res.json()),
+      fetch(`${API_BASE}/api/settings/ollama-models`).then(res => res.json())
+    ])
+      .then(([modelsData, ollamaData]) => {
+        const scannedList = (ollamaData.success && ollamaData.models) ? ollamaData.models : [];
+        setInstalledModels(scannedList);
+
+        if (modelsData.llmModel) {
+          setLlmModel(modelsData.llmModel);
+          if (scannedList.length > 0 && !scannedList.includes(modelsData.llmModel)) {
+            setShowCustomLlm(true);
+          }
+        }
+        if (modelsData.embeddingModel) {
+          setEmbeddingModel(modelsData.embeddingModel);
+          if (scannedList.length > 0 && !scannedList.includes(modelsData.embeddingModel)) {
+            setShowCustomEmbed(true);
+          }
+        }
       })
       .catch(err => console.error("Failed to load settings models:", err));
   }, []);
@@ -329,27 +349,111 @@ export default function ProfileSettingsPanel({
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <label style={{ fontSize: '0.8rem', color: '#fff' }}>LLM Chat Model</label>
-            <input 
-              type="text" 
-              placeholder="e.g. llama3.2:3b or deepseek-r1:8b" 
-              className="search-input glass-panel" 
-              style={{ padding: '8px' }}
-              value={llmModel}
-              onChange={e => setLlmModel(e.target.value)}
-            />
+            <label style={{ fontSize: '0.8rem', color: 'var(--text-main)' }}>LLM Chat Model</label>
+            {installedModels.length > 0 && !showCustomLlm ? (
+              <select
+                className="search-input glass-panel"
+                style={{ padding: '8px', background: 'var(--bg-main)', color: 'var(--text-main)', border: '1px solid var(--border-subtle)', borderRadius: '4px' }}
+                value={llmModel}
+                onChange={e => {
+                  const val = e.target.value;
+                  if (val === '__custom__') {
+                    setShowCustomLlm(true);
+                    setLlmModel('');
+                  } else {
+                    setLlmModel(val);
+                  }
+                }}
+              >
+                <option value="" style={{ background: '#121212', color: '#ffffff' }}>-- Select Installed LLM --</option>
+                {installedModels.map(model => (
+                  <option key={model} value={model} style={{ background: '#121212', color: '#ffffff' }}>
+                    {model}
+                  </option>
+                ))}
+                <option value="__custom__" style={{ background: '#121212', color: 'var(--brand-primary)', fontWeight: 'bold' }}>
+                  ✏️ WRITE-IN CUSTOM MODEL...
+                </option>
+              </select>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <input 
+                  type="text" 
+                  placeholder="e.g. llama3.2:3b or deepseek-r1:8b" 
+                  className="search-input glass-panel" 
+                  style={{ padding: '8px', width: '100%' }}
+                  value={llmModel}
+                  onChange={e => setLlmModel(e.target.value)}
+                />
+                {installedModels.length > 0 && (
+                  <button
+                    type="button"
+                    className="btn-suggestive-text"
+                    style={{ marginTop: '4px', textAlign: 'center', padding: '4px' }}
+                    onClick={() => {
+                      setShowCustomLlm(false);
+                      if (installedModels.length > 0) setLlmModel(installedModels[0]);
+                    }}
+                  >
+                    ← Switch back to scanned list
+                  </button>
+                )}
+              </div>
+            )}
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <label style={{ fontSize: '0.8rem', color: '#fff' }}>Embedding Model</label>
-            <input 
-              type="text" 
-              placeholder="e.g. nomic-embed-text" 
-              className="search-input glass-panel" 
-              style={{ padding: '8px' }}
-              value={embeddingModel}
-              onChange={e => setEmbeddingModel(e.target.value)}
-            />
+            <label style={{ fontSize: '0.8rem', color: 'var(--text-main)' }}>Embedding Model</label>
+            {installedModels.length > 0 && !showCustomEmbed ? (
+              <select
+                className="search-input glass-panel"
+                style={{ padding: '8px', background: 'var(--bg-main)', color: 'var(--text-main)', border: '1px solid var(--border-subtle)', borderRadius: '4px' }}
+                value={embeddingModel}
+                onChange={e => {
+                  const val = e.target.value;
+                  if (val === '__custom__') {
+                    setShowCustomEmbed(true);
+                    setEmbeddingModel('');
+                  } else {
+                    setEmbeddingModel(val);
+                  }
+                }}
+              >
+                <option value="" style={{ background: '#121212', color: '#ffffff' }}>-- Select Scanned Embedder --</option>
+                {installedModels.map(model => (
+                  <option key={model} value={model} style={{ background: '#121212', color: '#ffffff' }}>
+                    {model}
+                  </option>
+                ))}
+                <option value="__custom__" style={{ background: '#121212', color: 'var(--brand-primary)', fontWeight: 'bold' }}>
+                  ✏️ WRITE-IN CUSTOM MODEL...
+                </option>
+              </select>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <input 
+                  type="text" 
+                  placeholder="e.g. nomic-embed-text" 
+                  className="search-input glass-panel" 
+                  style={{ padding: '8px', width: '100%' }}
+                  value={embeddingModel}
+                  onChange={e => setEmbeddingModel(e.target.value)}
+                />
+                {installedModels.length > 0 && (
+                  <button
+                    type="button"
+                    className="btn-suggestive-text"
+                    style={{ marginTop: '4px', textAlign: 'center', padding: '4px' }}
+                    onClick={() => {
+                      setShowCustomEmbed(false);
+                      if (installedModels.length > 0) setEmbeddingModel(installedModels[0]);
+                    }}
+                  >
+                    ← Switch back to scanned list
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
@@ -551,6 +655,26 @@ export default function ProfileSettingsPanel({
             </button>
           </div>
         </div>
+
+        <div style={{ marginBottom: '12px' }}>
+          <h4 style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '8px' }}>COLOR SCHEME MODE</h4>
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <button 
+              className={`btn-tactical${colorMode === 'dark' ? '' : '-outline'}`} 
+              style={{ padding: '6px 12px', fontSize: '0.9rem' }} 
+              onClick={() => setColorMode('dark')}
+            >
+              DARK MODE
+            </button>
+            <button 
+              className={`btn-tactical${colorMode === 'light' ? '' : '-outline'}`} 
+              style={{ padding: '6px 12px', fontSize: '0.9rem' }} 
+              onClick={() => setColorMode('light')}
+            >
+              LIGHT MODE
+            </button>
+          </div>
+        </div>
         
         <div style={{ marginBottom: '12px' }}>
           <h4 style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '4px' }}>CORE DATABASE PATH</h4>
@@ -562,8 +686,8 @@ export default function ProfileSettingsPanel({
         <div>
           <h4 style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '4px' }}>NEURAL MODULES (OLLAMA)</h4>
           <div style={{ fontSize: '0.8rem', color: 'var(--text-main)', lineHeight: '1.6' }}>
-            <div style={{ marginBottom: '2px' }}>LLM MODEL: <span style={{color: 'var(--brand-primary)', fontFamily: 'var(--font-mono)'}}>llama3.1:8b</span></div>
-            <div style={{ marginBottom: '2px' }}>EMBEDDING MODEL: <span style={{color: 'var(--brand-primary)', fontFamily: 'var(--font-mono)'}}>nomic-embed-text</span></div>
+            <div style={{ marginBottom: '2px' }}>LLM MODEL: <span style={{color: 'var(--brand-primary)', fontFamily: 'var(--font-mono)'}}>{llmModel || 'None'}</span></div>
+            <div style={{ marginBottom: '2px' }}>EMBEDDING MODEL: <span style={{color: 'var(--brand-primary)', fontFamily: 'var(--font-mono)'}}>{embeddingModel || 'None'}</span></div>
             <div>STATUS: <span style={{color: '#00ff66', fontWeight: 'bold'}}>ONLINE</span></div>
           </div>
         </div>

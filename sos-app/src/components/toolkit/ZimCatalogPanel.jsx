@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Database, Search, FolderOpen, AlertTriangle } from 'lucide-react';
+import { Database, Search, FolderOpen, AlertTriangle, Play, HelpCircle } from 'lucide-react';
 import { API_BASE } from '../../config.js';
 
 export default function ZimCatalogPanel() {
@@ -9,6 +9,12 @@ export default function ZimCatalogPanel() {
   const [zimData, setZimData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  // ZIM Engine Process management states
+  const [engineStatus, setEngineStatus] = useState({ installed: false, running: false, port: 3008 });
+  const [activeArchive, setActiveArchive] = useState(null);
+  const [viewerUrl, setViewerUrl] = useState(null);
+  const [launching, setLaunching] = useState(false);
 
   const fetchZimCatalog = async (customPath = folderPath) => {
     setLoading(true);
@@ -35,8 +41,24 @@ export default function ZimCatalogPanel() {
     }
   };
 
+  const checkEngineStatus = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/toolkit/zim/status`);
+      const data = await res.json();
+      setEngineStatus(data);
+    } catch (err) {
+      console.error("Failed to check ZIM engine status:", err);
+    }
+  };
+
   useEffect(() => {
     fetchZimCatalog();
+    checkEngineStatus();
+
+    // Cleanup: Make sure to stop the kiwix-serve backend server if the panel unmounts
+    return () => {
+      fetch(`${API_BASE}/api/toolkit/zim/stop`, { method: 'POST' }).catch(() => {});
+    };
   }, []);
 
   const handleScanClick = () => {
@@ -49,6 +71,42 @@ export default function ZimCatalogPanel() {
     fetchZimCatalog('');
   };
 
+  const handleLaunch = async (archive) => {
+    setLaunching(true);
+    setError(null);
+    try {
+      const res = await fetch(`${API_BASE}/api/toolkit/zim/start`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ filename: archive.filename })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setViewerUrl(data.url);
+        setActiveArchive(archive);
+        setEngineStatus(prev => ({ ...prev, running: true }));
+      } else {
+        setError(data.error || 'Failed to launch ZIM archive.');
+      }
+    } catch (err) {
+      console.error(err);
+      setError('Connection to launcher endpoint failed.');
+    } finally {
+      setLaunching(false);
+    }
+  };
+
+  const handleClose = async () => {
+    try {
+      await fetch(`${API_BASE}/api/toolkit/zim/stop`, { method: 'POST' });
+    } catch (err) {
+      console.error(err);
+    }
+    setViewerUrl(null);
+    setActiveArchive(null);
+    setEngineStatus(prev => ({ ...prev, running: false }));
+  };
+
   const formatSize = (bytes) => {
     if (!bytes) return '0 B';
     const k = 1024;
@@ -57,6 +115,37 @@ export default function ZimCatalogPanel() {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
+  // 1. Embedded Viewer Mode Render
+  if (activeArchive && viewerUrl) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', height: '80vh', border: '1px solid var(--border-subtle)', borderRadius: '8px', overflow: 'hidden' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#12151c', padding: '12px 20px', borderBottom: '1px solid var(--border-strong)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <Database size={18} style={{ color: 'var(--brand-primary)' }} />
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.9rem', color: 'var(--brand-primary)', fontWeight: 'bold', letterSpacing: '1px' }}>
+              EMBEDDED KIWIX WEB SERVER: {activeArchive.title.toUpperCase()}
+            </span>
+          </div>
+          <button 
+            type="button" 
+            className="btn-tactical-outline" 
+            onClick={handleClose}
+            style={{ padding: '6px 12px', fontSize: '0.8rem', color: 'var(--brand-danger)', borderColor: 'var(--brand-danger)' }}
+          >
+            CLOSE ARCHIVE (STOP SERVER)
+          </button>
+        </div>
+        <iframe 
+          src={viewerUrl}
+          title="Kiwix ZIM Reader"
+          sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
+          style={{ width: '100%', flex: 1, border: 'none', backgroundColor: '#ffffff' }}
+        />
+      </div>
+    );
+  }
+
+  // 2. Standard Catalog/Configuration List Render
   return (
     <div style={{ color: '#e0e0e0', maxWidth: '900px', margin: '0 auto' }}>
       <div style={{ marginBottom: '24px', borderBottom: '1px solid rgba(0, 242, 254, 0.2)', paddingBottom: '16px' }}>
@@ -64,9 +153,25 @@ export default function ZimCatalogPanel() {
           Kiwix ZIM Catalog
         </h3>
         <p style={{ margin: 0, fontSize: '0.88rem', color: '#a0a0a0' }}>
-          Lightweight metadata-only scanner for Kiwix ZIM archives. Kiwix allows browsing rich wikis and reference catalogs offline.
+          Scan and mount Kiwix ZIM archives locally. Start a server back-end to read full wikis and references directly inside the app.
         </p>
       </div>
+
+      {/* ZIM engine warning if missing */}
+      {!engineStatus.installed && (
+        <div style={{ display: 'flex', gap: '12px', padding: '16px', backgroundColor: 'rgba(255, 183, 0, 0.04)', borderRadius: '6px', border: '1px solid rgba(255, 183, 0, 0.2)', marginBottom: '24px', color: 'var(--text-main)', fontSize: '0.88rem', lineHeight: '1.5' }}>
+          <HelpCircle size={22} style={{ flexShrink: 0, color: 'var(--brand-primary)' }} />
+          <div>
+            <strong style={{ color: 'var(--brand-primary)' }}>Embedded ZIM Reader Engine (Kiwix) Not Detected</strong>
+            <div style={{ marginTop: '4px', color: 'var(--text-muted)' }}>
+              To search and view `.zim` encyclopedias directly inside this tab, please install `kiwix-tools` on your host Linux Mint system:
+            </div>
+            <code style={{ display: 'block', marginTop: '8px', padding: '6px 10px', backgroundColor: '#090a0f', border: '1px solid var(--border-subtle)', borderRadius: '4px', fontFamily: 'var(--font-mono)', color: 'var(--brand-primary)' }}>
+              sudo apt install kiwix-tools
+            </code>
+          </div>
+        </div>
+      )}
 
       {/* Directory configuration inputs */}
       <div style={{ backgroundColor: '#12151c', border: '1px solid rgba(255, 255, 255, 0.05)', borderRadius: '6px', padding: '16px', marginBottom: '24px' }}>
@@ -79,13 +184,10 @@ export default function ZimCatalogPanel() {
               placeholder="e.g. C:/Users/Blair/Downloads/Kiwix"
               value={folderPath}
               onChange={(e) => setFolderPath(e.target.value)}
+              className="search-input glass-panel"
               style={{
                 width: '100%',
                 padding: '10px 12px 10px 40px',
-                backgroundColor: '#161a22',
-                border: '1px solid rgba(0, 242, 254, 0.3)',
-                borderRadius: '4px',
-                color: '#fff',
                 fontSize: '0.9rem',
                 boxSizing: 'border-box'
               }}
@@ -114,7 +216,7 @@ export default function ZimCatalogPanel() {
 
       {/* Security Boundary Warning */}
       <div style={{ backgroundColor: 'rgba(0, 242, 254, 0.02)', border: '1px solid rgba(0, 242, 254, 0.15)', borderRadius: '6px', padding: '12px', marginBottom: '24px', fontSize: '0.82rem', color: '#bbb' }}>
-        <strong>Boundary Check:</strong> SurvivalOS only lists available archives. ZIM file contents are NOT opened or indexed by this application.
+        <strong>Boundary Check:</strong> ZIM content is dynamically hosted on port `3008` in a local background sandbox. Zero parsing overhead is added to the database.
       </div>
 
       {/* Archives Catalog List */}
@@ -153,8 +255,23 @@ export default function ZimCatalogPanel() {
                   </div>
                 </div>
 
-                <div style={{ marginTop: '12px', paddingTop: '10px', borderTop: '1px solid rgba(255,255,255,0.05)', fontSize: '0.78rem', color: '#00ff7f', backgroundColor: 'rgba(0, 255, 127, 0.03)', padding: '6px 10px', borderRadius: '4px' }}>
-                  💡 Open this archive inside your standalone Kiwix reader app to search full text articles.
+                <div style={{ marginTop: '16px', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '12px' }}>
+                  {engineStatus.installed ? (
+                    <button
+                      type="button"
+                      className="btn-tactical"
+                      disabled={launching}
+                      onClick={() => handleLaunch(archive)}
+                      style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '8px 12px', fontSize: '0.85rem' }}
+                    >
+                      <Play size={14} fill="currentColor" />
+                      {launching ? 'LAUNCHING...' : 'LAUNCH WEB READER'}
+                    </button>
+                  ) : (
+                    <div style={{ fontSize: '0.78rem', color: 'var(--brand-primary)', backgroundColor: 'var(--brand-primary-dim)', padding: '6px 10px', borderRadius: '4px' }}>
+                      💡 Install `kiwix-tools` to unlock in-app reading.
+                    </div>
+                  )}
                 </div>
               </div>
             ))}

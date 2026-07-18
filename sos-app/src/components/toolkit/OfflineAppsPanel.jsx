@@ -75,7 +75,7 @@ export default function OfflineAppsPanel() {
         </p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '16px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
         {apps.map((app) => {
           const isInstalled = appStatus[app.id];
 
@@ -153,14 +153,17 @@ export default function OfflineAppsPanel() {
 
       {/* Retro CRT Game Emulator Overlay Modal */}
       {activeApp && (
-        <div style={{
-          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-          backgroundColor: 'rgba(0,0,0,0.95)',
-          zIndex: 20000,
-          display: 'flex', flexDirection: 'column',
-          padding: '24px',
-          backdropFilter: 'blur(10px)'
-        }}>
+        <div 
+          className="app-emulator-overlay"
+          style={{
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.95)',
+            zIndex: 20000,
+            display: 'flex', flexDirection: 'column',
+            padding: window.innerWidth <= 768 ? '8px' : '24px',
+            backdropFilter: 'blur(10px)'
+          }}
+        >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid rgba(0, 255, 102, 0.2)', paddingBottom: '12px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <Compass size={20} style={{ color: '#00ff66' }} />

@@ -45,7 +45,8 @@ import {
   ShieldCheck,
   StickyNote,
   Network,
-  CheckCircle
+  CheckCircle,
+  Palette
 } from 'lucide-react';
 import './App.css';
 import { getRiskLevel, requiresAcknowledgement, getSafetyWarning } from './modules/safety/riskRules.js';
@@ -109,6 +110,7 @@ import CrawlerControls from './components/crawler/CrawlerControls.jsx';
 import PanelErrorBoundary from './components/common/PanelErrorBoundary.jsx';
 import SetupWizardPanel from './components/toolkit/SetupWizardPanel.jsx';
 import OfflineToolkitPanel from './components/toolkit/OfflineToolkitPanel.jsx';
+import GuidesReaderPanel from './components/toolkit/GuidesReaderPanel.jsx';
 import ContentProviderRegistryPanel from './components/toolkit/ContentProviderRegistryPanel.jsx';
 import ContentGapAnalyzerPanel from './components/toolkit/ContentGapAnalyzerPanel.jsx';
 import ZimCatalogPanel from './components/toolkit/ZimCatalogPanel.jsx';
@@ -216,6 +218,15 @@ function App() {
   useEffect(() => {
     localStorage.setItem('sos-voice-settings', JSON.stringify(voiceSettings));
   }, [voiceSettings]);
+
+  const [theme, setTheme] = useState(() => localStorage.getItem('sos_theme') || 'rugged');
+  const [colorMode, setColorMode] = useState(() => localStorage.getItem('sos_color_mode') || 'dark');
+
+  useEffect(() => {
+    document.body.className = `theme-${theme} mode-${colorMode}`;
+    localStorage.setItem('sos_theme', theme);
+    localStorage.setItem('sos_color_mode', colorMode);
+  }, [theme, colorMode]);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
@@ -2681,7 +2692,7 @@ function App() {
                 transition: 'all 0.2s'
               }} 
               onClick={() => setViewMode('readiness')}
-              className="hover-bg-accent"
+              className="hover-bg-accent desktop-only-readiness-badge"
               title="Click to view detailed Readiness Score breakdown"
             >
               <ShieldAlert size={14} style={{ color: readiness.total >= 90 ? '#00ff66' : readiness.total >= 75 ? 'var(--brand-primary)' : readiness.total >= 50 ? '#00E5FF' : '#ff6600' }} />
@@ -2697,8 +2708,8 @@ function App() {
                   gap: '12px',
                   margin: '0 24px',
                   padding: '6px 14px',
-                  background: 'rgba(255, 183, 0, 0.03)',
-                  border: '1px solid rgba(255, 183, 0, 0.15)',
+                  background: 'var(--brand-primary-dim)',
+                  border: '1px solid var(--border-subtle)',
                   borderRadius: '4px',
                   fontSize: '0.75rem',
                   fontFamily: 'var(--font-mono)',
@@ -2746,6 +2757,13 @@ function App() {
               </div>
               <div style={{color: 'var(--text-muted)'}}>{window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'LOCAL HOST' : window.location.hostname.toUpperCase()}</div>
               
+              <Palette 
+                size={18} 
+                style={{cursor: 'pointer', color: theme === 'professional' ? 'var(--brand-primary)' : 'var(--text-muted)'}}
+                onClick={() => setTheme(prev => prev === 'rugged' ? 'professional' : 'rugged')}
+                title={`Switch to ${theme === 'rugged' ? 'Professional' : 'Tactical Rugged'} Theme`}
+              />
+
               <StickyNote 
                 size={18} 
                 style={{cursor: 'pointer', color: showNotepad ? 'var(--brand-primary)' : 'var(--text-muted)'}}
@@ -2798,7 +2816,7 @@ function App() {
                     <div style={{color: 'var(--text-muted)'}}>{getFilteredFiles().length} RECORDS FOUND</div>
                   </div>
                   {!searchQuery && (
-                    <div style={{ display: 'flex', gap: '12px' }}>
+                    <div className="category-action-buttons" style={{ display: 'flex', gap: '12px' }}>
                       <button 
                         className="btn-tactical" 
                         onClick={indexCategory}
@@ -2823,39 +2841,39 @@ function App() {
                 </div>
 
                 {/* Media Type Tabs */}
-                <div className="tab-container" style={{ display: 'flex', gap: '8px', margin: '16px 0', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '16px', overflowX: 'auto' }}>
+                <div className="tab-container">
                   <button 
                     className={`btn-tactical ${mediaTab === 'all' ? 'active' : ''}`}
                     onClick={() => setMediaTab('all')}
-                    style={{ fontSize: '0.75rem', padding: '6px 12px', letterSpacing: '1px' }}
+                    style={{ fontSize: '0.8rem', padding: '10px 16px', letterSpacing: '1px', flexShrink: 0, whiteSpace: 'nowrap', minHeight: '40px' }}
                   >
                     ALL RECORDS
                   </button>
                   <button 
                     className={`btn-tactical ${mediaTab === 'reading' ? 'active' : ''}`}
                     onClick={() => setMediaTab('reading')}
-                    style={{ fontSize: '0.75rem', padding: '6px 12px', letterSpacing: '1px' }}
+                    style={{ fontSize: '0.8rem', padding: '10px 16px', letterSpacing: '1px', flexShrink: 0, whiteSpace: 'nowrap', minHeight: '40px' }}
                   >
                     📖 BOOKS & MANUALS
                   </button>
                   <button 
                     className={`btn-tactical ${mediaTab === 'videos' ? 'active' : ''}`}
                     onClick={() => setMediaTab('videos')}
-                    style={{ fontSize: '0.75rem', padding: '6px 12px', letterSpacing: '1px' }}
+                    style={{ fontSize: '0.8rem', padding: '10px 16px', letterSpacing: '1px', flexShrink: 0, whiteSpace: 'nowrap', minHeight: '40px' }}
                   >
                     🎥 TRAINING VIDEOS
                   </button>
                   <button 
                     className={`btn-tactical ${mediaTab === 'software' ? 'active' : ''}`}
                     onClick={() => setMediaTab('software')}
-                    style={{ fontSize: '0.75rem', padding: '6px 12px', letterSpacing: '1px' }}
+                    style={{ fontSize: '0.8rem', padding: '10px 16px', letterSpacing: '1px', flexShrink: 0, whiteSpace: 'nowrap', minHeight: '40px' }}
                   >
                     💿 SOFTWARE & ISOS
                   </button>
                   <button 
                     className={`btn-tactical ${mediaTab === 'diagrams' ? 'active' : ''}`}
                     onClick={() => setMediaTab('diagrams')}
-                    style={{ fontSize: '0.75rem', padding: '6px 12px', letterSpacing: '1px' }}
+                    style={{ fontSize: '0.8rem', padding: '10px 16px', letterSpacing: '1px', flexShrink: 0, whiteSpace: 'nowrap', minHeight: '40px' }}
                   >
                     🖼 DIAGRAMS & IMAGES
                   </button>
@@ -2901,7 +2919,7 @@ function App() {
                   </div>
                 ) : (
                   /* Hierarchical virtual directory explorer view */
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div className="virtual-directory-explorer" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     {(() => {
                       const filtered = getFilteredFiles();
                       const { folders, files } = getCurrentDirectoryFilesAndFolders(filtered);
@@ -3499,7 +3517,7 @@ function App() {
                             marginTop: '16px',
                             padding: '16px',
                             borderColor: 'var(--brand-primary)',
-                            backgroundColor: 'rgba(255, 183, 0, 0.02)',
+                            backgroundColor: 'var(--brand-primary-dim)',
                             display: 'flex',
                             flexDirection: 'column',
                             gap: '12px'
@@ -3757,13 +3775,46 @@ function App() {
 
             {!error && !loading && viewMode === 'offline-toolkit' && (
               <div style={{ display: 'flex', flexDirection: 'column', width: '100%', paddingBottom: '40px' }}>
-                <div style={{ display: 'flex', gap: '8px', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', padding: '0 24px', marginBottom: '16px', flexWrap: 'wrap' }}>
+                {/* Mobile Tab Selector */}
+                <div className="mobile-only-tab-select" style={{ display: 'none', margin: '0 24px 16px', padding: '10px', background: 'rgba(10, 10, 12, 0.95)', border: '1px solid var(--border-subtle)', borderRadius: '4px' }}>
+                  <label style={{ marginRight: '10px', fontSize: '0.8rem', color: 'var(--brand-primary)', fontFamily: 'var(--font-mono)', fontWeight: 'bold' }}>MODULE:</label>
+                  <select 
+                    value={toolkitSubTab}
+                    onChange={(e) => setToolkitSubTab(e.target.value)}
+                    style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '0.85rem', fontFamily: 'var(--font-mono)', fontWeight: 'bold', outline: 'none', flex: 1, cursor: 'pointer' }}
+                  >
+                    <option value="wizard" style={{ background: '#111', color: '#fff' }}>Setup Wizard</option>
+                    <option value="guides" style={{ background: '#111', color: '#fff' }}>System Guides</option>
+                    <option value="cards" style={{ background: '#111', color: '#fff' }}>Tool Guides</option>
+                    <option value="gap" style={{ background: '#111', color: '#fff' }}>Gap Analyzer</option>
+                    <option value="lifecycle" style={{ background: '#111', color: '#fff' }}>Library Index</option>
+                    <option value="zim" style={{ background: '#111', color: '#fff' }}>ZIM Catalog</option>
+                    <option value="acq" style={{ background: '#111', color: '#fff' }}>Librarian Wishlist</option>
+                    <option value="providers" style={{ background: '#111', color: '#fff' }}>Download Directories</option>
+                    <option value="backup" style={{ background: '#111', color: '#fff' }}>Backup</option>
+                    <option value="solar" style={{ background: '#111', color: '#fff' }}>Solar Diagnostics</option>
+                    <option value="radio" style={{ background: '#111', color: '#fff' }}>Comms Directory</option>
+                    <option value="weather" style={{ background: '#111', color: '#fff' }}>Weather Logger</option>
+                    <option value="firstaid" style={{ background: '#111', color: '#fff' }}>First Aid</option>
+                    <option value="recipes" style={{ background: '#111', color: '#fff' }}>Recipe Planner</option>
+                    <option value="network" style={{ background: '#111', color: '#fff' }}>Network Builder</option>
+                  </select>
+                </div>
+
+                <div className="desktop-only-tab-buttons" style={{ display: 'flex', gap: '8px', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', padding: '0 24px', marginBottom: '16px', flexWrap: 'wrap' }}>
                   <button 
                     onClick={() => setToolkitSubTab('wizard')}
                     className={`btn-tactical${toolkitSubTab === 'wizard' ? '' : '-outline'}`}
                     style={{ padding: '8px 16px', borderRadius: '4px 4px 0 0', borderBottom: 'none', marginBottom: '4px' }}
                   >
                     Setup Wizard
+                  </button>
+                  <button 
+                    onClick={() => setToolkitSubTab('guides')}
+                    className={`btn-tactical${toolkitSubTab === 'guides' ? '' : '-outline'}`}
+                    style={{ padding: '8px 16px', borderRadius: '4px 4px 0 0', borderBottom: 'none', marginBottom: '4px' }}
+                  >
+                    System Guides
                   </button>
                   <button 
                     onClick={() => setToolkitSubTab('cards')}
@@ -3862,6 +3913,11 @@ function App() {
                     <SetupWizardPanel setViewMode={setViewMode} />
                   </PanelErrorBoundary>
                 )}
+                {toolkitSubTab === 'guides' && (
+                  <PanelErrorBoundary name="System Guides">
+                    <GuidesReaderPanel />
+                  </PanelErrorBoundary>
+                )}
                 {toolkitSubTab === 'cards' && (
                   <PanelErrorBoundary name="Offline Toolkit Cards">
                     <OfflineToolkitPanel />
@@ -3957,6 +4013,8 @@ function App() {
                     speakText={speakText}
                     currentTheme={currentTheme}
                     changeTheme={changeTheme}
+                    colorMode={colorMode}
+                    setColorMode={setColorMode}
                     simpleMode={simpleMode}
                     setSimpleMode={setSimpleMode}
                     setTourStep={setTourStep}
@@ -4216,30 +4274,25 @@ function App() {
                   </div>
                 )}
 
-                {['.mp4', '.webm'].includes(selectedDocument.extension?.toLowerCase()) ? (
-                  <video 
-                    src={`${API_BASE}${encodePath(selectedDocument.path)}`} 
-                    controls 
-                    autoPlay
-                    style={{ width: '100%', flex: 1, backgroundColor: 'black', borderRadius: '8px' }} 
-                  />
-                ) : ['.avi', '.mkv', '.wmv', '.mov'].includes(selectedDocument.extension?.toLowerCase()) ? (
-                  <div style={{ position: 'relative', width: '100%', flex: 1, backgroundColor: 'black', borderRadius: '8px', overflow: 'hidden' }}>
-                    <div style={{
-                      position: 'absolute', top: '12px', left: '12px', zIndex: 10,
-                      backgroundColor: 'rgba(0,0,0,0.7)', border: '1px solid var(--brand-primary)',
-                      color: 'var(--brand-primary)', padding: '6px 12px', fontSize: '0.75rem',
-                      fontFamily: 'var(--font-mono)', borderRadius: '4px', letterSpacing: '1.5px',
-                      display: 'flex', alignItems: 'center', gap: '8px', boxShadow: 'var(--glow-primary)'
-                    }}>
-                      <span className="status-dot-active" style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--brand-primary)', display: 'inline-block', boxShadow: '0 0 8px var(--brand-primary)' }}></span>
-                      REAL-TIME NEURAL TRANSCODING PROTOCOL (FFMPEG)
-                    </div>
+                {['.mp4', '.webm', '.avi', '.mkv', '.wmv', '.mov'].includes(selectedDocument.extension?.toLowerCase()) ? (
+                  <div style={{ position: 'relative', width: '100%', flex: 1, backgroundColor: 'black', borderRadius: '8px', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+                    {!['.mp4', '.webm'].includes(selectedDocument.extension?.toLowerCase()) && (
+                      <div style={{
+                        position: 'absolute', top: '12px', left: '12px', zIndex: 10,
+                        backgroundColor: 'rgba(0,0,0,0.7)', border: '1px solid var(--brand-primary)',
+                        color: 'var(--brand-primary)', padding: '6px 12px', fontSize: '0.75rem',
+                        fontFamily: 'var(--font-mono)', borderRadius: '4px', letterSpacing: '1.5px',
+                        display: 'flex', alignItems: 'center', gap: '8px', boxShadow: 'var(--glow-primary)'
+                      }}>
+                        <span className="status-dot-active" style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--brand-primary)', display: 'inline-block', boxShadow: '0 0 8px var(--brand-primary)' }}></span>
+                        REAL-TIME NEURAL TRANSCODING PROTOCOL (FFMPEG)
+                      </div>
+                    )}
                     <video 
                       src={`${API_BASE}/api/video/stream?path=${encodeURIComponent(selectedDocument.path)}`} 
                       controls 
                       autoPlay
-                      style={{ width: '100%', height: '100%', borderRadius: '8px' }} 
+                      style={{ width: '100%', height: '100%', borderRadius: '8px', flex: 1 }} 
                     />
                   </div>
                 ) : selectedDocument.extension?.toLowerCase() === '.iso' ? (
@@ -4252,16 +4305,15 @@ function App() {
                       DVD IMAGE MOUNT PROTOCOL
                     </h3>
                     <p style={{ color: 'var(--text-muted)', maxWidth: '600px', marginBottom: '32px', lineHeight: '1.6' }}>
-                      This is a <strong>CD3WD DVD ISO Image ({selectedDocument.name})</strong>. Windows 10 & 11 can mount this file natively as a virtual drive.
+                      This is a <strong>CD3WD DVD ISO Image ({selectedDocument.name})</strong>. You can mount this file natively as a virtual drive.
                     </p>
                     <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-subtle)', borderRadius: '8px', padding: '20px', textAlign: 'left', maxWidth: '600px', marginBottom: '32px' }}>
-                      <h4 style={{ margin: '0 0 10px 0', color: 'var(--brand-primary)' }}>Instructions:</h4>
-                      <ol style={{ margin: 0, paddingLeft: '20px', lineHeight: '1.5', color: 'var(--text-muted)' }}>
-                        <li>Copy the absolute local path using the button below.</li>
-                        <li>Paste the path into your Windows File Explorer path bar to find the file.</li>
-                        <li><strong>Double-click</strong> the file to mount it as a virtual DVD drive.</li>
-                        <li>Access the books, programs, and survival materials inside!</li>
-                      </ol>
+                      <h4 style={{ margin: '0 0 10px 0', color: 'var(--brand-primary)' }}>Mounting Instructions:</h4>
+                      <ul style={{ margin: 0, paddingLeft: '20px', lineHeight: '1.6', color: 'var(--text-muted)' }}>
+                        <li><strong>Windows 10/11:</strong> Double-click the file inside File Explorer to mount it natively.</li>
+                        <li><strong>Linux Mint (Cinnamon):</strong> Right-click the file inside Nemo (File Manager) and choose <strong>"Open with Disk Image Mounter"</strong>.</li>
+                        <li>Copy the path below to locate it quickly on your machine.</li>
+                      </ul>
                     </div>
                     <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', justifyContent: 'center' }}>
                       <a 
@@ -4285,8 +4337,53 @@ function App() {
                       </button>
                     </div>
                   </div>
+                ) : ['.epub', '.doc', '.docx', '.zip'].includes(selectedDocument.extension?.toLowerCase()) ? (
+                  <div style={{
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                    flex: 1, padding: '40px', textAlign: 'center', backgroundColor: '#0a0a0a', color: 'var(--text-main)'
+                  }}>
+                    {selectedDocument.extension?.toLowerCase() === '.epub' ? (
+                      <BookOpen size={64} style={{ color: 'var(--brand-primary)', marginBottom: '24px' }} />
+                    ) : selectedDocument.extension?.toLowerCase() === '.zip' ? (
+                      <Archive size={64} style={{ color: 'var(--brand-primary)', marginBottom: '24px' }} />
+                    ) : (
+                      <FileText size={64} style={{ color: 'var(--brand-primary)', marginBottom: '24px' }} />
+                    )}
+                    <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', marginBottom: '12px' }}>
+                      {selectedDocument.extension?.toUpperCase().slice(1)} DOCUMENT
+                    </h3>
+                    <p style={{ color: 'var(--text-muted)', maxWidth: '600px', marginBottom: '24px', lineHeight: '1.6' }}>
+                      {selectedDocument.extension?.toLowerCase() === '.epub' ? (
+                        "EPUB eBooks cannot be rendered natively inside browser views. To read this manual offline, copy its local path or download it, and open it in a reader like Calibre or FBReader."
+                      ) : selectedDocument.extension?.toLowerCase() === '.zip' ? (
+                        "This is a compressed ZIP archive. Copy its local path to locate and extract its contents via your system's file manager."
+                      ) : (
+                        "Word Documents (.doc/.docx) cannot be rendered natively inside the browser. Copy its local path or download it, and open it in LibreOffice Writer."
+                      )}
+                    </p>
+                    <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                      <a 
+                        href={`${API_BASE}${encodePath(selectedDocument.path)}`}
+                        download
+                        className="btn-tactical"
+                        style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 20px' }}
+                      >
+                        <Download size={16} /> DOWNLOAD FILE
+                      </a>
+                      <button 
+                        className="btn-tactical-outline" 
+                        onClick={() => {
+                          navigator.clipboard.writeText(selectedDocument.path);
+                          alert("Absolute path copied to clipboard!");
+                        }}
+                        style={{ padding: '10px 20px' }}
+                      >
+                        COPY LOCAL PATH
+                      </button>
+                    </div>
+                  </div>
                 ) : ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp'].includes(selectedDocument.extension?.toLowerCase()) ? (
-                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', flex: 1, backgroundColor: '#0a0a0a', borderRadius: '8px', overflow: 'auto', padding: '16px' }}>
+                  <div style={{ display: 'flex', center: 'center', justifyContent: 'center', alignItems: 'center', width: '100%', flex: 1, backgroundColor: '#0a0a0a', borderRadius: '8px', overflow: 'auto', padding: '16px' }}>
                     <img 
                       src={`${API_BASE}${encodePath(selectedDocument.path)}`} 
                       alt={selectedDocument.name} 

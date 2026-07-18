@@ -153,6 +153,37 @@ body {
   box-shadow: var(--glow-primary-strong);
 }
 
+.btn-tactical-outline {
+  background: transparent;
+  color: var(--brand-primary);
+  border: 1px solid var(--border-strong);
+  padding: 8px 16px;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-tactical-outline:hover {
+  background: var(--brand-primary-dim);
+  color: var(--brand-primary);
+  border-color: var(--brand-primary);
+  box-shadow: var(--glow-primary);
+}
+
+.btn-tactical-outline:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-display);
   text-transform: uppercase;
@@ -230,4 +261,348 @@ h1, h2, h3, h4, h5, h6 {
   border-color: var(--brand-primary);
   box-shadow: var(--glow-primary-strong);
 }
+
+/* --- THEME OVERRIDES --- */
+
+/* Professional Theme - Modern Sleek Glassmorphism */
+body.theme-professional {
+  --bg-base: #0f172a; /* Slate 900 */
+  --bg-surface: rgba(30, 41, 59, 0.4); /* Glass Slate 800 */
+  --bg-surface-hover: rgba(30, 41, 59, 0.7);
+  
+  --brand-secondary: #c084fc; /* Lavender accent */
+  --brand-danger: #ef4444;
+  
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  
+  --glass-bg: rgba(15, 23, 42, 0.55);
+  --glass-border: 1px solid rgba(255, 255, 255, 0.06);
+  --glass-blur: blur(24px);
+  
+  /* Modern clean fonts */
+  --font-display: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  
+  /* Very subtle, high-end professional grid */
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+}
+
+body.theme-professional .scanlines {
+  display: none !important;
+}
+
+/* Custom Markdown Rendering Styles inside the app */
+.markdown-body-custom {
+  font-family: var(--font-mono);
+  color: var(--text-main);
+}
+.markdown-body-custom .guide-h1 {
+  font-size: 1.6rem;
+  color: var(--brand-primary);
+  margin-top: 24px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 6px;
+}
+.markdown-body-custom .guide-h2 {
+  font-size: 1.3rem;
+  color: var(--brand-primary);
+  margin-top: 20px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 4px;
+}
+.markdown-body-custom .guide-h3 {
+  font-size: 1.1rem;
+  color: var(--brand-primary);
+  margin-top: 16px;
+  margin-bottom: 8px;
+}
+.markdown-body-custom .guide-p {
+  margin-bottom: 14px;
+  line-height: 1.6;
+}
+.markdown-body-custom .guide-ul {
+  margin-bottom: 16px;
+  padding-left: 20px;
+}
+.markdown-body-custom .guide-li {
+  margin-bottom: 6px;
+}
+.markdown-body-custom .guide-hr {
+  border: 0;
+  border-top: 1px solid var(--border-subtle);
+  margin: 24px 0;
+}
+.markdown-body-custom blockquote {
+  border-left: 3px solid var(--brand-primary-dim);
+  padding-left: 12px;
+  color: var(--text-muted);
+  margin: 16px 0;
+  font-style: italic;
+}
+.markdown-body-custom code {
+  background-color: rgba(255, 255, 255, 0.05);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 0.85em;
+  color: var(--brand-secondary);
+}
+.markdown-body-custom .inline-math {
+  font-family: var(--font-mono);
+  font-style: italic;
+  color: var(--brand-secondary);
+}
+.markdown-body-custom .display-math {
+  background-color: rgba(0, 0, 0, 0.2);
+  padding: 16px;
+  border-radius: 6px;
+  text-align: center;
+  font-family: var(--font-mono);
+  margin: 16px 0;
+  border: 1px solid var(--border-subtle);
+  overflow-x: auto;
+}
+.markdown-body-custom .alert-box {
+  padding: 16px;
+  margin: 16px 0;
+  border-radius: 6px;
+  border-left: 4px solid;
+  font-size: 0.9rem;
+}
+.markdown-body-custom .alert-box.alert-note {
+  background-color: rgba(56, 189, 248, 0.03);
+  border-color: #38bdf8;
+}
+.markdown-body-custom .alert-box.alert-tip {
+  background-color: rgba(34, 197, 94, 0.03);
+  border-color: #22c55e;
+}
+.markdown-body-custom .alert-box.alert-important {
+  background-color: rgba(168, 85, 247, 0.03);
+  border-color: #a855f7;
+}
+.markdown-body-custom .alert-box.alert-warning {
+  background-color: rgba(234, 179, 8, 0.03);
+  border-color: #eab308;
+}
+.markdown-body-custom .alert-box.alert-caution {
+  background-color: rgba(239, 68, 68, 0.03);
+  border-color: #ef4444;
+}
+.markdown-body-custom .alert-box .alert-title {
+  display: block;
+  margin-bottom: 4px;
+  font-weight: bold;
+}
+
+/* Hover effect for guide list items */
+.guide-list-item-hover:hover {
+  border-color: var(--brand-primary) !important;
+  box-shadow: 0 0 12px rgba(255, 183, 0, 0.1) !important;
+  background-color: rgba(255, 255, 255, 0.02) !important;
+}
+body.theme-professional .guide-list-item-hover:hover {
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.1) !important;
+}
+
+/* Professional overrides for layout components */
+body.theme-professional h1, 
+body.theme-professional h2, 
+body.theme-professional h3, 
+body.theme-professional h4, 
+body.theme-professional h5, 
+body.theme-professional h6 {
+  text-transform: none; /* Modern clean case instead of retro force uppercase */
+  letter-spacing: 0.5px;
+  font-weight: 500;
+}
+
+body.theme-professional .glass-panel {
+  border-radius: 12px;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+body.theme-professional .search-container {
+  background: rgba(15, 23, 42, 0.6);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+body.theme-professional .nav-item {
+  border-radius: 6px;
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+body.theme-professional .nav-item.active {
+  background: var(--brand-primary-dim);
+  border-left: 3px solid var(--brand-primary);
+  padding-left: 13px; /* Align content with the border */
+}
+
+body.theme-professional .btn-tactical {
+  border-radius: 6px;
+  text-transform: none;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  font-family: var(--font-display);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+body.theme-professional .btn-tactical:hover {
+  transform: translateY(-1.5px);
+  box-shadow: 0 6px 16px rgba(56, 189, 248, 0.25);
+}
+
+body.theme-professional .file-card {
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+body.theme-professional .file-card::before {
+  display: none !important; /* Remove aggressive left Amber strip */
+}
+
+body.theme-professional .file-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--brand-primary);
+  box-shadow: 0 10px 30px rgba(56, 189, 248, 0.15);
+}
+
+body.theme-professional .btn-tactical-outline {
+  border-radius: 6px;
+  text-transform: none;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  font-family: var(--font-display);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  border-color: var(--border-strong) !important;
+}
+
+body.theme-professional .btn-tactical-outline:hover {
+  background: var(--brand-primary-dim);
+  box-shadow: 0 4px 12px rgba(56, 189, 248, 0.15);
+}
+
+/* Standalone inputs, selects, and textareas styling enhancement */
+input.search-input.glass-panel,
+select.search-input.glass-panel,
+textarea.search-input.glass-panel {
+  background-color: rgba(0, 0, 0, 0.45) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  margin-left: 0 !important; /* Remove margin designed for search icon */
+  padding: 10px 12px !important;
+  border-radius: 6px !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+  color: var(--text-main) !important;
+}
+
+input.search-input.glass-panel:focus,
+select.search-input.glass-panel:focus,
+textarea.search-input.glass-panel:focus {
+  border-color: var(--brand-primary) !important;
+  box-shadow: var(--glow-primary) !important;
+  outline: none !important;
+}
+
+body.theme-professional input.search-input.glass-panel,
+body.theme-professional select.search-input.glass-panel,
+body.theme-professional textarea.search-input.glass-panel {
+  background-color: rgba(15, 23, 42, 0.65) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 8px !important;
+}
+
+body.theme-professional input.search-input.glass-panel:focus,
+body.theme-professional select.search-input.glass-panel:focus,
+body.theme-professional textarea.search-input.glass-panel:focus {
+  border-color: var(--brand-primary) !important;
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2), var(--glow-primary) !important;
+}
+
+/* --- LIGHT MODE SPECIFIC OVERRIDES --- */
+body.mode-light {
+  --bg-base: #f8fafc; /* Slate 50 */
+  --bg-surface: rgba(255, 255, 255, 0.65);
+  --bg-surface-hover: rgba(255, 255, 255, 0.85);
+  
+  --text-main: #0f172a; /* Slate 900 */
+  --text-muted: #64748b; /* Slate 500 */
+  
+  --border-subtle: rgba(15, 23, 42, 0.08);
+  --border-strong: var(--brand-primary);
+  
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: 1px solid rgba(15, 23, 42, 0.08);
+  --glass-blur: blur(20px);
+}
+
+body.theme-professional.mode-light {
+  --bg-base: #f1f5f9; /* slate 100 background for light professional theme */
+  --bg-surface: rgba(255, 255, 255, 0.6);
+  --bg-surface-hover: rgba(255, 255, 255, 0.9);
+  --glass-bg: rgba(255, 255, 255, 0.55);
+}
+
+body.mode-light.theme-rugged {
+  background-image: 
+    linear-gradient(rgba(255, 183, 0, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 183, 0, 0.04) 1px, transparent 1px);
+}
+
+body.mode-light.theme-professional {
+  background-image: 
+    linear-gradient(rgba(15, 23, 42, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15, 23, 42, 0.02) 1px, transparent 1px);
+}
+
+body.mode-light .glass-panel {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+body.mode-light .search-container {
+  background: rgba(255, 255, 255, 0.8) !important;
+}
+
+body.mode-light input.search-input.glass-panel,
+body.mode-light select.search-input.glass-panel,
+body.mode-light textarea.search-input.glass-panel {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  border: 1px solid rgba(15, 23, 42, 0.12) !important;
+  color: #0f172a !important;
+}
+
+body.mode-light option {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+}
+
+body.mode-light label, 
+body.mode-light .file-name,
+body.mode-light .category-action-buttons button,
+body.mode-light .category-header button {
+  color: #0f172a !important;
+}
+
+body.mode-light .breadcrumb-bar span,
+body.mode-light .file-meta span,
+body.mode-light .nav-item span {
+  color: var(--text-main) !important;
+}
+
+body.mode-light .nav-item {
+  color: #475569 !important;
+}
+
+body.mode-light .nav-item.active {
+  color: var(--brand-primary) !important;
+}
+
 
