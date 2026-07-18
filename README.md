@@ -101,11 +101,9 @@ npm run dev
 
 ## 📚 Off-Grid Library Reference Sources
 
-Need content to fuel your R.A.N.G.E.R. engine? SurvivalOS acts as your librarian, but you need to stock the shelves. Here are highly recommended open-source survival repositories to download into your library:
+Need content to fuel your R.A.N.G.E.R. engine? SurvivalOS acts as your librarian, but you need to stock the shelves. 
 
-*   **[pieroboseta/APOCALYPSE](https://github.com/pieroboseta/APOCALYPSE):** Medical, plumbing, structural building, and off-grid survival.
-*   **[PR0M3TH3AN/Survival-Data](https://github.com/PR0M3TH3AN/Survival-Data):** Emergency checklists, HAM radio guides, first-aid runbooks.
-*   **[alx-xlx/awesome-survival](https://github.com/alx-xlx/awesome-survival):** Bushcraft, foraging, and wilderness guidance.
+Inside the SurvivalOS application, navigate to the **OFFLINE TOOLKIT > DOWNLOAD DIRECTORIES** tab for a complete, curated reference guide on where and how to safely acquire medical, agricultural, and structural survival encyclopedias to fill your local library.
 
 ---
 
