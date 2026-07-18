@@ -14,7 +14,11 @@ function isNativeCodec(absolutePath) {
     // Native codecs universally supported by web browsers
     return ['h264', 'vp9', 'av1', 'vp8'].includes(codec.toLowerCase());
   } catch (e) {
-    // If query fails, safely fallback to transcoding to guarantee playback
+    // If ffprobe is missing or fails, assume true for .mp4/.webm to prevent useless transcode crash
+    const ext = path.extname(absolutePath).toLowerCase();
+    if (['.mp4', '.webm'].includes(ext)) {
+      return true;
+    }
     return false;
   }
 }
@@ -27,6 +31,20 @@ function streamVideo(req, res, absolutePath) {
     return res.sendFile(absolutePath);
   }
   
+  // Verify ffmpeg exists before trying to spawn it
+  let hasFfmpeg = true;
+  try {
+    const { execSync } = require('child_process');
+    execSync('which ffmpeg', { stdio: 'ignore' });
+  } catch (e) {
+    hasFfmpeg = false;
+  }
+
+  if (!hasFfmpeg) {
+    console.warn(`[STREAM] FFmpeg not found on system. Falling back to native file transfer.`);
+    return res.sendFile(absolutePath);
+  }
+
   console.log(`[TRANSCODE] Starting FFmpeg real-time transcode for: ${absolutePath}`);
   
   res.writeHead(200, {

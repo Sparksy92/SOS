@@ -24,9 +24,11 @@ const TTS_URL = process.env.SOS_TTS_URL || 'http://localhost:3002';
 
 // Security headers
 app.use(helmet({
-  contentSecurityPolicy: false,  // Disable CSP for now since the app uses inline styles
+  contentSecurityPolicy: false,
   crossOriginEmbedderPolicy: false,
-  frameguard: false,             // Allow iframe document previews from different local ports (3000 vs 3001)
+  crossOriginOpenerPolicy: false,
+  crossOriginResourcePolicy: false,
+  frameguard: false,
 }));
 
 // Response compression
