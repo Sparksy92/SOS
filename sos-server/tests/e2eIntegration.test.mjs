@@ -13,7 +13,7 @@ test('SOS End-to-End API Integration Suite', async (t) => {
   let server;
   const originalFetch = global.fetch;
   
-  t.before(() => {
+  t.before(async () => {
     // Mock the external TTS service call
     global.fetch = async (url, options) => {
       const urlStr = typeof url === 'string' ? url : url.toString();
@@ -31,6 +31,11 @@ test('SOS End-to-End API Integration Suite', async (t) => {
 
     // Require index.js which boots the Express server on process.env.PORT
     server = require('../index.js');
+
+    // Wait for the server to be listening to avoid connection race conditions
+    if (server && !server.listening) {
+      await new Promise(resolve => server.once('listening', resolve));
+    }
   });
 
   t.after(() => {
