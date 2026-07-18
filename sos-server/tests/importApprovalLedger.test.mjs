@@ -235,6 +235,14 @@ test('Toolkit Routes Exception Generic Hardening', () => {
     throw new Error("Sensitive filesystem root exception or Users folder path leak");
   };
 
+  const originalExistsSync = fs.existsSync;
+  fs.existsSync = (p) => {
+    if (typeof p === 'string' && (p.includes('kiwix') || p.includes('materials'))) {
+      return true;
+    }
+    return originalExistsSync(p);
+  };
+
   return new Promise((resolve, reject) => {
     const { req, res } = mockReqRes({}, (result) => {
       try {
@@ -244,6 +252,8 @@ test('Toolkit Routes Exception Generic Hardening', () => {
         assert.ok(!result.body.error.includes("readdirSync"), "Detailed stack error must not leak to client");
         resolve();
       } catch (err) {
+        fs.readdirSync = originalReaddirSync;
+        fs.existsSync = originalExistsSync;
         reject(err);
       }
     });
@@ -253,8 +263,9 @@ test('Toolkit Routes Exception Generic Hardening', () => {
     return new Promise((resolve, reject) => {
       const { req, res } = mockReqRes({}, (result) => {
         try {
-          // Restore readdirSync
+          // Restore readdirSync and existsSync
           fs.readdirSync = originalReaddirSync;
+          fs.existsSync = originalExistsSync;
 
           assert.strictEqual(result.statusCode, 500);
           assert.strictEqual(result.body.error, "Internal server error during ZIM catalog scan.");
@@ -262,6 +273,7 @@ test('Toolkit Routes Exception Generic Hardening', () => {
           resolve();
         } catch (err) {
           fs.readdirSync = originalReaddirSync;
+          fs.existsSync = originalExistsSync;
           reject(err);
         }
       });
