@@ -4328,7 +4328,7 @@ function App() {
                       </button>
                     </div>
                   </div>
-                ) : ['.epub', '.doc', '.docx', '.zip'].includes(selectedDocument.extension?.toLowerCase()) ? (
+                ) : ['.epub', '.doc', '.docx', '.zip', '.zim'].includes(selectedDocument.extension?.toLowerCase()) ? (
                   <div style={{
                     display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                     flex: 1, padding: '40px', textAlign: 'center', backgroundColor: '#0a0a0a', color: 'var(--text-main)'
@@ -4337,6 +4337,8 @@ function App() {
                       <BookOpen size={64} style={{ color: 'var(--brand-primary)', marginBottom: '24px' }} />
                     ) : selectedDocument.extension?.toLowerCase() === '.zip' ? (
                       <Archive size={64} style={{ color: 'var(--brand-primary)', marginBottom: '24px' }} />
+                    ) : selectedDocument.extension?.toLowerCase() === '.zim' ? (
+                      <Database size={64} style={{ color: 'var(--brand-primary)', marginBottom: '24px' }} />
                     ) : (
                       <FileText size={64} style={{ color: 'var(--brand-primary)', marginBottom: '24px' }} />
                     )}
@@ -4348,19 +4350,34 @@ function App() {
                         "EPUB eBooks cannot be rendered natively inside browser views. To read this manual offline, copy its local path or download it, and open it in a reader like Calibre or FBReader."
                       ) : selectedDocument.extension?.toLowerCase() === '.zip' ? (
                         "This is a compressed ZIP archive. Copy its local path to locate and extract its contents via your system's file manager."
+                      ) : selectedDocument.extension?.toLowerCase() === '.zim' ? (
+                        "This is a Kiwix ZIM Offline Archive containing complete wiki content. You can run and read this encyclopedia natively inside the 'Kiwix ZIM Catalog' under the OFFLINE TOOLKIT tab."
                       ) : (
                         "Word Documents (.doc/.docx) cannot be rendered natively inside the browser. Copy its local path or download it, and open it in LibreOffice Writer."
                       )}
                     </p>
                     <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', justifyContent: 'center' }}>
-                      <a 
-                        href={`${API_BASE}${encodePath(selectedDocument.path)}`}
-                        download
-                        className="btn-tactical"
-                        style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 20px' }}
-                      >
-                        <Download size={16} /> DOWNLOAD FILE
-                      </a>
+                      {selectedDocument.extension?.toLowerCase() === '.zim' ? (
+                        <button 
+                          className="btn-tactical" 
+                          onClick={() => {
+                            setViewMode('offline-toolkit');
+                            setSelectedDocument(null);
+                          }}
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 20px' }}
+                        >
+                          <Database size={16} /> OPEN ZIM READER
+                        </button>
+                      ) : (
+                        <a 
+                          href={`${API_BASE}${encodePath(selectedDocument.path)}`}
+                          download
+                          className="btn-tactical"
+                          style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 20px' }}
+                        >
+                          <Download size={16} /> DOWNLOAD FILE
+                        </a>
+                      )}
                       <button 
                         className="btn-tactical-outline" 
                         onClick={() => {
