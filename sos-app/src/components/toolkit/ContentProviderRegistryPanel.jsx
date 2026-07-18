@@ -72,6 +72,13 @@ const STATIC_DIRECTORIES = [
     officialSourceUrl: 'https://www.survival-manual.com/',
     sourceType: 'Field & Survival Manuals Collection',
     operatorNotes: 'Quick reference collection for standard military survival manuals, wilderness medicine guidelines, and shelter construction PDF files.'
+  },
+  {
+    id: 'awesome_survival_git',
+    label: 'Awesome Survival Git Repository',
+    officialSourceUrl: 'https://github.com/alx-xlx/awesome-survival',
+    sourceType: 'Curated Open Source Resource Directory',
+    operatorNotes: 'Comprehensive directory listing highly vetted survival resource lists, open source mapping repos, and offline communications configurations.'
   }
 ];
 
