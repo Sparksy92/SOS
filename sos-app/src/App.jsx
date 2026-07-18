@@ -2919,7 +2919,7 @@ function App() {
                   </div>
                 ) : (
                   /* Hierarchical virtual directory explorer view */
-                  <div className="virtual-directory-explorer" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div className="virtual-directory-explorer" style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '24px' }}>
                     {(() => {
                       const filtered = getFilteredFiles();
                       const { folders, files } = getCurrentDirectoryFilesAndFolders(filtered);

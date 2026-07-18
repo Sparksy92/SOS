@@ -6,6 +6,15 @@ import { createRequire } from 'module';
 
 const require = createRequire(import.meta.url);
 const { RunnableSequence } = require('@langchain/core/runnables');
+const { OllamaEmbeddings } = require('@langchain/ollama');
+
+// Mock OllamaEmbeddings before importing ebgService/ai
+OllamaEmbeddings.prototype.embedQuery = async function(text) {
+  return Array(768).fill(0.1);
+};
+OllamaEmbeddings.prototype.embedDocuments = async function(documents) {
+  return documents.map(() => Array(768).fill(0.1));
+};
 
 // Dynamic import to guarantee process.env.SOS_DB_PATH is registered first
 const { db } = await import('../db.js');
