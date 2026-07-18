@@ -37,6 +37,41 @@ const STATIC_DIRECTORIES = [
     officialSourceUrl: 'https://libgen.is/',
     sourceType: 'Academic Textbooks',
     operatorNotes: 'Comprehensive search directory for modern scientific textbooks, engineering manuals, and reference guides.'
+  },
+  {
+    id: 'survivor_library',
+    label: 'Survivor Library',
+    officialSourceUrl: 'http://www.survivorlibrary.com/',
+    sourceType: 'Homesteading & Technical PDF Archive',
+    operatorNotes: 'Extremely rich collection of thousands of public domain books specifically curated for offline restoration of essential technologies.'
+  },
+  {
+    id: 'geofabrik_osm',
+    label: 'Geofabrik OpenStreetMap Downloads',
+    officialSourceUrl: 'https://download.geofabrik.de/',
+    sourceType: 'Offline Geographic Mapping Data',
+    operatorNotes: 'Free map extract files in PBF format, categorized by continent and country. Vital for off-grid mapping engines.'
+  },
+  {
+    id: 'appropedia',
+    label: 'Appropedia Wiki',
+    officialSourceUrl: 'https://www.appropedia.org/',
+    sourceType: 'Sustainability & Appropriate Tech Wiki',
+    operatorNotes: 'Collaborative encyclopedia focused on sustainability, off-grid systems, solar power, water purification, and agriculture.'
+  },
+  {
+    id: 'cd3wd',
+    label: 'CD3WD Third-World Development Library',
+    officialSourceUrl: 'https://archive.org/details/cd3wd',
+    sourceType: 'Technical Development Library',
+    operatorNotes: 'Mirror of the legendary offline library containing manuals on mechanical, electrical, and structural systems for off-grid operations.'
+  },
+  {
+    id: 'preparedness_manuals',
+    label: 'The Preparedness Manuals Library',
+    officialSourceUrl: 'https://www.survival-manual.com/',
+    sourceType: 'Field & Survival Manuals Collection',
+    operatorNotes: 'Quick reference collection for standard military survival manuals, wilderness medicine guidelines, and shelter construction PDF files.'
   }
 ];
 
