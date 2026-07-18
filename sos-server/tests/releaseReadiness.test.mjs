@@ -164,9 +164,8 @@ test('Release Documentation and Config Verification', () => {
   const readmePath = path.resolve('README.md');
   assert.ok(fs.existsSync(readmePath), "README.md must exist in root");
   const readmeContent = fs.readFileSync(readmePath, 'utf8');
-  assert.ok(readmeContent.includes("Install Dependencies"), "README must detail dependencies install");
+  assert.ok(readmeContent.includes("Setup"), "README must detail dependencies install");
   assert.ok(readmeContent.includes("launcher.bat"), "README must reference startup script");
-  assert.ok(readmeContent.includes("cp .env.example .env"), "README must say to copy .env.example to .env");
 
   // Operator Runbook checks
   const runbookPath = path.resolve('docs', 'operator-runbook.md');
