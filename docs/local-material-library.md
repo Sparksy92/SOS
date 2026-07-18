@@ -10,9 +10,10 @@ survival/
 ├── sos-server/              # Node.js API backend (tracked in Git)
 ├── launcher.bat             # Windows tactical launcher
 ├── launcher.sh              # Linux tactical launcher
-├── ATL/                     # [Local Library] Applied Tech & Agriculture (500GB+ outside Git)
-├── ENCYCLOPEDIAS.../        # [Local Library] Encyclopedias & Reference
-├── CD3WD Extracted Manuals/ # [Local Library] Extracted CD3WD books
+├── Agriculture/             # [Local Library] Farming and food production manuals
+├── Medical/                 # [Local Library] Wilderness medicine and first aid books
+├── Water/                   # [Local Library] Water purification and sanitation guides
+├── Videos/                  # [Local Library] Instruction videos and courses
 └── ...
 ```
 
@@ -35,12 +36,12 @@ The backend scanner scans and renders the following extensions:
 *   Scanned or image-only PDFs must be converted to text using the Vision OCR script (`ocr_library.py`).
 *   **Storage Location**: Output markdown files are written in a `markdown_materials/` subfolder right next to the original PDF:
     ```
-    ATL/01 Background reading/
-    ├── 01-15.pdf
+    Agriculture/Farming Guides/
+    ├── manual.pdf
     └── markdown_materials/
-        └── 01-15.md
+        └── manual.md
     ```
-*   **Duplicate Protection**: The backend scanner explicitly ignores the `markdown_materials` directory during file tree indexing to prevent showing duplicate items. When a user views `01-15.pdf` and activates the R.A.N.G.E.R. Audio Reader, the backend checks for the presence of the `.md` file in `markdown_materials/` to read the high-fidelity text instead.
+*   **Duplicate Protection**: The backend scanner explicitly ignores the `markdown_materials` directory during file tree indexing to prevent showing duplicate items. When a user views `manual.pdf` and activates the R.A.N.G.E.R. Audio Reader, the backend checks for the presence of the `.md` file in `markdown_materials/` to read the high-fidelity text instead.
 
 ## 6. Source Material Protection
 *   The crawler operates in a **100% read-only** capacity for library files.
