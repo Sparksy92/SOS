@@ -4393,7 +4393,7 @@ function App() {
                   <iframe 
                     src={`${API_BASE}${encodePath(selectedDocument.path)}`}
                     title="Document Viewer"
-                    sandbox="allow-same-origin allow-scripts allow-popups allow-downloads"
+                    sandbox={selectedDocument.extension?.toLowerCase() === '.pdf' ? undefined : "allow-same-origin allow-scripts allow-popups allow-downloads"}
                     style={{ width: '100%', flex: 1, border: 'none', backgroundColor: '#e2e8f0' }}
                   />
                 )}
