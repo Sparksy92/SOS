@@ -2810,78 +2810,69 @@ function App() {
             
             {!error && !loading && viewMode === 'files' && (activeCategory || searchQuery) && (
               <>
-                <div className="category-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: '16px' }}>
+                <div className="category-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
                   <div>
-                    <h2 className="category-title">{searchQuery ? `SEARCH: "${searchQuery.toUpperCase()}"` : (activeCategory ? activeCategory.toUpperCase() : '')}</h2>
-                    <div style={{color: 'var(--text-muted)'}}>{getFilteredFiles().length} RECORDS FOUND</div>
+                    <h2 className="category-title" style={{ margin: 0 }}>{searchQuery ? `SEARCH: "${searchQuery.toUpperCase()}"` : (activeCategory ? activeCategory.toUpperCase() : '')}</h2>
+                    <div style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', fontSize: '0.75rem', marginTop: '4px' }}>{getFilteredFiles().length} RECORDS FOUND</div>
                   </div>
-                  {!searchQuery && (
-                    <div className="category-action-buttons" style={{ display: 'flex', gap: '12px' }}>
-                      <button 
-                        className="btn-tactical" 
-                        onClick={indexCategory}
-                        disabled={isIndexingBatch || isDecoding}
-                        style={{ fontSize: '0.8rem', padding: '8px 16px', background: isIndexingBatch ? 'var(--brand-primary-dim)' : '' }}
-                      >
-                        <Cpu size={16} />
-                        {isIndexingBatch ? `INDEXING... ${indexProgress}/${indexTotal}` : 'INDEX CATEGORY'}
-                      </button>
-                      
-                      <button 
-                        className="btn-tactical" 
-                        onClick={decodeCategory}
-                        disabled={isDecoding || isIndexingBatch}
-                        style={{ fontSize: '0.8rem', padding: '8px 16px', background: isDecoding ? 'var(--brand-primary-dim)' : '' }}
-                      >
-                        <Fingerprint size={16} />
-                        {isDecoding ? `DECODING... ${decodeProgress}/${decodeTotal}` : 'DECODE FILENAMES'}
-                      </button>
-                    </div>
-                  )}
-                </div>
+                  <div className="category-action-buttons" style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+                    {/* Media Type Dropdown Filter */}
+                    <select
+                      value={mediaTab}
+                      onChange={(e) => setMediaTab(e.target.value)}
+                      className="search-input glass-panel"
+                      style={{ 
+                        padding: '6px 12px', 
+                        fontSize: '0.75rem', 
+                        fontFamily: 'var(--font-mono)', 
+                        height: '35px',
+                        width: '210px',
+                        margin: 0,
+                        backgroundColor: 'rgba(0, 0, 0, 0.45)',
+                        border: '1px solid rgba(255, 255, 255, 0.18)',
+                        borderRadius: '4px',
+                        color: 'var(--brand-primary)',
+                        cursor: 'pointer',
+                        textTransform: 'uppercase',
+                        letterSpacing: '1px'
+                      }}
+                    >
+                      <option value="all" style={{ background: '#0e121a', color: '#fff' }}>ALL RECORDS</option>
+                      <option value="reading" style={{ background: '#0e121a', color: '#fff' }}>📖 BOOKS & MANUALS</option>
+                      <option value="videos" style={{ background: '#0e121a', color: '#fff' }}>🎥 TRAINING VIDEOS</option>
+                      <option value="software" style={{ background: '#0e121a', color: '#fff' }}>💿 SOFTWARE & ISOS</option>
+                      <option value="diagrams" style={{ background: '#0e121a', color: '#fff' }}>🖼 DIAGRAMS & IMAGES</option>
+                    </select>
 
-                {/* Media Type Tabs */}
-                <div className="tab-container">
-                  <button 
-                    className={`btn-tactical ${mediaTab === 'all' ? 'active' : ''}`}
-                    onClick={() => setMediaTab('all')}
-                    style={{ fontSize: '0.8rem', padding: '10px 16px', letterSpacing: '1px', flexShrink: 0, whiteSpace: 'nowrap', minHeight: '40px' }}
-                  >
-                    ALL RECORDS
-                  </button>
-                  <button 
-                    className={`btn-tactical ${mediaTab === 'reading' ? 'active' : ''}`}
-                    onClick={() => setMediaTab('reading')}
-                    style={{ fontSize: '0.8rem', padding: '10px 16px', letterSpacing: '1px', flexShrink: 0, whiteSpace: 'nowrap', minHeight: '40px' }}
-                  >
-                    📖 BOOKS & MANUALS
-                  </button>
-                  <button 
-                    className={`btn-tactical ${mediaTab === 'videos' ? 'active' : ''}`}
-                    onClick={() => setMediaTab('videos')}
-                    style={{ fontSize: '0.8rem', padding: '10px 16px', letterSpacing: '1px', flexShrink: 0, whiteSpace: 'nowrap', minHeight: '40px' }}
-                  >
-                    🎥 TRAINING VIDEOS
-                  </button>
-                  <button 
-                    className={`btn-tactical ${mediaTab === 'software' ? 'active' : ''}`}
-                    onClick={() => setMediaTab('software')}
-                    style={{ fontSize: '0.8rem', padding: '10px 16px', letterSpacing: '1px', flexShrink: 0, whiteSpace: 'nowrap', minHeight: '40px' }}
-                  >
-                    💿 SOFTWARE & ISOS
-                  </button>
-                  <button 
-                    className={`btn-tactical ${mediaTab === 'diagrams' ? 'active' : ''}`}
-                    onClick={() => setMediaTab('diagrams')}
-                    style={{ fontSize: '0.8rem', padding: '10px 16px', letterSpacing: '1px', flexShrink: 0, whiteSpace: 'nowrap', minHeight: '40px' }}
-                  >
-                    🖼 DIAGRAMS & IMAGES
-                  </button>
+                    {!searchQuery && (
+                      <>
+                        <button 
+                          className="btn-tactical" 
+                          onClick={indexCategory}
+                          disabled={isIndexingBatch || isDecoding}
+                          style={{ fontSize: '0.8rem', padding: '8px 16px', background: isIndexingBatch ? 'var(--brand-primary-dim)' : '', height: '35px', display: 'flex', alignItems: 'center', gap: '6px' }}
+                        >
+                          <Cpu size={16} />
+                          {isIndexingBatch ? `INDEXING... ${indexProgress}/${indexTotal}` : 'INDEX CATEGORY'}
+                        </button>
+                        
+                        <button 
+                          className="btn-tactical" 
+                          onClick={decodeCategory}
+                          disabled={isDecoding || isIndexingBatch}
+                          style={{ fontSize: '0.8rem', padding: '8px 16px', background: isDecoding ? 'var(--brand-primary-dim)' : '', height: '35px', display: 'flex', alignItems: 'center', gap: '6px' }}
+                        >
+                          <Fingerprint size={16} />
+                          {isDecoding ? `DECODING... ${decodeProgress}/${decodeTotal}` : 'DECODE FILENAMES'}
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
 
                 {searchQuery ? (
                   /* Flat search results view */
-                  <div className="file-grid">
+                  <div className="file-grid" style={{ marginTop: '24px' }}>
                     {getFilteredFiles().map((file, idx) => {
                       const meta = metadata[file.path];
                       const displayTitle = meta && meta.title && meta.title !== 'Unknown Document' && meta.title !== 'Error decoding' ? meta.title : file.name;
