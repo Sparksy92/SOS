@@ -31,6 +31,7 @@ jobs:
           npm install
 
       - name: Run Backend Logic Tests
+        timeout-minutes: 5
         run: |
           node --test-concurrency=1 --test sos-server/tests/*.test.mjs
 
