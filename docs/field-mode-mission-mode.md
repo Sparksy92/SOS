@@ -1,13 +1,13 @@
-# SurvivalOS: Jarvis Field Mode & Mission Mode (Local-First Offline)
+# SurvivalOS: R.A.N.G.E.R. Field Mode & Mission Mode (Local-First Offline)
 
-This guide documents the local active operational field sessions (Missions) framework integrated into the SurvivalOS terminal dashboard and J.A.R.V.I.S. (Local AI).
+This guide documents the local active operational field sessions (Missions) framework integrated into the SurvivalOS terminal dashboard and R.A.N.G.E.R. (Local AI).
 
 ## Overview & Design Directive
 
 Field Mode allows operators to:
 1.  Initialize guided checklists and mission objectives for specific situational contexts.
 2.  Maintain a live chronological event timeline log locally.
-3.  Directly query J.A.R.V.I.S. and attach verified source citations, AI logs, and notes to the active mission dossier.
+3.  Directly query R.A.N.G.E.R. and attach verified source citations, AI logs, and notes to the active mission dossier.
 4.  Export structured Markdown and JSON reports completely offline for physical storage.
 
 > [!IMPORTANT]
@@ -50,12 +50,12 @@ SurvivalOS includes 6 preloaded situational configuration templates:
 3.  Select a Situational Template or enter custom parameters.
 4.  Click **START MISSION PROTOCOL**. The session is now mounted to the active operational HUD.
 
-### Attaching Resources from J.A.R.V.I.S. Chat
+### Attaching Resources from R.A.N.G.E.R. Chat
 When an active mission is running, a banner is displayed at the top of the chat panel indicating: `⚡ ACTIVE FIELD MODE: [Title]`.
 Under any AI answer bubble:
 *   Click **ADD ANSWER TO MISSION** to copy and link the AI log to the active session.
 *   Click **ADD SOURCES TO MISSION** to link all RAG book citations.
-*   Click **CREATE MISSION NOTE** to compose a new note prefitted with the Jarvis query contents.
+*   Click **CREATE MISSION NOTE** to compose a new note prefitted with the R.A.N.G.E.R. query contents.
 On individual source citation cards:
 *   Click **ADD TO MISSION** to link that specific snippet excerpt.
 

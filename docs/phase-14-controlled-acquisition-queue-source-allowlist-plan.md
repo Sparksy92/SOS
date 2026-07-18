@@ -23,7 +23,7 @@
 *   **Approval Ledger**: Adds buttons to queue approved ledger entries. Pending/rejected ledger items are blocked from queuing.
 *   **Manual Import**: Staged files matching queue items can be marked as `manually_staged` in the queue store via button click.
 
-### 5. Jarvis guidance
+### 5. R.A.N.G.E.R. guidance
 *   Advisory-only intercepts for counting and summarizing planned, acquired, staged, or blocked reference checklist items.
 
 ---
@@ -41,4 +41,4 @@ Run unit tests to verify:
 2.  Add a candidate from Gap Analyzer to queue, verify it shows up in Acquisition Queue.
 3.  Add source to allowlist, verify operator-trusted flags update.
 4.  Test JSON export/import and Markdown exports.
-5.  Ask Jarvis conversational prompts and verify counts match.
+5.  Ask R.A.N.G.E.R. conversational prompts and verify counts match.

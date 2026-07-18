@@ -20,7 +20,7 @@
 ### 4. Integrations
 *   **Manual Import**, **Acquisition Queue**, and **Approval Ledger**: Show lifecycle status hints and render `"Open Lifecycle"` navigation buttons.
 
-### 5. J.A.R.V.I.S. conversational updates
+### 5. R.A.N.G.E.R. conversational updates
 *   Summarizes local lifecycle counts, stuck files, missing evidence, and recommended next steps.
 
 ---

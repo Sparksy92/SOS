@@ -1,6 +1,6 @@
 # Phase 14 Implementation Notes — Controlled Acquisition Queue & Source Allowlist
 
-This document details the acquisition queue and source allowlist stores, UI panels, integrations, Jarvis responses, test suite, and verification notes implemented for Phase 14.
+This document details the acquisition queue and source allowlist stores, UI panels, integrations, R.A.N.G.E.R. responses, test suite, and verification notes implemented for Phase 14.
 
 ## Features and Subsystems Implemented
 
@@ -30,7 +30,7 @@ This document details the acquisition queue and source allowlist stores, UI pane
 *   **Approval Ledger**: For approved items with source URLs, enables quick queuing or allowlisting. Pending/rejected ledger records show warning guidance: `"Complete source evidence before queueing this item."`
 *   **Manual Import**: Staged card queue shows `"Queue status: manually staged candidate detected"` when staged files align with queue hints, and adds a button `"Mark Queue Item as Manually Staged"` updating localStorage only.
 
-### 5. J.A.R.V.I.S. Conversational Guidance
+### 5. R.A.N.G.E.R. Conversational Guidance
 *   Deterministic local intercepts implemented in `App.jsx` for:
     *   `what is in my acquisition queue?`
     *   `what sources are allowlisted?`
@@ -46,7 +46,7 @@ This document details the acquisition queue and source allowlist stores, UI pane
 ## Verification Logs
 
 ### Automated Tests
-Node unit tests verify store key namespaces, creation helpers, persistence, import validations, UI strings, ledger gating, and Jarvis prompts:
+Node unit tests verify store key namespaces, creation helpers, persistence, import validations, UI strings, ledger gating, and R.A.N.G.E.R. prompts:
 *   Test File Path: [`sos-server/tests/acquisitionQueue.test.mjs`](file:///c:/Users/operator/Downloads/survival/sos-server/tests/acquisitionQueue.test.mjs)
 ```bash
 node --test sos-server/tests/acquisitionQueue.test.mjs

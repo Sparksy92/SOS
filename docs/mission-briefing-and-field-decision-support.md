@@ -4,7 +4,7 @@ SurvivalOS now includes a local-first conversational copilot that guides you thr
 
 ## 1. Conversational Guided Intake (Phase 11A)
 
-Instead of using rigid forms, J.A.R.V.I.S. intercepts natural intent phrases in chat to start a local-first planning questionnaire.
+Instead of using rigid forms, R.A.N.G.E.R. intercepts natural intent phrases in chat to start a local-first planning questionnaire.
 
 ### Intent Triggers
 *   **Fishing**: *"I wanna go fishing"*, *"Plan a fishing trip"*
@@ -17,9 +17,9 @@ Instead of using rigid forms, J.A.R.V.I.S. intercepts natural intent phrases in 
 *   **General**: *"I want to start a mission"*, *"plan a new mission"*
 
 ### Intake Flow
-1.  **Intake Activation**: J.A.R.V.I.S. recognizes the intent, blocks server-side LLM calls, and responds with the first question (e.g. *"Where are you fishing today?"*).
+1.  **Intake Activation**: R.A.N.G.E.R. recognizes the intent, blocks server-side LLM calls, and responds with the first question (e.g. *"Where are you fishing today?"*).
 2.  **State Management**: Answers are saved in React state as you chat.
-3.  **Draft Preview**: Once questions are answered, J.A.R.V.I.S. prints a summary of suggested objectives and checklist items.
+3.  **Draft Preview**: Once questions are answered, R.A.N.G.E.R. prints a summary of suggested objectives and checklist items.
 4.  **Operator Approval Gate**: Storing to the active mission database requires the operator to type `YES` or `CREATE`. Typing `CANCEL` clears the session saving nothing.
 
 ---
@@ -27,7 +27,7 @@ Instead of using rigid forms, J.A.R.V.I.S. intercepts natural intent phrases in 
 ## 2. Mission Organization Score & Briefings (Phase 11)
 
 Calculated dynamically from a baseline of `50` points:
-*   **Attachments**: `+10` points per Jarvis Answer, `+10` points per Citation source, `+5` points per field Note.
+*   **Attachments**: `+10` points per R.A.N.G.E.R. Answer, `+10` points per Citation source, `+5` points per field Note.
 *   **Checkpoints**: `+10` points per completed objective, `+5` points per completed checklist task.
 *   **Deductions**: `-5` points per unreviewed queued source, `-5` points per open high-priority task.
 

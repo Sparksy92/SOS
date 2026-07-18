@@ -8,7 +8,7 @@ In SurvivalOS, a reference document is defined as **Indexed** if and only if:
 1.  It has an active entry inside the SQLite `indexed_docs` table.
 2.  Its content has been successfully parsed into text chunks and saved inside the SQLite `document_chunks` table.
 
-Jarvis uses the `document_chunks` table for offline RAG searches. If chunks are absent, Jarvis cannot find or retrieve facts from that document, regardless of any flag in the frontend or manifest.
+R.A.N.G.E.R. uses the `document_chunks` table for offline RAG searches. If chunks are absent, R.A.N.G.E.R. cannot find or retrieve facts from that document, regardless of any flag in the frontend or manifest.
 
 ---
 
@@ -17,7 +17,7 @@ Jarvis uses the `document_chunks` table for offline RAG searches. If chunks are 
 Previously, a mismatch could occur because:
 *   The background crawler parsed files into the SQLite database.
 *   But manual single-document indexing via the Library UI only indexed documents into the Langchain `vectorStore` (HNSWLib) on disk.
-*   This left the SQLite chunk table empty, meaning the document remained invisible to J.A.R.V.I.S. Chat, and the manifest flag remained out of sync.
+*   This left the SQLite chunk table empty, meaning the document remained invisible to R.A.N.G.E.R. Chat, and the manifest flag remained out of sync.
 
 ### Unified Solution:
 *   Both the crawler and manual single-document indexing now use the unified indexing pathway in `ai.indexFile`.

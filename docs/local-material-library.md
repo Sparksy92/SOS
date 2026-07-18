@@ -40,7 +40,7 @@ The backend scanner scans and renders the following extensions:
     └── markdown_materials/
         └── 01-15.md
     ```
-*   **Duplicate Protection**: The backend scanner explicitly ignores the `markdown_materials` directory during file tree indexing to prevent showing duplicate items. When a user views `01-15.pdf` and activates the J.A.R.V.I.S. Audio Reader, the backend checks for the presence of the `.md` file in `markdown_materials/` to read the high-fidelity text instead.
+*   **Duplicate Protection**: The backend scanner explicitly ignores the `markdown_materials` directory during file tree indexing to prevent showing duplicate items. When a user views `01-15.pdf` and activates the R.A.N.G.E.R. Audio Reader, the backend checks for the presence of the `.md` file in `markdown_materials/` to read the high-fidelity text instead.
 
 ## 6. Source Material Protection
 *   The crawler operates in a **100% read-only** capacity for library files.

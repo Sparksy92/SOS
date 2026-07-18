@@ -38,10 +38,10 @@ A UI panel reading from the Reference Library Audit JSON to show missing categor
 A staging UI showing files placed in `import-staging/offline-library/`. Operators can verify the metadata, check safety risk indicators, and follow explicit instructions to manually copy the files into their materials directory.
 
 ### Kiwix/ZIM Awareness
-A lightweight catalog reader listing `.zim` files present in a configured directory, showing titles, paths, and sizes, and allowing J.A.R.V.I.S. to refer users to them.
+A lightweight catalog reader listing `.zim` files present in a configured directory, showing titles, paths, and sizes, and allowing R.A.N.G.E.R. to refer users to them.
 
-### Jarvis-Guided Offline Readiness
-Conversational commands enabling J.A.R.V.I.S. to output checklist status, explain wizard stages, recommend setup guides, and list gap priorities.
+### R.A.N.G.E.R.-Guided Offline Readiness
+Conversational commands enabling R.A.N.G.E.R. to output checklist status, explain wizard stages, recommend setup guides, and list gap priorities.
 
 ---
 
@@ -149,7 +149,7 @@ interface StagedFile {
 1.  Open the Toolkit page, toggle guide cards, and confirm setup checklist updates.
 2.  Place a dummy file (`US_Army_Manual.pdf`) in `import-staging/offline-library/` and verify that it appears in the staging panel with safety disclaimers.
 3.  Confirm that moving the file to `/materials` and running manifest refresh moves it to the Gap Analyzer active file list.
-4.  Ask J.A.R.V.I.S. *"offline readiness checklist"* and confirm conversational overview output.
+4.  Ask R.A.N.G.E.R. *"offline readiness checklist"* and confirm conversational overview output.
 
 ## Acceptance Criteria
 *   Setup progress saved strictly in local-only localStorage with prefix `sos_`.

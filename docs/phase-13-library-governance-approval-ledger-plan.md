@@ -24,7 +24,7 @@
 *   Displays matching ledger decisions under candidate items in the Gap Analyzer.
 *   Wording strictly references operator audit logs and avoids copyright clearance claims.
 
-### 5. Jarvis Guidance (`App.jsx`)
+### 5. R.A.N.G.E.R. Guidance (`App.jsx`)
 *   Local-only intercepts for counting and summarizing operator decisions.
 *   Explicitly reports counts and guides operator to the ledger panel.
 
@@ -45,4 +45,4 @@ Run unit tests to verify:
 ### Manual Checklist
 1.  Open the Toolkit, toggle sub-tabs, and confirm ledger edits save.
 2.  Import and export ledger data and verify schema constraints.
-3.  Ask J.A.R.V.I.S. about the ledger and verify advisory responses.
+3.  Ask R.A.N.G.E.R. about the ledger and verify advisory responses.

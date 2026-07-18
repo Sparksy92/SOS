@@ -100,17 +100,17 @@ test('SOS End-to-End API Integration Suite', async (t) => {
     const postRes = await fetch(`http://localhost:${testPort}/api/settings/library-path`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ path: '/media/bs/JARVIS/SurvivalOS_Library' })
+      body: JSON.stringify({ path: '/media/storage/SurvivalOS_Library' })
     });
     assert.strictEqual(postRes.status, 200);
     const postBody = await postRes.json();
     assert.strictEqual(postBody.success, true);
-    assert.strictEqual(postBody.path, '/media/bs/JARVIS/SurvivalOS_Library');
+    assert.strictEqual(postBody.path, '/media/storage/SurvivalOS_Library');
 
     // 2. Retrieve library path
     const getRes = await fetch(`http://localhost:${testPort}/api/settings/library-path`);
     assert.strictEqual(getRes.status, 200);
     const getBody = await getRes.json();
-    assert.strictEqual(getBody.path, '/media/bs/JARVIS/SurvivalOS_Library');
+    assert.strictEqual(getBody.path, '/media/storage/SurvivalOS_Library');
   });
 });

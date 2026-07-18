@@ -40,7 +40,7 @@ This document details the unified components, storage structures, routes, and sa
 *   Verification status is set to `requires_operator_review`. Heuristics do not prove copyright clearance. UI requires operators to verify file source validity.
 *   Includes a **Dismiss** action that saves to local storage key `sos_import_queue_dismissed` to hide listings without deleting files from disk.
 
-### 7. Conversational J.A.R.V.I.S. Guidance (`App.jsx`)
+### 7. Conversational R.A.N.G.E.R. Guidance (`App.jsx`)
 *   Added local static guidance response command intercepts for:
     *   `offline readiness checklist` / `help me get ready for offline use` / `what offline tools should I set up?` / `show my offline toolkit status` (Checklist summaries).
     *   `what content am i missing?` (Gap analyzer category status).

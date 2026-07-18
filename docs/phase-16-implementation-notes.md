@@ -22,14 +22,14 @@ This document lists the implementation and verification details of Phase 16, add
 *   Explicitly outlines safety boundaries: backups are local-only and do not include material files or cloud sync.
 
 ### 4. Conversational guidance
-*   Jarvis intercepts in `App.jsx` respond to backup and audit queries with localized summaries.
+*   R.A.N.G.E.R. intercepts in `App.jsx` respond to backup and audit queries with localized summaries.
 
 ---
 
 ## Verification Logs
 
 ### Automated Tests
-Node unit tests verify registry entries, schema version 3 structures, URL/path rejections, preview/restore state validations, and Jarvis intercepts:
+Node unit tests verify registry entries, schema version 3 structures, URL/path rejections, preview/restore state validations, and R.A.N.G.E.R. intercepts:
 *   Test File Path: [`sos-server/tests/offlineToolkitBackup.test.mjs`](file:///c:/Users/operator/Downloads/survival/sos-server/tests/offlineToolkitBackup.test.mjs)
 ```bash
 node --test sos-server/tests/offlineToolkitBackup.test.mjs

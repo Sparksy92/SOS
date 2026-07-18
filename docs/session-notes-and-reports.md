@@ -1,4 +1,4 @@
-# User Guide: J.A.R.V.I.S. Saved Logs, Field Notes, and Reports
+# User Guide: R.A.N.G.E.R. Saved Logs, Field Notes, and Reports
 
 This guide documents the local user-controlled logging, field notes, and session report generation features in SurvivalOS.
 
@@ -6,24 +6,24 @@ This guide documents the local user-controlled logging, field notes, and session
 
 *   **100% Offline & Local**: All saved answers, library source card references, custom field notes, and report drafts are stored directly in your browser's local storage (`localStorage`) prefixed with `sos_`.
 *   **Zero Cloud Synchronization**: No data is uploaded, transmitted, or shared with external servers.
-*   **No Silent AI Memory**: Jarvis does not record or remember your conversation history automatically behind the scenes. Only items you explicitly click to save are persisted.
+*   **No Silent AI Memory**: R.A.N.G.E.R. does not record or remember your conversation history automatically behind the scenes. Only items you explicitly click to save are persisted.
 *   **No Hidden Logs**: Everything that is saved is visible under the **NOTES / REPORTS** panel in the sidebar.
 
 ---
 
 ## 1. Saving Chat Answers & Sources
 
-Under each Jarvis AI response, you will find a button bar:
+Under each R.A.N.G.E.R. AI response, you will find a button bar:
 *   **Save Answer**: Saves the query text, answer text, matching risk category, and source references.
 *   **Save Sources**: Saves the metadata (title, path, page/section number, match label, excerpt) of the source cards used to answer the query. It does not store full manual content.
-*   **Create Field Note**: Opens the note editor pre-filled with the Jarvis query, response context, and source references.
+*   **Create Field Note**: Opens the note editor pre-filled with the R.A.N.G.E.R. query, response context, and source references.
 *   **Add to Report**: Saves the answer and opens the consolidated Report Builder with it selected.
 
 ---
 
 ## 2. Field Notes
 
-Field notes are manual observation records you write yourself. Under **NOTES / REPORTS**, click **NEW FIELD NOTE** or choose **CREATE FIELD NOTE** under a Jarvis answer.
+Field notes are manual observation records you write yourself. Under **NOTES / REPORTS**, click **NEW FIELD NOTE** or choose **CREATE FIELD NOTE** under a R.A.N.G.E.R. answer.
 *   **Note Types**: Classify notes as *General, Observation, Task, Supply Note, Repair Note, Field Incident*, or *Research Note*.
 *   **Tags**: Add comma-separated tags to quickly filter notes later.
 *   **Risk Category**: Specify if the note touches high-risk topics. High-risk notes display visual caution banners.
@@ -61,7 +61,7 @@ Click **BUILD REPORT** inside the Notes & Reports panel to bundle notes and rese
 *   **Autosave Active**: The report draft is automatically saved to local storage in the background as you edit. An indicator at the top header flashes `// AUTOSAVING...` and confirms `// DRAFT AUTOSAVED` once written.
 
 ### Exporting Options
-*   **Export Markdown**: Downloads a formatted `.md` file containing Situation Overviews, Jarvis logs, Field Notes, Source lists, safety warnings, and directives. Useful for printing or viewing in local markdown readers.
+*   **Export Markdown**: Downloads a formatted `.md` file containing Situation Overviews, R.A.N.G.E.R. logs, Field Notes, Source lists, safety warnings, and directives. Useful for printing or viewing in local markdown readers.
 *   **Export JSON**: Downloads a structured `.json` data file to backup/transfer raw report data.
 *   **Copy Report Markdown**: Copies the formatted Markdown directly to your system clipboard.
 

@@ -1,6 +1,6 @@
 # Phase 13 Implementation Notes — Library Governance & Operator Approval Ledger
 
-This document details the ledger store properties, safety checks, UI tabs, manual staging integrations, gap analyzer overlays, J.A.R.V.I.S. conversational intercept updates, and backend route generic error mappings implemented for Phase 13.
+This document details the ledger store properties, safety checks, UI tabs, manual staging integrations, gap analyzer overlays, R.A.N.G.E.R. conversational intercept updates, and backend route generic error mappings implemented for Phase 13.
 
 ## Components and Features Implemented
 
@@ -31,7 +31,7 @@ This document details the ledger store properties, safety checks, UI tabs, manua
 *   Statuses matching by filename/title heuristically are annotated as `Possible ledger match` to prevent false positive matches.
 *   Wording strictly references operator evaluation decisions and avoids copyright clearance claims.
 
-### 5. Deterministic Conversational J.A.R.V.I.S. Guidance (`App.jsx`)
+### 5. Deterministic Conversational R.A.N.G.E.R. Guidance (`App.jsx`)
 *   Added local guidance-only conversational intercepts responding to:
     *   `what imports need review?`
     *   `show my approval ledger`
@@ -39,7 +39,7 @@ This document details the ledger store properties, safety checks, UI tabs, manua
     *   `what references are rejected?`
     *   `what needs license evidence?`
     *   `can i import this file?`
-*   Jarvis reports counts and summaries, but does not claim legal clearance or initiate disk/file modifications.
+*   R.A.N.G.E.R. reports counts and summaries, but does not claim legal clearance or initiate disk/file modifications.
 
 ### 6. Backend Route Exception Hardening (`toolkit.routes.js`)
 *   Updated `/staging` and `/zim` Express route catch blocks.

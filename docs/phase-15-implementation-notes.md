@@ -23,7 +23,7 @@ This document outlines the design, implementation, and verification details for 
 *   **Acquisition Queue**: Cards show dynamic lifecycle tag summaries and a navigation button.
 *   **Approval Ledger**: Selected editor entries display a lifecycle stage preview and navigation link.
 
-### 4. Jarvis Conversational Guidance
+### 4. R.A.N.G.E.R. Conversational Guidance
 *   Deterministic local chat intercepts in `App.jsx` handle prompt requests for:
     *   `show my library lifecycle`
     *   `what references are stuck?`
@@ -42,7 +42,7 @@ This document outlines the design, implementation, and verification details for 
 ## Verification Logs
 
 ### Automated Tests
-Node unit tests verify store namespaces, validator updates, stage derivations, matches, UI strings, and Jarvis checks:
+Node unit tests verify store namespaces, validator updates, stage derivations, matches, UI strings, and R.A.N.G.E.R. checks:
 *   Test File Path: [`sos-server/tests/libraryLifecycle.test.mjs`](file:///c:/Users/operator/Downloads/survival/sos-server/tests/libraryLifecycle.test.mjs)
 ```bash
 node --test sos-server/tests/libraryLifecycle.test.mjs

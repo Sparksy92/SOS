@@ -19,5 +19,5 @@ This document establishes the official taxonomy and phrasing guidelines for the 
 
 ## 3. Allowed Terminology
 *   **Logistical Dashboard**: "offline command center app", "local survival dashboard", "homestead management database".
-*   **Knowledge Base**: "offline reference library", "neural document search", "Jarvis-powered local knowledge system".
+*   **Knowledge Base**: "offline reference library", "neural document search", "R.A.N.G.E.R.-powered local knowledge system".
 *   **Task Runners**: "sync crawler", "metadata decoder", "vision OCR library script".

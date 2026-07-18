@@ -23,7 +23,7 @@
 *   Includes Search and filter-by-difficulty selectors.
 
 ### 5. Chat Trigger Commands (`App.jsx`)
-*   J.A.R.V.I.S. intercepts queries for *"offline readiness checklist"*, *"help me get ready for offline use"*, and *"what offline tools should I set up?"*.
+*   R.A.N.G.E.R. intercepts queries for *"offline readiness checklist"*, *"help me get ready for offline use"*, and *"what offline tools should I set up?"*.
 *   Returns a local status report displaying current verified counts and step checkmarks without triggering network calls or server actions.
 
 ---

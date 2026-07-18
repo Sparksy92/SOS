@@ -17,9 +17,9 @@ Verify each of the following checklist items manually to confirm the release can
 - [ ] **Index Integrity Tab**: Audits database records and triggers manual file indexing.
 - [ ] **Mission Mode**: Guided intake accepts questions, prompts user confirmations, and saves notes.
 
-## 3. Local AI & Jarvis Prompts
-- [ ] **Jarvis Release Prompts**: Prompts like `is survivalos ready?` respond locally.
-- [ ] **Jarvis Health Prompts**: Prompt replies explain how to start servers and warn about backups.
+## 3. Local AI & R.A.N.G.E.R. Prompts
+- [ ] **R.A.N.G.E.R. Release Prompts**: Prompts like `is survivalos ready?` respond locally.
+- [ ] **R.A.N.G.E.R. Health Prompts**: Prompt replies explain how to start servers and warn about backups.
 
 ## 4. Off-Grid Boundaries (Strict Enforcements)
 - [ ] **No Cloud Sync**: Verify no options exists to link Google, Dropbox, or OneDrive accounts.

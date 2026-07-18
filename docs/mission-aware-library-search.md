@@ -4,11 +4,11 @@ This guide documents the mission-aware offline search recommendation engine and 
 
 ## Overview & Design Directives
 
-To optimize offline homestead research, SurvivalOS allows the local J.A.R.V.I.S. assistant and the active operational context (Missions) to suggest relevant books, manuals, and guides from the operator's offline reference library manifest. 
+To optimize offline homestead research, SurvivalOS allows the local R.A.N.G.E.R. assistant and the active operational context (Missions) to suggest relevant books, manuals, and guides from the operator's offline reference library manifest. 
 
 ### Core Features:
 1.  **Context-Driven Recommendations**: Scores and ranks offline documents automatically using tokenized matching against mission parameters (objectives, situation summary, checklists).
-2.  **Indexed/Unindexed Expose**: Identifies which documents are already indexed in the local SQLite RAG database (ready for Jarvis prompt queries) or unindexed (requires library panel indexing).
+2.  **Indexed/Unindexed Expose**: Identifies which documents are already indexed in the local SQLite RAG database (ready for R.A.N.G.E.R. prompt queries) or unindexed (requires library panel indexing).
 3.  **Source Review Queue**: Stages recommended manuals in a workspace review queue for manual checking, ensuring operators do not lose reference paths during intense field tasks.
 4.  **100% Offline Integrity**: Recommends local files purely based on cached manifest data loaded inside the browser. No folder crawls, deep scanning, external lookups, or telemetry are used.
 
@@ -35,7 +35,7 @@ Documents are evaluated transparently without artificial percentages. Recommenda
 
 ### 2. Utilizing the Source Review Queue
 *   On any recommended source card, click **QUEUE FOR REVIEW** to append it to the mission's staging queue.
-*   In the J.A.R.V.I.S. chat view, individual source cards include a **QUEUE FOR REVIEW** button, enabling quick tagging from conversation outputs.
+*   In the R.A.N.G.E.R. chat view, individual source cards include a **QUEUE FOR REVIEW** button, enabling quick tagging from conversation outputs.
 *   Queued sources display inside the Active Mission View in a dedicated **Source Review Queue** widget for fast open/dismiss control.
 
 ### 3. Safety Warning Gating

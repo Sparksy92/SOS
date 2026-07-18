@@ -31,7 +31,7 @@ The scanned list is exposed to the frontend via `GET /api/toolkit/zim` in this f
 }
 ```
 
-### 3. J.A.R.V.I.S. Guidance Integration
-When an operator is planning a mission or asking a medical question, J.A.R.V.I.S. checks the ZIM catalog metadata. J.A.R.V.I.S. can suggest:
+### 3. R.A.N.G.E.R. Guidance Integration
+When an operator is planning a mission or asking a medical question, R.A.N.G.E.R. checks the ZIM catalog metadata. R.A.N.G.E.R. can suggest:
 *   *"I see you have the Wikipedia Medicine ZIM archive (`wikipedia_en_medicine_novid_2026-05.zim`) configured. You can search this archive inside your Kiwix desktop application for detailed clinical procedures."*
-*   This keeps J.A.R.V.I.S.'s scope strictly advisory and avoids parsing heavy binaries inside the NodeJS event loop.
+*   This keeps R.A.N.G.E.R.'s scope strictly advisory and avoids parsing heavy binaries inside the NodeJS event loop.
