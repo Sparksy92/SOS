@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Target, CheckCircle, XCircle, Award } from 'lucide-react';
 
-const QuizEngine = ({ course, onComplete }) => {
+const QuizEngine = ({ course, onComplete, onSaveProgress }) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
@@ -25,6 +25,9 @@ const QuizEngine = ({ course, onComplete }) => {
     setTimeout(() => {
       if (isLastQuestion) {
         setShowResult(true);
+        if (onSaveProgress) {
+          onSaveProgress(isCorrect ? score + 1 : score);
+        }
       } else {
         setCurrentQuestionIndex(currentQuestionIndex + 1);
         setSelectedOption(null);

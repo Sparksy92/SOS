@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { RefreshCw, Check, X, Star } from 'lucide-react';
 
-const FlashcardEngine = ({ course, onComplete }) => {
+const FlashcardEngine = ({ course, onComplete, onSaveProgress }) => {
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [mastered, setMastered] = useState(0);
@@ -14,6 +14,7 @@ const FlashcardEngine = ({ course, onComplete }) => {
   };
 
   const handleNext = (didMaster) => {
+    const finalMastered = didMaster ? mastered + 1 : mastered;
     if (didMaster) {
       setMastered(mastered + 1);
     }
@@ -21,6 +22,9 @@ const FlashcardEngine = ({ course, onComplete }) => {
     if (isLastCard) {
       // Done with the deck
       setCurrentCardIndex(-1); // special state for complete
+      if (onSaveProgress) {
+        onSaveProgress(finalMastered);
+      }
     } else {
       setIsFlipped(false);
       setCurrentCardIndex(currentCardIndex + 1);
