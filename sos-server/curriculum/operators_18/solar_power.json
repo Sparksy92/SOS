@@ -1,0 +1,26 @@
+{
+  "id": "solar_power",
+  "title": "Off-Grid Solar Load Calculation",
+  "type": "quiz",
+  "subject": "Applied Physics & Engineering",
+  "gradeLevel": "Vocational / Operator",
+  "standards": ["NEC Article 690 - Solar Photovoltaic Systems"],
+  "description": "Learn how to calculate daily power usage and size off-grid solar panels and battery banks.",
+  "questions": [
+    {
+      "question": "A communications radio uses 20 watts. If it is powered on for 6 hours a day, how many Watt-hours (Wh) of energy does it consume daily?",
+      "options": ["3.33 Wh", "120 Wh", "240 Wh", "60 Wh"],
+      "correctIndex": 1
+    },
+    {
+      "question": "To prevent damage and extend the lifespan of a standard Lead-Acid deep cycle battery, what is the generally recommended maximum depth of discharge (DoD)?",
+      "options": ["100% (Fully discharged)", "80% DoD", "50% DoD", "20% DoD"],
+      "correctIndex": 2
+    },
+    {
+      "question": "You have a 12V system. If you run a load that draws 10 Amps for 4 hours, how many Amp-hours (Ah) have you discharged from your battery?",
+      "options": ["40 Ah", "4.8 Ah", "120 Ah", "12 Ah"],
+      "correctIndex": 0
+    }
+  ]
+}

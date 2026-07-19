@@ -1,11 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   BookOpen, Target, Star, Award, 
   ChevronLeft, PlayCircle, Map,
-  Feather, Zap, Compass, Shield
+  Feather, Zap, Compass, Shield,
+  Edit3, BookOpenCheck, Loader2
 } from 'lucide-react';
 import QuizEngine from './QuizEngine.jsx';
 import FlashcardEngine from './FlashcardEngine.jsx';
+import Scratchpad from './Scratchpad.jsx';
+import { API_BASE } from '../../config.js';
 
 const AGE_BRACKETS = [
   { id: 'sprouts', label: 'Sprouts (0-5)', icon: Feather, color: '#4CAF50', description: 'Early learning, shapes, numbers, and basic nature.' },
@@ -14,40 +17,39 @@ const AGE_BRACKETS = [
   { id: 'operators', label: 'Operators (18+)', icon: Shield, color: '#9E9E9E', description: 'Adult field manuals, medical, and engineering.' }
 ];
 
-const MOCK_COURSES = {
-  explorers: [
-    { 
-      id: 'math_101', 
-      title: 'Campfire Math', 
-      type: 'quiz',
-      icon: Target,
-      color: '#E91E63',
-      description: 'Practice basic addition and subtraction using campfire logs.',
-      questions: [
-        { question: 'If you have 3 logs and find 2 more, how many logs do you have?', options: ['4', '5', '6', '3'], correctIndex: 1 },
-        { question: 'You caught 5 fish, but 1 swam away. How many are left?', options: ['4', '5', '3', '2'], correctIndex: 0 },
-        { question: 'We need 10 apples. We have 6. How many more do we need?', options: ['2', '3', '4', '5'], correctIndex: 2 }
-      ]
-    },
-    { 
-      id: 'foraging_101', 
-      title: 'Safe Foraging (Flashcards)', 
-      type: 'flashcard',
-      icon: Star,
-      color: '#4CAF50',
-      description: 'Learn which berries and plants are safe to eat.',
-      cards: [
-        { front: 'Dandelion', back: 'Edible! The entire plant (leaves, flower, root) is safe to eat.' },
-        { front: 'Shiny leaves with three leaflets', back: 'Poison Ivy! DO NOT TOUCH. Leaves of three, let it be.' },
-        { front: 'Pine Needles', back: 'Edible! Can be steeped in hot water to make Vitamin C rich tea.' }
-      ]
-    }
-  ]
-};
-
 const AcademyDashboardPanel = () => {
+  const [coursesByBracket, setCoursesByBracket] = useState({
+    sprouts: [],
+    explorers: [],
+    cadets: [],
+    operators: []
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
   const [activeBracket, setActiveBracket] = useState(null);
   const [activeCourse, setActiveCourse] = useState(null);
+  const [showScratchpad, setShowScratchpad] = useState(false);
+
+  // Fetch dynamic courses from backend
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch(`${API_BASE}/api/academy/courses`);
+        if (!res.ok) throw new Error("Failed to load courses");
+        const data = await res.json();
+        setCoursesByBracket(data);
+      } catch (err) {
+        console.error("[ACADEMY] Error loading courses:", err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCourses();
+  }, []);
 
   const handleBracketSelect = (bracketId) => {
     setActiveBracket(bracketId);
@@ -56,40 +58,83 @@ const AcademyDashboardPanel = () => {
 
   const handleCourseLaunch = (course) => {
     setActiveCourse(course);
+    setShowScratchpad(true); // default open scratchpad for lessons to assist student
   };
 
   const handleBack = () => {
     if (activeCourse) {
       setActiveCourse(null);
+      setShowScratchpad(false);
     } else {
       setActiveBracket(null);
     }
   };
 
-  // 1. Render Course content (Quiz or Flashcard)
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: '16px', color: 'var(--brand-primary)' }}>
+        <Loader2 size={48} className="animate-spin" />
+        <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 'bold' }}>SCANNING LOCAL CURRICULUMS...</span>
+      </div>
+    );
+  }
+
+  // 1. Render Course content (Quiz or Flashcard) with Side-by-Side Scratchpad option
   if (activeCourse) {
     return (
-      <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-        <div style={{ padding: '16px', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <button 
-            onClick={handleBack}
-            style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'transparent', border: 'none', color: 'var(--text-color)', cursor: 'pointer', padding: '8px', borderRadius: '4px' }}
-            className="hover-bg"
+      <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        {/* Navigation / Header */}
+        <div style={{ padding: '16px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.02)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <button 
+              onClick={handleBack}
+              style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'transparent', border: 'none', color: 'var(--text-color)', cursor: 'pointer', padding: '8px', borderRadius: '4px' }}
+              className="hover-bg"
+            >
+              <ChevronLeft size={20} /> Back
+            </button>
+            <h2 style={{ margin: 0, fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <activeCourse.icon size={24} color={activeCourse.color} />
+              {activeCourse.title}
+            </h2>
+          </div>
+          
+          <button
+            onClick={() => setShowScratchpad(!showScratchpad)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              backgroundColor: showScratchpad ? 'var(--brand-primary)' : 'rgba(255,255,255,0.05)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              color: '#fff',
+              padding: '8px 16px',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontWeight: 'bold',
+              transition: 'all 0.2s'
+            }}
           >
-            <ChevronLeft size={20} /> Back
+            <Edit3 size={16} />
+            {showScratchpad ? 'Hide Scratchpad' : 'Show Scratchpad'}
           </button>
-          <h2 style={{ margin: 0, fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <activeCourse.icon size={24} color={activeCourse.color} />
-            {activeCourse.title}
-          </h2>
         </div>
         
-        <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
-          {activeCourse.type === 'quiz' && (
-            <QuizEngine course={activeCourse} onComplete={() => setActiveCourse(null)} />
-          )}
-          {activeCourse.type === 'flashcard' && (
-            <FlashcardEngine course={activeCourse} onComplete={() => setActiveCourse(null)} />
+        {/* Content Area with Side-by-Side Flex */}
+        <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+          {/* Main Course Module */}
+          <div style={{ flex: 1, overflowY: 'auto', padding: '24px', position: 'relative' }}>
+            {activeCourse.type === 'quiz' && (
+              <QuizEngine course={activeCourse} onComplete={() => { setActiveCourse(null); setShowScratchpad(false); }} />
+            )}
+            {activeCourse.type === 'flashcard' && (
+              <FlashcardEngine course={activeCourse} onComplete={() => { setActiveCourse(null); setShowScratchpad(false); }} />
+            )}
+          </div>
+          
+          {/* Floating Student Scratchpad */}
+          {showScratchpad && (
+            <Scratchpad />
           )}
         </div>
       </div>
@@ -99,7 +144,14 @@ const AcademyDashboardPanel = () => {
   // 2. Render Course List for selected Bracket
   if (activeBracket) {
     const bracket = AGE_BRACKETS.find(b => b.id === activeBracket);
-    const courses = MOCK_COURSES[activeBracket] || [];
+    const courses = coursesByBracket[activeBracket] || [];
+
+    // Assign generic icons for render if missing
+    const preparedCourses = courses.map(course => ({
+      ...course,
+      icon: course.type === 'quiz' ? Target : Star,
+      color: bracket.color
+    }));
 
     return (
       <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -118,15 +170,15 @@ const AcademyDashboardPanel = () => {
         </div>
         
         <div style={{ padding: '24px', flex: 1, overflowY: 'auto' }}>
-          {courses.length === 0 ? (
+          {preparedCourses.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '40px', color: 'rgba(255,255,255,0.5)' }}>
               <BookOpen size={48} style={{ margin: '0 auto 16px auto', opacity: 0.5 }} />
               <p>No interactive courses installed for this track yet.</p>
-              <p style={{ fontSize: '0.85rem' }}>Import educational ZIM files via the Offline Toolkit to populate.</p>
+              <p style={{ fontSize: '0.85rem' }}>Drop new curriculum JSON files inside <code>sos-server/curriculum/{bracket.id}_*</code> directory.</p>
             </div>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
-              {courses.map(course => (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px' }}>
+              {preparedCourses.map(course => (
                 <div 
                   key={course.id}
                   onClick={() => handleCourseLaunch(course)}
@@ -166,10 +218,29 @@ const AcademyDashboardPanel = () => {
                     </div>
                     <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#fff' }}>{course.title}</h3>
                   </div>
+                  
+                  {/* Standards & Grade Info */}
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', fontSize: '0.75rem' }}>
+                    <span style={{ backgroundColor: 'rgba(255,255,255,0.06)', padding: '2px 8px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                      {course.gradeLevel || 'K-12'}
+                    </span>
+                    <span style={{ backgroundColor: 'rgba(255,255,255,0.06)', padding: '2px 8px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                      {course.subject || 'Survival'}
+                    </span>
+                  </div>
+
                   <p style={{ margin: 0, fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)', flex: 1, lineHeight: '1.5' }}>
                     {course.description}
                   </p>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+
+                  {course.standards && course.standards.length > 0 && (
+                    <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', borderTop: '1px dashed rgba(255,255,255,0.08)', paddingTop: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <BookOpenCheck size={12} />
+                      Standards: {course.standards.join(', ')}
+                    </div>
+                  )}
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
                     <span style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1px', color: course.color, fontWeight: 'bold' }}>
                       {course.type}
                     </span>

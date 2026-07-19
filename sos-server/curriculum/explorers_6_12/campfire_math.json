@@ -1,0 +1,26 @@
+{
+  "id": "campfire_math",
+  "title": "Campfire Math",
+  "type": "quiz",
+  "subject": "Mathematics",
+  "gradeLevel": "Grade 3",
+  "standards": ["CCSS.MATH.CONTENT.3.OA.A.1", "CCSS.MATH.CONTENT.3.NBT.A.2"],
+  "description": "Learn multiplication, subtraction, and word problems using real survival logic.",
+  "questions": [
+    {
+      "question": "Each camper needs 3 liters of water per day. If there are 4 campers, how many liters of water do they need in total for one day?",
+      "options": ["7 Liters", "10 Liters", "12 Liters", "15 Liters"],
+      "correctIndex": 2
+    },
+    {
+      "question": "A box of matches contains 50 matches. If we use 3 matches to light a fire every day, how many matches do we use in one week (7 days)?",
+      "options": ["14 matches", "21 matches", "28 matches", "35 matches"],
+      "correctIndex": 1
+    },
+    {
+      "question": "Our solar battery starts at 100% capacity. During the night, the lights consume 35% and the radio consumes 15%. What percentage is left in the morning?",
+      "options": ["50%", "65%", "45%", "80%"],
+      "correctIndex": 0
+    }
+  ]
+}

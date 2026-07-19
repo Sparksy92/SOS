@@ -1,0 +1,26 @@
+{
+  "id": "counting_nature",
+  "title": "Counting in Nature",
+  "type": "quiz",
+  "subject": "Mathematics",
+  "gradeLevel": "Pre-K",
+  "standards": ["CCSS.MATH.CONTENT.K.CC.B.4"],
+  "description": "Learn to count items found around the campsite.",
+  "questions": [
+    {
+      "question": "How many acorns do you see if there is 1 on the rock and 1 in your hand?",
+      "options": ["1", "2", "3", "4"],
+      "correctIndex": 1
+    },
+    {
+      "question": "If we see 3 birds in the tree and 2 fly away, how many birds are left in the tree?",
+      "options": ["1", "2", "3", "0"],
+      "correctIndex": 0
+    },
+    {
+      "question": "Count the tents: 🏕️ 🏕️ 🏕️. How many tents are there?",
+      "options": ["2", "3", "4", "5"],
+      "correctIndex": 1
+    }
+  ]
+}

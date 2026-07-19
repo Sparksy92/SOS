@@ -1,0 +1,27 @@
+{
+  "id": "safe_foraging",
+  "title": "Safe Foraging Basics",
+  "type": "flashcard",
+  "subject": "Life Science",
+  "gradeLevel": "Grade 4",
+  "standards": ["CCSS.ELA-LITERACY.RI.4.7", "NextGen Science: 4-LS1-1"],
+  "description": "Learn to identify edible and poisonous plants that you might encounter in the wild.",
+  "cards": [
+    {
+      "front": "Dandelion (Taraxacum)",
+      "back": "EDIBLE! The entire plant is safe. Leaves can be eaten raw or boiled, flowers are sweet, and roots can be roasted as a coffee substitute."
+    },
+    {
+      "front": "Leaves of Three (Poison Ivy / Oak)",
+      "back": "TOXIC! Do not touch or burn. Causes severe skin rashes due to urushiol oil. Remember: 'Leaves of three, let it be!'"
+    },
+    {
+      "front": "Pine Needles (White Pine)",
+      "back": "EDIBLE! Steep in hot (but not boiling) water to make a pine needle tea which is extremely high in Vitamin C."
+    },
+    {
+      "front": "Wild Berries - White or Yellow",
+      "back": "DANGEROUS! A good rule of thumb: 10% of white/yellow wild berries are edible (90% toxic). Avoid them completely."
+    }
+  ]
+}

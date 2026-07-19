@@ -1,0 +1,26 @@
+{
+  "id": "basic_electronics",
+  "title": "Basic Electronics & Radio Principles",
+  "type": "quiz",
+  "subject": "Physical Science & Engineering",
+  "gradeLevel": "Grade 9",
+  "standards": ["NextGen Science: HS-PS3-3", "ARES Amateur Radio Syllabus"],
+  "description": "Understand basic electronic components, Ohm's law, and HAM radio concepts for emergencies.",
+  "questions": [
+    {
+      "question": "What is the primary formula for Ohm's Law?",
+      "options": ["V = I / R", "V = I * R", "V = R / I", "P = V * I"],
+      "correctIndex": 1
+    },
+    {
+      "question": "Which electronic component is used to store electrical energy in an electric field?",
+      "options": ["Resistor", "Inductor", "Capacitor", "Transistor"],
+      "correctIndex": 2
+    },
+    {
+      "question": "Which VHF frequency range is designated for Amateur Radio HAM operations commonly used in local emergency nets?",
+      "options": ["144 - 148 MHz (2 Meters)", "88 - 108 MHz (FM Broadcast)", "462 - 467 MHz (GMRS)", "27 MHz (CB Radio)"],
+      "correctIndex": 0
+    }
+  ]
+}

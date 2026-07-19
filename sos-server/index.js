@@ -181,6 +181,7 @@ const settingsRoutes = require('./routes/settings.routes');
 const meshtasticRoutes = require('./routes/meshtastic.routes');
 const networkRoutes = require('./routes/network.routes');
 const guidesRoutes = require('./routes/guides.routes');
+const academyRoutes = require('./routes/academy.routes');
 
 app.use('/api/crawler', crawlerRoutes);
 app.use('/api/video', mediaRoutes);
@@ -194,6 +195,7 @@ app.use('/api/ebg', ebgRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/mesh', meshtasticRoutes);
 app.use('/api/network', networkRoutes);
+app.use('/api/academy', academyRoutes);
 
 // Launcher UI HTML route
 app.get('/launcher', (req, res) => {
