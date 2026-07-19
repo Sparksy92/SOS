@@ -46,7 +46,8 @@ import {
   StickyNote,
   Network,
   CheckCircle,
-  Palette
+  Palette,
+  GraduationCap
 } from 'lucide-react';
 import './App.css';
 import { getRiskLevel, requiresAcknowledgement, getSafetyWarning } from './modules/safety/riskRules.js';
@@ -129,6 +130,7 @@ import FirstAidPanel from './components/toolkit/FirstAidPanel.jsx';
 import RecipePlannerPanel from './components/toolkit/RecipePlannerPanel.jsx';
 import NetworkBuilderPanel from './components/toolkit/NetworkBuilderPanel.jsx';
 import LocalReleaseCandidatePanel from './components/release/LocalReleaseCandidatePanel.jsx';
+import AcademyDashboardPanel from './components/academy/AcademyDashboardPanel.jsx';
 import { loadSetupProgress, DEFAULT_STEPS } from './modules/toolkit/setupProgressStore.js';
 import { loadLedger } from './modules/toolkit/importApprovalLedgerStore.js';
 import { loadQueue, saveQueueItem } from './modules/toolkit/acquisitionQueueStore.js';
@@ -2587,6 +2589,14 @@ function App() {
             </div>
 
             <div 
+              className={`nav-item ${viewMode === 'academy' ? 'active' : ''}`}
+              onClick={() => { setViewMode('academy'); setSidebarOpen(false); }}
+            >
+              <GraduationCap size={18} className={viewMode === 'academy' ? 'text-glow' : ''}/>
+              <span style={{color: viewMode === 'academy' ? 'var(--brand-primary)' : ''}}>SURVIVAL ACADEMY</span>
+            </div>
+
+            <div 
               className={`nav-item ${viewMode === 'offline-toolkit' ? 'active' : ''}`}
               onClick={() => { setViewMode('offline-toolkit'); setSidebarOpen(false); }}
             >
@@ -3724,6 +3734,12 @@ function App() {
             {!error && !loading && viewMode === 'ebg' && (
               <PanelErrorBoundary name="Cognitive Belief Graph">
                 <EbgGraphPanel />
+              </PanelErrorBoundary>
+            )}
+
+            {!error && !loading && viewMode === 'academy' && (
+              <PanelErrorBoundary name="Survival Academy">
+                <AcademyDashboardPanel />
               </PanelErrorBoundary>
             )}
 
