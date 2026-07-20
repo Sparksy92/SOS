@@ -8,14 +8,17 @@ const IndexIntegrityPanel = ({ onRefreshManifest }) => {
   const [repairing, setRepairing] = useState(false);
   const [repairResult, setRepairResult] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [refreshResult, setRefreshResult] = useState(null);
 
   const runRefresh = async () => {
     setRefreshing(true);
     setRepairResult(null);
+    setRefreshResult(null);
     try {
       const res = await fetch(`${API_BASE}/api/materials/refresh`, { method: 'POST' });
       const data = await res.json();
       if (res.ok) {
+        setRefreshResult(data);
         // Notify parent to load fresh manifest categories in library browser view
         if (onRefreshManifest) {
           await onRefreshManifest();
@@ -117,7 +120,50 @@ const IndexIntegrityPanel = ({ onRefreshManifest }) => {
         </div>
       </div>
 
-      {loading && (
+      {refreshing && (
+        <div style={{
+          padding: '30px',
+          textAlign: 'center',
+          color: 'var(--brand-primary)',
+          fontFamily: 'var(--font-mono)',
+          fontSize: '0.9rem',
+          backgroundColor: 'rgba(255, 255, 255, 0.01)',
+          border: '1px dashed var(--border-subtle)',
+          borderRadius: '4px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '12px'
+        }}>
+          <RefreshCw size={24} className="spin" style={{ color: 'var(--brand-primary)' }} />
+          <div>SCANNING CRAWLER PATHS & REBUILDING MATERIAL MANIFEST...</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+            Auditing filesystem structure (50,000+ files). This may take up to 10 seconds. Please do not close or navigate away.
+          </div>
+        </div>
+      )}
+
+      {refreshResult && !refreshing && (
+        <div style={{
+          backgroundColor: 'rgba(0, 255, 102, 0.05)',
+          border: '1px solid #00ff66',
+          padding: '12px',
+          borderRadius: '4px',
+          color: '#00ff66',
+          fontSize: '0.8rem',
+          fontFamily: 'var(--font-mono)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px'
+        }}>
+          <CheckCircle size={16} />
+          <span>
+            SUCCESS: Material manifest rebuilt successfully. Registered <strong>{refreshResult.totalFiles}</strong> files from your library path at {new Date(refreshResult.timestamp).toLocaleTimeString()}.
+          </span>
+        </div>
+      )}
+
+      {loading && !refreshing && (
         <div style={{ padding: '30px', textAlign: 'center', color: 'var(--brand-primary)', fontFamily: 'var(--font-mono)', fontSize: '0.9rem' }}>
           AUDITING SQLite DOCUMENT CHUNKS TABLE...
         </div>

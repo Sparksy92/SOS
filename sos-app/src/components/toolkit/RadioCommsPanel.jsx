@@ -27,6 +27,12 @@ const FREQ_DIRECTORY = {
     { name: "Ch 16", freq: "156.800 MHz", desc: "International distress, safety and calling channel" },
     { name: "Ch 9", freq: "156.450 MHz", desc: "Secondary calling channel (non-commercial)" },
     { name: "Ch 22A", freq: "157.100 MHz", desc: "US Coast Guard safety broadcasts liaison channel" }
+  ],
+  entertainment: [
+    { name: "Standard FM Broadcasts", freq: "88.0 - 108.0 MHz", desc: "Local news, music, talk shows. Tune in off-grid via pocket receivers or RTL-SDR dongles." },
+    { name: "AM Broadcast Band", freq: "530 - 1700 kHz", desc: "Mediumwave AM radio. Heavy range propagation at night; ideal for emergency broadcast news." },
+    { name: "Shortwave Radio (HF)", freq: "3.0 - 30.0 MHz", desc: "Global broadcasts (BBC World Service, VOA, ham traffic) bouncing off the ionosphere." },
+    { name: "Local Airband Comms", freq: "108.0 - 137.0 MHz", desc: "Civil aviation voice communications (AM mode). Tracks local airspace activity." }
   ]
 };
 
@@ -129,6 +135,30 @@ export default function RadioCommsPanel() {
               </div>
             ))}
           </div>
+          {activeTab === 'entertainment' && (
+            <div style={{
+              backgroundColor: 'rgba(0, 242, 254, 0.03)',
+              border: '1px dashed rgba(0, 242, 254, 0.2)',
+              padding: '16px',
+              borderRadius: '6px',
+              color: 'var(--text-main)',
+              fontSize: '0.8rem',
+              lineHeight: '1.5',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '8px'
+            }}>
+              <strong style={{ color: 'var(--brand-primary)' }}>🎙️ HOW TO LISTEN OFF-GRID (SDR INTEGRATION)</strong>
+              <div style={{ color: 'var(--text-muted)' }}>
+                To tune into these frequencies directly on your host machine without internet:
+              </div>
+              <ul style={{ margin: 0, paddingLeft: '20px', color: 'var(--text-muted)' }}>
+                <li>Plug a cheap <strong>RTL-SDR USB Dongle</strong> (Software Defined Radio) into your device.</li>
+                <li>Install a local SDR utility like <strong>GQRX</strong> or <strong>SDR++</strong> (<code>sudo apt install gqrx-sdr</code>).</li>
+                <li>Connect your antenna, tune into standard FM bands, AM, or shortwave, and listen to music, emergency broadcasts, and weather feeds 100% offline!</li>
+              </ul>
+            </div>
+          )}
         </div>
 
         {/* Logbook / Repeater Entry Card */}

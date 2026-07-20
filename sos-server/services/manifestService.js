@@ -117,7 +117,7 @@ function scanDirectory(dirPath, metadataKeys, arrayOfFiles = []) {
         scanDirectory(fullPath, metadataKeys, arrayOfFiles);
       } else {
         const ext = path.extname(file).toLowerCase();
-        if (['.pdf', '.epub', '.zim', '.doc', '.docx', '.txt', '.zip', '.mp4', '.avi', '.mkv', '.wmv', '.webm', '.mov', '.iso', '.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.md'].includes(ext)) {
+        if (['.pdf', '.epub', '.zim', '.doc', '.docx', '.txt', '.zip', '.mp4', '.avi', '.mkv', '.wmv', '.webm', '.mov', '.iso', '.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.md', '.mp3', '.wav', '.ogg', '.flac', '.aac', '.m4a'].includes(ext)) {
           const relativePath = path.relative(materialsRoot, fullPath);
           const parts = path.dirname(relativePath).split(path.sep);
           const rawCategory = parts[0] || 'Uncategorized';

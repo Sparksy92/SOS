@@ -13,7 +13,8 @@ import {
 
 export default function CrawlerControls({ 
   crawlerStatus, 
-  API_BASE 
+  API_BASE,
+  onRefreshManifest
 }) {
   const [typedConfirm, setTypedConfirm] = useState('');
   const [typedZipConfirm, setTypedZipConfirm] = useState('');
@@ -22,10 +23,12 @@ export default function CrawlerControls({
   
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const [localLoadingMode, setLocalLoadingMode] = useState(null);
 
   const triggerSync = async (mode, extraParams = {}) => {
     setErrorMessage('');
     setSuccessMessage('');
+    setLocalLoadingMode(mode);
     try {
       const res = await fetch(`${API_BASE}/api/crawler/start`, {
         method: 'POST',
@@ -41,7 +44,14 @@ export default function CrawlerControls({
       if (extraParams.dryRun) modeText += ' (DRY RUN)';
       if (extraParams.rebuild) modeText += ' (REBUILD)';
       
-      setSuccessMessage(`Crawler execution started: ${modeText} mode.`);
+      if (mode === 'inventory') {
+        setSuccessMessage(`Manifest rebuilt successfully! Your offline library inventory has been updated.`);
+        if (onRefreshManifest) {
+          await onRefreshManifest();
+        }
+      } else {
+        setSuccessMessage(`Crawler execution started: ${modeText} mode.`);
+      }
       
       // Close modals
       setShowRebuildConfirm(false);
@@ -50,6 +60,8 @@ export default function CrawlerControls({
       setTypedZipConfirm('');
     } catch (e) {
       setErrorMessage(e.message);
+    } finally {
+      setLocalLoadingMode(null);
     }
   };
 
@@ -154,10 +166,11 @@ export default function CrawlerControls({
             <button 
               className="btn-tactical" 
               onClick={() => triggerSync('inventory')}
-              disabled={crawlerStatus?.isCrawling}
+              disabled={crawlerStatus?.isCrawling || localLoadingMode === 'inventory'}
               style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px', fontSize: '0.85rem' }}
             >
-              <RefreshCw size={14} /> Refresh Manifest / Inventory Scan
+              <RefreshCw size={14} className={(localLoadingMode === 'inventory' || (crawlerStatus?.isCrawling && crawlerStatus.mode === 'inventory')) ? 'spin' : ''} />
+              {localLoadingMode === 'inventory' ? 'SCANNING & REBUILDING MANIFEST...' : 'Refresh Manifest / Inventory Scan'}
             </button>
             <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: '1.4' }}>
               Performs a lightweight directory scan to catalog documents and rebuild the manifest cache. <strong>Does not index text pages or extract ZIPs.</strong> Fully safe and fast.
@@ -170,16 +183,17 @@ export default function CrawlerControls({
               <button 
                 className="btn-tactical" 
                 onClick={() => triggerSync('index')}
-                disabled={crawlerStatus?.isCrawling}
+                disabled={crawlerStatus?.isCrawling || localLoadingMode === 'index'}
                 style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px', fontSize: '0.85rem', borderColor: 'var(--brand-primary)', color: 'var(--brand-primary)' }}
               >
-                <FileText size={14} /> Index Local Library
+                <FileText size={14} className={localLoadingMode === 'index' ? 'spin' : ''} />
+                {localLoadingMode === 'index' ? 'INDEXING...' : 'Index Local Library'}
               </button>
               
               <button 
                 className="btn-tactical" 
                 onClick={() => setShowRebuildConfirm(true)}
-                disabled={crawlerStatus?.isCrawling}
+                disabled={crawlerStatus?.isCrawling || localLoadingMode !== null}
                 style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px', fontSize: '0.85rem', borderColor: 'var(--brand-danger)', color: 'var(--brand-danger)' }}
               >
                 <ShieldAlert size={14} /> FULL REBUILD INDEX
@@ -195,10 +209,11 @@ export default function CrawlerControls({
             <button 
               className="btn-tactical" 
               onClick={() => triggerSync('extract-zips', { dryRun: true })}
-              disabled={crawlerStatus?.isCrawling}
+              disabled={crawlerStatus?.isCrawling || localLoadingMode === 'extract-zips'}
               style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px', fontSize: '0.85rem', borderColor: '#00e5ff', color: '#00e5ff' }}
             >
-              <Eye size={14} /> ZIP Extraction Dry Run
+              <Eye size={14} className={localLoadingMode === 'extract-zips' ? 'spin' : ''} />
+              {localLoadingMode === 'extract-zips' ? 'RUNNING DRY RUN...' : 'ZIP Extraction Dry Run'}
             </button>
             <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: '1.4' }}>
               Scans your library folder for unextracted ZIP packages and returns their filenames. <strong>Does not extract or move anything.</strong> Use this to preview potential disk usage.
@@ -210,7 +225,7 @@ export default function CrawlerControls({
             <button 
               className="btn-tactical" 
               onClick={() => setShowZipConfirm(true)}
-              disabled={crawlerStatus?.isCrawling}
+              disabled={crawlerStatus?.isCrawling || localLoadingMode !== null}
               style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px', fontSize: '0.85rem', borderColor: '#ffea00', color: '#ffea00' }}
             >
               <Archive size={14} /> Extract ZIP Archives

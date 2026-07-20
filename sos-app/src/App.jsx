@@ -140,9 +140,78 @@ import { computeLifecycleRecords } from './modules/toolkit/libraryLifecycleAnaly
 import { createOfflineToolkitBackup, runOfflineToolkitIntegrityAudit } from './modules/toolkit/offlineToolkitBackupStore.js';
 import { API_BASE } from './config.js';
 
-const encodePath = (pathString) => {
-  if (!pathString) return '';
-  return pathString.split('/').map(segment => encodeURIComponent(segment)).join('/');
+const ZIM_DETAILS = {
+  'appropedia_en_all_maxi_2026-02.zim': {
+    title: 'Appropedia Sustainability Wiki',
+    summary: 'The collaborative wiki for sustainability, appropriate technology, and resilience. Contains off-grid construction, organic farming, waste management, and solar energy designs.'
+  },
+  'gutenberg_en_all_2023-08.zim': {
+    title: 'Project Gutenberg Library',
+    summary: 'Over 70,000 free offline books spanning classic literature, historical references, and educational guides.'
+  },
+  'ifixit_en_all_2025-12.zim': {
+    title: 'iFixit Repair Manuals',
+    summary: 'Step-by-step repair guides for electronics, appliances, engines, tools, and household gear. Extremely useful for maintaining equipment in off-grid environments.'
+  },
+  'khanacademy_en_all_2023-03.zim': {
+    title: 'Khan Academy Curriculum',
+    summary: 'Comprehensive interactive courses spanning Mathematics, Sciences, History, and Grammar. Perfect for offline homeschooling and self-study.'
+  },
+  'phet_en_all_2026-05.zim': {
+    title: 'PhET Science Simulations',
+    summary: 'Interactive HTML5 physics, chemistry, biology, earth science, and math simulations. Helps students learn science through discovery and experimentation.'
+  },
+  'wikem_en_all_maxi_2026-04.zim': {
+    title: 'WikEM Emergency Medicine Wiki',
+    summary: 'The largest emergency medicine open-access wiki. Contains rapid clinical reference guides for trauma, acute care, diagnoses, and treatments.'
+  },
+  'wikiciv_en_all_maxi_2025-11.zim': {
+    title: 'WikiCiv Civilizational Rebuild Wiki',
+    summary: 'Civilization rebuild manual focusing on basic agriculture, metallurgy, water purification, and simple mechanical machines.'
+  },
+  'wikipedia_en_medicine_maxi_2026-04.zim': {
+    title: 'Wikipedia Medical Encyclopedia',
+    summary: 'Comprehensive offline medical encyclopedia covering anatomy, illnesses, pharmacology, surgical procedures, and emergency response.'
+  },
+  'wikivoyage_en_all_maxi_2026-06.zim': {
+    title: 'Wikivoyage Travel Guide',
+    summary: 'Offline world travel guide with maps, geography, survival tips, cultural briefs, and phrasebooks for remote exploration.'
+  },
+  'zimgit-medicine_en_2024-08.zim': {
+    title: 'Git Medicine Wiki',
+    summary: 'A curated collection of practical emergency medicine articles, survival health tips, and field surgery protocols.'
+  },
+  'privacydefence.org_en_opsecbible_2026-06.zim': {
+    title: 'OPSEC Bible & Privacy Guide',
+    summary: 'Comprehensive guide covering operational security (OPSEC), digital privacy defense, anonymity protocols, and security guidelines for off-grid and active scenarios.'
+  }
+};
+
+const getZimDetails = (filename) => {
+  if (!filename) return null;
+  const normalized = filename.toLowerCase().trim();
+  
+  if (ZIM_DETAILS[normalized]) return ZIM_DETAILS[normalized];
+  
+  for (const key of Object.keys(ZIM_DETAILS)) {
+    const baseKey = key.split('_20')[0];
+    if (normalized.startsWith(baseKey)) {
+      return ZIM_DETAILS[key];
+    }
+  }
+  
+  if (normalized.endsWith('.zim')) {
+    const cleanName = filename
+      .replace('.zim', '')
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+    return {
+      title: cleanName,
+      summary: 'Offline Kiwix ZIM archive for local reference.'
+    };
+  }
+  return null;
 };
 
 function App() {
@@ -2885,8 +2954,10 @@ function App() {
                   <div className="file-grid" style={{ marginTop: '24px' }}>
                     {getFilteredFiles().map((file, idx) => {
                       const meta = metadata[file.path];
-                      const displayTitle = meta && meta.title && meta.title !== 'Unknown Document' && meta.title !== 'Error decoding' ? meta.title : file.name;
-                      const displaySummary = meta && meta.summary && meta.title !== 'Error decoding' ? meta.summary : `ORIGINAL FILE: ${file.name}`;
+                      const isZim = file.extension === '.zim' || file.name.endsWith('.zim');
+                      const zimDetails = isZim ? getZimDetails(file.name) : null;
+                      const displayTitle = zimDetails ? zimDetails.title : (meta && meta.title && meta.title !== 'Unknown Document' && meta.title !== 'Error decoding' ? meta.title : file.name);
+                      const displaySummary = zimDetails ? zimDetails.summary : (meta && meta.summary && meta.title !== 'Error decoding' ? meta.summary : `ORIGINAL FILE: ${file.name}`);
                       
                       return (
                         <div className="file-card glass-panel" key={idx} onClick={() => openFile(file)}>
@@ -3002,8 +3073,10 @@ function App() {
                               <div className="file-grid">
                                 {files.map((file, idx) => {
                                   const meta = metadata[file.path];
-                                  const displayTitle = meta && meta.title && meta.title !== 'Unknown Document' && meta.title !== 'Error decoding' ? meta.title : file.name;
-                                  const displaySummary = meta && meta.summary && meta.title !== 'Error decoding' ? meta.summary : `ORIGINAL FILE: ${file.name}`;
+                                  const isZim = file.extension === '.zim' || file.name.endsWith('.zim');
+                                  const zimDetails = isZim ? getZimDetails(file.name) : null;
+                                  const displayTitle = zimDetails ? zimDetails.title : (meta && meta.title && meta.title !== 'Unknown Document' && meta.title !== 'Error decoding' ? meta.title : file.name);
+                                  const displaySummary = zimDetails ? zimDetails.summary : (meta && meta.summary && meta.title !== 'Error decoding' ? meta.summary : `ORIGINAL FILE: ${file.name}`);
                                   
                                   // Risk indicator badge
                                   const riskBadge = file.riskCategory ? (
@@ -3994,6 +4067,17 @@ function App() {
                   <CrawlerControls 
                     crawlerStatus={crawlerStatus}
                     API_BASE={API_BASE}
+                    onRefreshManifest={async () => {
+                      try {
+                        const res = await fetch(`${API_BASE}/api/materials`);
+                        const data = await res.json();
+                        if (data.categories) {
+                          setCategories(data.categories);
+                        }
+                      } catch (e) {
+                        console.error("Failed refreshing manifest categories:", e);
+                      }
+                    }}
                   />
                 </PanelErrorBoundary>
               </div>
@@ -4030,7 +4114,9 @@ function App() {
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
             <h2 style={{ color: 'var(--brand-primary)', margin: 0, flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: '200px' }}>
-              {metadata[selectedDocument.path]?.title || selectedDocument.name}
+              {(selectedDocument.extension === '.zim' || selectedDocument.name.endsWith('.zim')) 
+                ? (getZimDetails(selectedDocument.name)?.title || selectedDocument.name) 
+                : (metadata[selectedDocument.path]?.title || selectedDocument.name)}
             </h2>
             
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#ccc', fontSize: '0.85rem', fontFamily: 'var(--font-mono)', marginRight: '16px' }}>
@@ -4304,6 +4390,56 @@ function App() {
                         style={{ padding: '12px 24px', fontSize: '1rem' }}
                       >
                         COPY ABSOLUTE PATH
+                      </button>
+                    </div>
+                  </div>
+                ) : ['.mp3', '.wav', '.ogg', '.flac', '.aac', '.m4a'].includes(selectedDocument.extension?.toLowerCase()) ? (
+                  <div style={{
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                    flex: 1, padding: '40px', textAlign: 'center', backgroundColor: '#0a0a0a', color: 'var(--text-main)'
+                  }}>
+                    <Volume2 size={64} style={{ color: 'var(--brand-primary)', marginBottom: '24px' }} />
+                    <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', marginBottom: '12px', maxWidth: '600px', wordBreak: 'break-all' }}>
+                      {selectedDocument.name}
+                    </h3>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--brand-primary)', fontFamily: 'var(--font-mono)', letterSpacing: '2px', marginBottom: '24px' }}>
+                      AUDIO ENTERTAINMENT PROTOCOL ACTIVE
+                    </div>
+                    
+                    <div className="glass-panel" style={{ 
+                      padding: '24px', borderRadius: '8px', border: '1px solid var(--border-subtle)', 
+                      background: 'rgba(255,255,255,0.01)', width: '100%', maxWidth: '500px', marginBottom: '32px' 
+                    }}>
+                      <audio 
+                        src={`${API_BASE}${encodePath(selectedDocument.path)}`} 
+                        controls 
+                        autoPlay
+                        style={{ width: '100%' }} 
+                      />
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', marginTop: '12px', display: 'flex', justifyContent: 'space-between' }}>
+                        <span>Format: {selectedDocument.extension?.toUpperCase().replace('.', '')}</span>
+                        <span>Location: {selectedDocument.category?.toUpperCase()}</span>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                      <a 
+                        href={`${API_BASE}${encodePath(selectedDocument.path)}`} 
+                        download
+                        className="btn-tactical"
+                        style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 20px', backgroundColor: 'var(--brand-primary)', color: 'black' }}
+                      >
+                        <Download size={16} /> DOWNLOAD AUDIO
+                      </a>
+                      <button 
+                        className="btn-tactical-outline"
+                        onClick={() => {
+                          navigator.clipboard.writeText(selectedDocument.path);
+                          alert("Absolute path copied to clipboard!");
+                        }}
+                        style={{ padding: '10px 20px' }}
+                      >
+                        COPY LOCAL PATH
                       </button>
                     </div>
                   </div>
