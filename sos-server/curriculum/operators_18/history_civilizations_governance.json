@@ -1,0 +1,38 @@
+{
+  "id": "operators_history_governance",
+  "title": "History of Infrastructure, Civics & Governance",
+  "subject": "History & Social Studies",
+  "gradeLevel": "Adult Mastery (Ages 18+)",
+  "category": "History & Social Studies",
+  "standards": [
+    "US.C3.FRAMEWORK.CIVICS.MASTERY",
+    "CA.BC.POLITICAL.SCIENCE"
+  ],
+  "description": "Study the historical rise and collapse of agricultural societies, infrastructure development, water rights, and constitutional law.",
+  "learningObjectives": [
+    "Analyze how historical civilizations managed water rights, food security, and energy infrastructure.",
+    "Understand constitutional law, property rights, and community mutual assistance compacts."
+  ],
+  "lessons": [
+    {
+      "id": "lesson_1",
+      "title": "Hydraulic Empires & Infrastructure Failure",
+      "content": "Throughout history, civilizations (such as ancient Mesopotamia and Rome) relied on complex aqueducts and irrigation. When maintenance failed or soil salinization occurred, food yields collapsed. Infrastructure resilience is the foundation of societal stability."
+    }
+  ],
+  "flashcards": [
+    { "term": "Hydraulic Empire", "definition": "A government structure that maintains power through exclusive control over water supply and irrigation." },
+    { "term": "Resilience", "definition": "The capacity of a system or homestead to withstand, adapt to, and recover from severe shocks." }
+  ],
+  "questions": [
+    {
+      "question": "Why did historical agricultural civilizations prioritize water infrastructure management above almost all else?",
+      "options": ["Water was required for crops, livestock, sanitation, and survival", "Water was used for decorative fountains only", "Water had no trade value", "It was required by modern law"],
+      "correctIndex": 0
+    }
+  ],
+  "practicalChallenge": {
+    "title": "Homestead Infrastructure Security Assessment",
+    "instruction": "Audit your homestead's 3 primary critical infrastructure systems: Water, Power, and Food Storage. Identify 1 single point of failure for each!"
+  }
+}

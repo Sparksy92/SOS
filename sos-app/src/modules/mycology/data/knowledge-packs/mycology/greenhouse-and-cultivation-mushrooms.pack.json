@@ -1,0 +1,234 @@
+{
+  "id": "greenhouse-and-cultivation-mushrooms-v1",
+  "module": "mycology",
+  "title": "Greenhouse Cultivation & Global Species Master Pack",
+  "version": "1.1.0",
+  "source": "Commercial & Homestead Mushroom Cultivation Guides",
+  "license": "CC-BY-SA-4.0",
+  "entries": [
+    {
+      "id": "pleurotus_eryngii",
+      "type": "mycology",
+      "title": "King Oyster",
+      "scientificName": "Pleurotus eryngii",
+      "authority": "(DC.) Quél.",
+      "taxonomy": {
+        "kingdom": "Fungi",
+        "phylum": "Basidiomycota",
+        "class": "Agaricomycetes",
+        "order": "Agaricales",
+        "family": "Pleurotaceae",
+        "genus": "Pleurotus",
+        "species": "Pleurotus eryngii"
+      },
+      "content": {
+        "summary": "Prized gourmet mushroom with thick, meaty stem and savory umami flavor. Ideal for greenhouse cultivation.",
+        "description": "Large, thick cylindrical white stem with a small flat brown cap. Excellent shelf life and firm culinary texture resembling scallops.",
+        "identificationGuide": "Cultivated on sterilized hardwood sawdust supplemented with wheat bran. Fruiting requires 15-20°C, 85-90% relative humidity, and high fresh air exchange.",
+        "habitatDesc": "Cultivated indoors/greenhouses on hardwood sawdust blocks or straw bags.",
+        "seasonalityDesc": "Year-round controlled greenhouse fruiting.",
+        "edibility": "choice",
+        "toxicityDesc": "Choice edible. Safe when cooked.",
+        "medicinalDesc": "Contains lovastatin for cholesterol regulation and high levels of ergothioneine antioxidant."
+      },
+      "safetyRating": { "difficulty": "beginner", "risk": "low", "requirement": "visual" },
+      "sourcesAttribution": [
+        { "type": "scientific", "contributor": "Commercial Mushroom Cultivation Manual", "notes": "Greenhouse fruiting parameters: Temp 15-20°C, RH 85-90%, CO2 < 1200 ppm." }
+      ],
+      "media": [{ "url": "/materials/mycology/king_oyster.jpg", "caption": "Thick meaty stems of King Oyster", "angle": "side", "quality": "good", "verified": true }],
+      "traits": {
+        "hymenophore": [{ "name": "gills", "label": "Decurrent White Gills" }],
+        "cap_color": [{ "name": "brown", "label": "Tan / Light Brown Cap" }],
+        "stem": [{ "name": "thick", "label": "Thick Meaty Stem" }],
+        "habitat": [{ "name": "greenhouse", "label": "Greenhouse / Sawdust Block" }],
+        "edibility": [{ "name": "choice", "label": "Choice Edible" }]
+      }
+    },
+    {
+      "id": "lentinula_edodes",
+      "type": "mycology",
+      "title": "Shiitake",
+      "scientificName": "Lentinula edodes",
+      "authority": "(Berk.) Pegler",
+      "taxonomy": {
+        "kingdom": "Fungi",
+        "phylum": "Basidiomycota",
+        "class": "Agaricomycetes",
+        "order": "Agaricales",
+        "family": "Marasmiaceae",
+        "genus": "Lentinula",
+        "species": "Lentinula edodes"
+      },
+      "content": {
+        "summary": "Classic savory gourmet & medicinal mushroom grown on oak logs or hardwood bags in greenhouses.",
+        "description": "Umbrella-shaped brown cap with white flocking/scales along the margin. Gills are white to pale cream, attached to a central tough fibrous stem.",
+        "identificationGuide": "Cultivated on oak/hardwood logs or supplemented sawdust blocks. Requires cold shock (soaking in cold water 12-24h) to trigger heavy fruiting flushes at 16-22°C.",
+        "habitatDesc": "Hardwood logs (Oak, Maple) or greenhouse sawdust blocks.",
+        "seasonalityDesc": "Spring to autumn outdoors, year-round in greenhouses.",
+        "edibility": "choice",
+        "toxicityDesc": "Edible and highly nutritious. Cook thoroughly.",
+        "medicinalDesc": "Contains Lentinan, a beta-glucan proven to enhance immune cell function and lower blood pressure."
+      },
+      "safetyRating": { "difficulty": "beginner", "risk": "low", "requirement": "visual" },
+      "sourcesAttribution": [
+        { "type": "traditional", "contributor": "Traditional Asian Agriculture", "notes": "Cultivated for over 1,000 years in East Asia." }
+      ],
+      "media": [{ "url": "/materials/mycology/shiitake.jpg", "caption": "Shiitake fruiting on oak log", "angle": "top", "quality": "good", "verified": true }],
+      "traits": {
+        "hymenophore": [{ "name": "gills", "label": "White Gills" }],
+        "cap_color": [{ "name": "brown", "label": "Dark Brown with Flocking" }],
+        "habitat": [{ "name": "oak_logs", "label": "Oak Logs / Greenhouse Sawdust" }],
+        "edibility": [{ "name": "choice", "label": "Choice Edible" }]
+      }
+    },
+    {
+      "id": "grifola_frondosa",
+      "type": "mycology",
+      "title": "Maitake (Hen of the Woods)",
+      "scientificName": "Grifola frondosa",
+      "authority": "(Dicks.) Gray",
+      "taxonomy": {
+        "kingdom": "Fungi",
+        "phylum": "Basidiomycota",
+        "class": "Agaricomycetes",
+        "order": "Polyporales",
+        "family": "Meripilaceae",
+        "genus": "Grifola",
+        "species": "Grifola frondosa"
+      },
+      "content": {
+        "summary": "Large, rosette-like cluster of greyish-brown caps with intense savory aroma and medicinal D-fraction.",
+        "description": "Forms large dense clusters of overlapping feather-like caps attached to a branching central core. Pore underside is white.",
+        "identificationGuide": "Greenhouse culture uses oak sawdust supplemented with rice bran. Requires 15-20°C and indirect light for cap pigmentation.",
+        "habitatDesc": "At base of mature Oak trees or greenhouse sawdust bags.",
+        "seasonalityDesc": "Autumn in wild, year-round in greenhouse.",
+        "edibility": "choice",
+        "toxicityDesc": "Choice edible. Excellent when sauteed.",
+        "medicinalDesc": "Contains Maitake D-Fraction, widely researched for anti-tumor and blood glucose regulating effects."
+      },
+      "safetyRating": { "difficulty": "intermediate", "risk": "low", "requirement": "visual" },
+      "sourcesAttribution": [
+        { "type": "scientific", "contributor": "Medicinal Mushroom Journal", "notes": "High potency bio-active D-fraction polysaccharides." }
+      ],
+      "media": [{ "url": "/materials/mycology/maitake.jpg", "caption": "Dense rosette cluster of Maitake caps", "angle": "top", "quality": "good", "verified": true }],
+      "traits": {
+        "hymenophore": [{ "name": "pores", "label": "Tiny White Pores" }],
+        "cap_color": [{ "name": "grey", "label": "Greyish Brown Rosette" }],
+        "habitat": [{ "name": "oak", "label": "Oak Base & Greenhouse Bags" }],
+        "edibility": [{ "name": "choice", "label": "Choice Edible" }]
+      }
+    },
+    {
+      "id": "cordyceps_militaris",
+      "type": "mycology",
+      "title": "Cordyceps Militaris",
+      "scientificName": "Cordyceps militaris",
+      "authority": "(L.) Fr.",
+      "taxonomy": {
+        "kingdom": "Fungi",
+        "phylum": "Ascomycota",
+        "class": "Sordariomycetes",
+        "order": "Hypocreales",
+        "family": "Cordycipitaceae",
+        "genus": "Cordyceps",
+        "species": "Cordyceps militaris"
+      },
+      "content": {
+        "summary": "High-value bright orange club-shaped medicinal fungus cultivated on sterile grain substrates in climate-controlled rooms.",
+        "description": "Slender, vibrant orange club-like fruiting bodies (2-7 cm tall) covered in tiny pimple-like perithecia openings.",
+        "identificationGuide": "Cultivated indoors/greenhouses on rice/broth mixtures inside glass jars under LED lighting at 18-22°C.",
+        "habitatDesc": "Indoor/greenhouse sterile grain culture jars.",
+        "seasonalityDesc": "Controlled indoor cycle (6-8 weeks).",
+        "edibility": "edible",
+        "toxicityDesc": "Safe medicinal fungus.",
+        "medicinalDesc": "Rich in Cordycepin (adenosine analogue) and adenosine, supporting cellular ATP production, stamina, and oxygen uptake."
+      },
+      "safetyRating": { "difficulty": "intermediate", "risk": "low", "requirement": "visual" },
+      "sourcesAttribution": [
+        { "type": "traditional", "contributor": "Traditional Chinese Medicine", "notes": "Renowned energy and lung vitality tonic." }
+      ],
+      "media": [{ "url": "/materials/mycology/cordyceps.jpg", "caption": "Vibrant orange Cordyceps clubs in jar culture", "angle": "side", "quality": "good", "verified": true }],
+      "traits": {
+        "hymenophore": [{ "name": "clubs", "label": "Club-shaped Orange Fruiting Bodies" }],
+        "cap_color": [{ "name": "orange", "label": "Bright Orange" }],
+        "habitat": [{ "name": "grain_jar", "label": "Indoor Sterile Grain Jars" }],
+        "edibility": [{ "name": "edible", "label": "Medicinal Tonic" }]
+      }
+    },
+    {
+      "id": "stropharia_rugosoannulata",
+      "type": "mycology",
+      "title": "Wine Cap (Garden Giant)",
+      "scientificName": "Stropharia rugosoannulata",
+      "authority": "Farlow ex Murrill",
+      "taxonomy": {
+        "kingdom": "Fungi",
+        "phylum": "Basidiomycota",
+        "class": "Agaricomycetes",
+        "order": "Agaricales",
+        "family": "Strophariaceae",
+        "genus": "Stropharia",
+        "species": "Stropharia rugosoannulata"
+      },
+      "content": {
+        "summary": "Robust burgundy-capped mushroom that thrives in greenhouse soil beds, woodchips, and outdoor garden mulch.",
+        "description": "Large wine-red to reddish-brown cap fading to tan. Gills start pale, turning dark purplish-grey with age. Thick stem features a cogwheel-like ring.",
+        "identificationGuide": "Easy garden/greenhouse bed species. Inoculate woodchips or straw beds alongside greenhouse crops. Fruits at 15-25°C.",
+        "habitatDesc": "Woodchip beds, straw mulch, and greenhouse floor soil beds.",
+        "seasonalityDesc": "Spring to late autumn.",
+        "edibility": "choice",
+        "toxicityDesc": "Choice edible when young before caps flatten out.",
+        "medicinalDesc": "Accumulates soil heavy metals safely while building rich humus soil for garden crops."
+      },
+      "safetyRating": { "difficulty": "beginner", "risk": "low", "requirement": "visual" },
+      "sourcesAttribution": [
+        { "type": "scientific", "contributor": "Permaculture & Regenerative Soil Guides", "notes": "Ideal companion mushroom for greenhouse vegetable beds." }
+      ],
+      "media": [{ "url": "/materials/mycology/wine_cap.jpg", "caption": "Burgundy cap of Wine Cap in woodchips", "angle": "top", "quality": "good", "verified": true }],
+      "traits": {
+        "hymenophore": [{ "name": "gills", "label": "Purplish Grey Gills" }],
+        "cap_color": [{ "name": "red", "label": "Wine Red / Burgundy" }],
+        "habitat": [{ "name": "woodchips", "label": "Woodchip & Straw Mulch Beds" }],
+        "edibility": [{ "name": "choice", "label": "Choice Edible" }]
+      }
+    },
+    {
+      "id": "trametes_versicolor",
+      "type": "mycology",
+      "title": "Turkey Tail",
+      "scientificName": "Trametes versicolor",
+      "authority": "(L.) Lloyd",
+      "taxonomy": {
+        "kingdom": "Fungi",
+        "phylum": "Basidiomycota",
+        "class": "Agaricomycetes",
+        "order": "Polyporales",
+        "family": "Polyporaceae",
+        "genus": "Trametes",
+        "species": "Trametes versicolor"
+      },
+      "content": {
+        "summary": "Ubiquitous medicinal bracket fungus featuring colorful concentric bands and tiny white pores underneath.",
+        "description": "Thin, velvety bracket displaying concentric zones of brown, tan, blue, orange, and white. Underneath surface is bright white to cream with tiny pores (3-5 per mm).",
+        "identificationGuide": "Check for VELVETY surface, multi-colored concentric rings, WHITE porous underside (does not stain brown when scratched), and thin flexible tough texture.",
+        "habitatDesc": "Dead hardwood logs, stumps, and greenhouse hardwood sawdust bags.",
+        "seasonalityDesc": "Year-round persistent.",
+        "edibility": "inedible",
+        "toxicityDesc": "Non-toxic, but tough and leathery. Prepared as tea or extract.",
+        "medicinalDesc": "Source of PSK (Polysaccharide Krestin) and PSP, FDA-studied immuno-modulators used in adjunctive oncology care."
+      },
+      "safetyRating": { "difficulty": "beginner", "risk": "low", "requirement": "visual" },
+      "sourcesAttribution": [
+        { "type": "scientific", "contributor": "NIH & Clinical Oncology Research", "notes": "Extensive clinical studies on PSK immunomodulation." }
+      ],
+      "media": [{ "url": "/materials/mycology/turkey_tail.jpg", "caption": "Concentric colorful rings of Turkey Tail", "angle": "top", "quality": "good", "verified": true }],
+      "traits": {
+        "hymenophore": [{ "name": "pores", "label": "Tiny White Pores" }],
+        "cap_color": [{ "name": "multicolor", "label": "Concentric Banded Rings" }],
+        "habitat": [{ "name": "hardwood", "label": "Hardwood Logs & Sawdust" }],
+        "edibility": [{ "name": "inedible", "label": "Inedible / Medicinal Tea" }]
+      }
+    }
+  ],
+  "identificationKeys": []
+}

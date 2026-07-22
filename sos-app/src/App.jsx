@@ -131,6 +131,7 @@ import RecipePlannerPanel from './components/toolkit/RecipePlannerPanel.jsx';
 import NetworkBuilderPanel from './components/toolkit/NetworkBuilderPanel.jsx';
 import LocalReleaseCandidatePanel from './components/release/LocalReleaseCandidatePanel.jsx';
 import AcademyDashboardPanel from './components/academy/AcademyDashboardPanel.jsx';
+import MycologyModule from './modules/mycology/MycologyModule.jsx';
 import { loadSetupProgress, DEFAULT_STEPS } from './modules/toolkit/setupProgressStore.js';
 import { loadLedger } from './modules/toolkit/importApprovalLedgerStore.js';
 import { loadQueue, saveQueueItem } from './modules/toolkit/acquisitionQueueStore.js';
@@ -2593,7 +2594,7 @@ function App() {
               className={`nav-item ${viewMode === 'dashboard' ? 'active' : ''}`}
               onClick={() => { setViewMode('dashboard'); setSidebarOpen(false); }}
             >
-              <LayoutDashboard size={18} className={viewMode === 'dashboard' ? 'text-glow' : ''}/>
+              <LayoutDashboard size={18} color="#38BDF8" className={viewMode === 'dashboard' ? 'text-glow' : ''}/>
               <span style={{color: viewMode === 'dashboard' ? 'var(--brand-primary)' : ''}}>DASHBOARD</span>
             </div>
 
@@ -2601,7 +2602,7 @@ function App() {
               className={`nav-item ${viewMode === 'field-mode' ? 'active' : ''}`}
               onClick={() => { setViewMode('field-mode'); setSidebarOpen(false); }}
             >
-              <Compass size={18} className={viewMode === 'field-mode' ? 'text-glow' : ''}/>
+              <Compass size={18} color="#F59E0B" className={viewMode === 'field-mode' ? 'text-glow' : ''}/>
               <span style={{color: viewMode === 'field-mode' ? 'var(--brand-primary)' : ''}}>FIELD MODE</span>
             </div>
 
@@ -2609,7 +2610,7 @@ function App() {
               className={`nav-item ${viewMode === 'chat' ? 'active' : ''}`}
               onClick={() => { setViewMode('chat'); setSidebarOpen(false); }}
             >
-              <Cpu size={18} className={viewMode === 'chat' ? 'text-glow' : ''}/>
+              <Cpu size={18} color="#A855F7" className={viewMode === 'chat' ? 'text-glow' : ''}/>
               <span style={{color: viewMode === 'chat' ? 'var(--brand-primary)' : ''}}>R.A.N.G.E.R. (LOCAL AI)</span>
             </div>
 
@@ -2621,7 +2622,7 @@ function App() {
               className={`nav-item ${viewMode === 'water' ? 'active' : ''}`}
               onClick={() => { setViewMode('water'); setSidebarOpen(false); }}
             >
-              <Droplet size={18} className={viewMode === 'water' ? 'text-glow' : ''}/>
+              <Droplet size={18} color="#3B82F6" className={viewMode === 'water' ? 'text-glow' : ''}/>
               <span style={{color: viewMode === 'water' ? 'var(--brand-primary)' : ''}}>WATER INVENTORY</span>
             </div>
 
@@ -2629,15 +2630,23 @@ function App() {
               className={`nav-item ${viewMode === 'food' ? 'active' : ''}`}
               onClick={() => { setViewMode('food'); setSidebarOpen(false); }}
             >
-              <Wheat size={18} className={viewMode === 'food' ? 'text-glow' : ''}/>
+              <Wheat size={18} color="#EAB308" className={viewMode === 'food' ? 'text-glow' : ''}/>
               <span style={{color: viewMode === 'food' ? 'var(--brand-primary)' : ''}}>FOOD & PANTRY</span>
+            </div>
+
+            <div 
+              className={`nav-item ${viewMode === 'mycology' ? 'active' : ''}`}
+              onClick={() => { setViewMode('mycology'); setSidebarOpen(false); }}
+            >
+              <span style={{ fontSize: '18px', lineHeight: 1 }}>🍄</span>
+              <span style={{color: viewMode === 'mycology' ? 'var(--brand-primary)' : ''}}>MYCOLOGY ENGINE</span>
             </div>
 
             <div 
               className={`nav-item ${viewMode === 'map' ? 'active' : ''}`}
               onClick={() => { setViewMode('map'); setSidebarOpen(false); }}
             >
-              <Compass size={18} className={viewMode === 'map' ? 'text-glow' : ''}/>
+              <Compass size={18} color="#10B981" className={viewMode === 'map' ? 'text-glow' : ''}/>
               <span style={{color: viewMode === 'map' ? 'var(--brand-primary)' : ''}}>TACTICAL MAP</span>
             </div>
 
@@ -2645,7 +2654,7 @@ function App() {
               className={`nav-item ${viewMode === 'action-guides' ? 'active' : ''}`}
               onClick={() => { setViewMode('action-guides'); setSidebarOpen(false); }}
             >
-              <ClipboardList size={18} className={viewMode === 'action-guides' ? 'text-glow' : ''}/>
+              <ClipboardList size={18} color="#EC4899" className={viewMode === 'action-guides' ? 'text-glow' : ''}/>
               <span style={{color: viewMode === 'action-guides' ? 'var(--brand-primary)' : ''}}>ACTION GUIDES</span>
             </div>
 
@@ -2653,7 +2662,7 @@ function App() {
               className={`nav-item ${viewMode === 'reports-panel' ? 'active' : ''}`}
               onClick={() => { setViewMode('reports-panel'); setSidebarOpen(false); }}
             >
-              <FileSpreadsheet size={18} className={viewMode === 'reports-panel' ? 'text-glow' : ''}/>
+              <FileSpreadsheet size={18} color="#14B8A6" className={viewMode === 'reports-panel' ? 'text-glow' : ''}/>
               <span style={{color: viewMode === 'reports-panel' ? 'var(--brand-primary)' : ''}}>NOTES / REPORTS</span>
             </div>
 
@@ -2661,7 +2670,7 @@ function App() {
               className={`nav-item ${viewMode === 'academy' ? 'active' : ''}`}
               onClick={() => { setViewMode('academy'); setSidebarOpen(false); }}
             >
-              <GraduationCap size={18} className={viewMode === 'academy' ? 'text-glow' : ''}/>
+              <GraduationCap size={18} color="#6366F1" className={viewMode === 'academy' ? 'text-glow' : ''}/>
               <span style={{color: viewMode === 'academy' ? 'var(--brand-primary)' : ''}}>SURVIVAL ACADEMY</span>
             </div>
 
@@ -2669,7 +2678,7 @@ function App() {
               className={`nav-item ${viewMode === 'offline-toolkit' ? 'active' : ''}`}
               onClick={() => { setViewMode('offline-toolkit'); setSidebarOpen(false); }}
             >
-              <CheckSquare size={18} className={viewMode === 'offline-toolkit' ? 'text-glow' : ''}/>
+              <CheckSquare size={18} color="#8B5CF6" className={viewMode === 'offline-toolkit' ? 'text-glow' : ''}/>
               <span style={{color: viewMode === 'offline-toolkit' ? 'var(--brand-primary)' : ''}}>OFFLINE TOOLKIT</span>
             </div>
 
@@ -2677,7 +2686,7 @@ function App() {
               className={`nav-item ${viewMode === 'arcade' ? 'active' : ''}`}
               onClick={() => { setViewMode('arcade'); setSidebarOpen(false); }}
             >
-              <Gamepad2 size={18} className={viewMode === 'arcade' ? 'text-glow' : ''}/>
+              <Gamepad2 size={18} color="#F43F5E" className={viewMode === 'arcade' ? 'text-glow' : ''}/>
               <span style={{color: viewMode === 'arcade' ? 'var(--brand-primary)' : ''}}>TACTICAL ARCADE</span>
             </div>
 
@@ -2687,7 +2696,7 @@ function App() {
                   className={`nav-item ${viewMode === 'index-integrity' ? 'active' : ''}`}
                   onClick={() => { setViewMode('index-integrity'); setSidebarOpen(false); }}
                 >
-                  <Database size={18} className={viewMode === 'index-integrity' ? 'text-glow' : ''}/>
+                  <Database size={18} color="#0284C7" className={viewMode === 'index-integrity' ? 'text-glow' : ''}/>
                   <span style={{color: viewMode === 'index-integrity' ? 'var(--brand-primary)' : ''}}>INDEX INTEGRITY</span>
                 </div>
 
@@ -2695,7 +2704,7 @@ function App() {
                   className={`nav-item ${viewMode === 'ebg' ? 'active' : ''}`}
                   onClick={() => { setViewMode('ebg'); setSidebarOpen(false); }}
                 >
-                  <Network size={18} className={viewMode === 'ebg' ? 'text-glow' : ''}/>
+                  <Network size={18} color="#06B6D4" className={viewMode === 'ebg' ? 'text-glow' : ''}/>
                   <span style={{color: viewMode === 'ebg' ? 'var(--brand-primary)' : ''}}>COGNITIVE BELIEF GRAPH</span>
                 </div>
               </>
@@ -2722,7 +2731,7 @@ function App() {
                     setSidebarOpen(false); 
                   }}
                 >
-                  <FolderOpen size={18} />
+                  <FolderOpen size={18} color="#F59E0B" />
                   <span>{cat.toUpperCase()}</span>
                 </div>
               ))
@@ -3738,6 +3747,12 @@ function App() {
                   setViewMode={setViewMode}
                   setChatInput={setChatInput}
                 />
+              </PanelErrorBoundary>
+            )}
+
+            {!error && !loading && viewMode === 'mycology' && (
+              <PanelErrorBoundary name="Mycology Knowledge Engine">
+                <MycologyModule />
               </PanelErrorBoundary>
             )}
 

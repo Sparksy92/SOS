@@ -1,0 +1,366 @@
+{
+  "id": "north-america-fungi-v1",
+  "module": "mycology",
+  "title": "North American Wild Mushrooms Pack",
+  "version": "1.0.0",
+  "source": "North American Mycological Association & SOS Field Library",
+  "license": "CC-BY-SA-4.0",
+  "entries": [
+    {
+      "id": "hericium_erinaceus",
+      "type": "mycology",
+      "title": "Lion's Mane",
+      "scientificName": "Hericium erinaceus",
+      "authority": "(Bull.) Pers.",
+      "taxonomy": {
+        "kingdom": "Fungi",
+        "phylum": "Basidiomycota",
+        "class": "Agaricomycetes",
+        "order": "Russulales",
+        "family": "Hericiaceae",
+        "genus": "Hericium",
+        "species": "Hericium erinaceus"
+      },
+      "content": {
+        "summary": "Distinctive white cascading toothy mushroom growing on hardwood trees.",
+        "description": "Produces a compact, unbranched fruiting body with long, soft, icicle-like spines (teeth) hanging downwards. Pure white when fresh, aging to pale cream or yellow.",
+        "identificationGuide": "Look for dense white icicle-like teeth (1-5 cm long) hanging from a single unbranched bulbous base attached directly to hardwood trees (oak, beech, maple).",
+        "habitatDesc": "Grows singly on decaying or living hardwood trees, particularly oak, beech, and maple.",
+        "seasonalityDesc": "Late summer to late autumn.",
+        "edibility": "choice",
+        "toxicityDesc": "Non-toxic. High culinary and medicinal value.",
+        "medicinalDesc": "Contains erinacines and hericenones known to stimulate nerve growth factor (NGF) synthesis and support cognitive health."
+      },
+      "safetyRating": {
+        "difficulty": "beginner",
+        "risk": "low",
+        "requirement": "visual"
+      },
+      "sourcesAttribution": [
+        { "type": "scientific", "contributor": "NAMA Field Guides", "notes": "Peer-reviewed mycological entry" },
+        { "type": "traditional", "contributor": "Traditional Herbal Medicine", "notes": "Used historically as a tonic for digestion and vitality." }
+      ],
+      "media": [
+        { "url": "/materials/mycology/lions_mane.jpg", "caption": "Cascading white teeth on hardwood trunk", "angle": "side", "quality": "good", "verified": true }
+      ],
+      "references": [
+        { "title": "Mushrooms Demystified by David Arora", "url": "" }
+      ],
+      "relationships": [
+        { "target_id": "hericium_coralloides", "relation_type": "similar_species", "notes": "Coral Tooth Fungus (Hericium coralloides) is also edible but has branched branches." }
+      ],
+      "traits": {
+        "hymenophore": [{ "name": "teeth", "label": "Teeth / Spines" }],
+        "cap_color": [{ "name": "white", "label": "White to Cream" }],
+        "stem": [{ "name": "stemless", "label": "Stemless / Direct Attachment" }],
+        "spore_print": [{ "name": "white", "label": "White" }],
+        "flesh": [{ "name": "white", "label": "Soft White Flesh" }],
+        "habitat": [{ "name": "hardwood", "label": "Hardwood / Dead Tree" }],
+        "season": [{ "name": "fall", "label": "Autumn / Late Summer" }],
+        "edibility": [{ "name": "choice", "label": "Choice Edible" }]
+      }
+    },
+    {
+      "id": "cantharellus_cibarius",
+      "type": "mycology",
+      "title": "Golden Chanterelle",
+      "scientificName": "Cantharellus cibarius",
+      "authority": "Fr.",
+      "taxonomy": {
+        "kingdom": "Fungi",
+        "phylum": "Basidiomycota",
+        "class": "Agaricomycetes",
+        "order": "Cantharellales",
+        "family": "Cantharellaceae",
+        "genus": "Cantharellus",
+        "species": "Cantharellus cibarius"
+      },
+      "content": {
+        "summary": "Prized funnel-shaped yellow mushroom with false gill folds and apricot aroma.",
+        "description": "Bright golden-yellow to orange cap shaped like a vase or trumpet. Underneath cap features blunt, cross-veined false gills running down the stem (decurrent). Fruit-like apricot smell.",
+        "identificationGuide": "Differentiate from toxic Jack-o'-Lantern (Omphalotus olearius) by checking for FALSE GILLS (blunt ridges that cross-branch and do not peel cleanly) and solid white interior flesh.",
+        "habitatDesc": "Forms mycorrhizal relationships with mossy oak, beech, and coniferous forests.",
+        "seasonalityDesc": "Early summer through autumn.",
+        "edibility": "choice",
+        "toxicityDesc": "Edible and delicious when thoroughly cooked.",
+        "medicinalDesc": "Rich in Vitamin D2, essential amino acids, and beta-glucans."
+      },
+      "safetyRating": {
+        "difficulty": "intermediate",
+        "risk": "moderate",
+        "requirement": "visual"
+      },
+      "sourcesAttribution": [
+        { "type": "scientific", "contributor": "NAMA Foraging Manuals", "notes": "Crucial to distinguish from Jack-o'-Lantern." }
+      ],
+      "media": [
+        { "url": "/materials/mycology/chanterelle.jpg", "caption": "Golden Chanterelle showing blunt false gills", "angle": "underside", "quality": "good", "verified": true }
+      ],
+      "references": [
+        { "title": "Audubon Society Field Guide to North American Mushrooms", "url": "" }
+      ],
+      "relationships": [
+        { "target_id": "omphalotus_olearius", "relation_type": "lookalike", "notes": "Jack-o'-Lantern mushroom has true blade-like gills, grows in dense clusters on wood, and has orange interior flesh. POISONOUS." }
+      ],
+      "traits": {
+        "hymenophore": [{ "name": "folds", "label": "False Gills / Blunt Folds" }],
+        "cap_color": [{ "name": "yellow", "label": "Golden Yellow / Orange" }],
+        "stem": [{ "name": "solid", "label": "Solid White Interior Stem" }],
+        "spore_print": [{ "name": "pale_yellow", "label": "Pale Yellow / Cream" }],
+        "flesh": [{ "name": "white", "label": "Solid White Flesh" }],
+        "habitat": [{ "name": "hardwood", "label": "Mossy Hardwood & Conifer Soil" }],
+        "season": [{ "name": "summer", "label": "Summer" }, { "name": "fall", "label": "Autumn" }],
+        "edibility": [{ "name": "choice", "label": "Choice Edible" }]
+      }
+    },
+    {
+      "id": "morchella_angusticeps",
+      "type": "mycology",
+      "title": "Black Morel",
+      "scientificName": "Morchella angusticeps",
+      "authority": "Peck",
+      "taxonomy": {
+        "kingdom": "Fungi",
+        "phylum": "Ascomycota",
+        "class": "Pezizomycetes",
+        "order": "Pezizales",
+        "family": "Morchellaceae",
+        "genus": "Morchella",
+        "species": "Morchella angusticeps"
+      },
+      "content": {
+        "summary": "Highly prized spring mushroom with honeycomb pitted cap and completely hollow interior.",
+        "description": "Distinctive elongated conical cap covered in dark brown to black pitted ridges resembling a honeycomb. The cap is fully attached to the stem at the base, and the entire mushroom is completely hollow inside.",
+        "identificationGuide": "ALWAYS slice vertically in half from top to bottom. True morels are COMPLETELY HOLLOW from cap apex down through the stem base.",
+        "habitatDesc": "Appears in spring around ash, tulip poplar, apple orchards, and recently burned forest areas.",
+        "seasonalityDesc": "Spring (April - June).",
+        "edibility": "choice",
+        "toxicityDesc": "MUST BE COOKED thoroughly. Contains toxic hydrazine-like compound when raw.",
+        "medicinalDesc": "Rich in antioxidants and trace minerals."
+      },
+      "safetyRating": {
+        "difficulty": "intermediate",
+        "risk": "high",
+        "requirement": "visual"
+      },
+      "sourcesAttribution": [
+        { "type": "scientific", "contributor": "Mycological Society of America", "notes": "Must verify hollow stem vs Gyromitra false morels." }
+      ],
+      "media": [
+        { "url": "/materials/mycology/morel.jpg", "caption": "Honeycomb pitted cap of Black Morel", "angle": "top", "quality": "good", "verified": true }
+      ],
+      "references": [
+        { "title": "Morels by Michael Kuo", "url": "" }
+      ],
+      "relationships": [
+        { "target_id": "gyromitra_esculenta", "relation_type": "lookalike", "notes": "False Morel (Gyromitra esculenta) has a brain-like wrinkled cap, is NOT hollow inside (filled with cottony tissue), and contains DEADLY gyromitrin toxin." }
+      ],
+      "traits": {
+        "hymenophore": [{ "name": "pits", "label": "Honeycomb Pits" }],
+        "cap_color": [{ "name": "brown", "label": "Dark Brown to Black Ridges" }],
+        "stem": [{ "name": "hollow", "label": "Completely Hollow Interior" }],
+        "spore_print": [{ "name": "cream", "label": "Cream to Ocher" }],
+        "flesh": [{ "name": "hollow", "label": "Thin Hollow Flesh" }],
+        "habitat": [{ "name": "hardwood", "label": "Ash, Poplar, Orchards, Burn Sites" }],
+        "season": [{ "name": "spring", "label": "Spring" }],
+        "edibility": [{ "name": "choice", "label": "Choice Edible (Cooked Only)" }]
+      }
+    },
+    {
+      "id": "laetiporus_sulphureus",
+      "type": "mycology",
+      "title": "Chicken of the Woods",
+      "scientificName": "Laetiporus sulphureus",
+      "authority": "(Bull.) Murrill",
+      "taxonomy": {
+        "kingdom": "Fungi",
+        "phylum": "Basidiomycota",
+        "class": "Agaricomycetes",
+        "order": "Polyporales",
+        "family": "Fomitopsidaceae",
+        "genus": "Laetiporus",
+        "species": "Laetiporus sulphureus"
+      },
+      "content": {
+        "summary": "Vibrant orange and yellow bracket fungus with pore underside and chicken-like texture.",
+        "description": "Large overlapping shelf-like brackets ranging from vibrant yellow to bright orange. Underneath surface consists of tiny sulfur-yellow pores (no gills). Succulent fleshy texture reminiscent of cooked chicken breast.",
+        "identificationGuide": "Look for bright orange/yellow shelf brackets on hardwood trees with yellow porous undersides. Avoid specimens growing on conifers or eucalyptus which can cause gastrointestinal distress.",
+        "habitatDesc": "Grows on living or dead hardwood trees, especially oak.",
+        "seasonalityDesc": "Late spring through autumn.",
+        "edibility": "choice",
+        "toxicityDesc": "Edible and delicious. Cook thoroughly. Test small portion first as a minority of individuals report mild digestive sensitivity.",
+        "medicinalDesc": "Contains immuno-modulating polysaccharide complexes."
+      },
+      "safetyRating": {
+        "difficulty": "beginner",
+        "risk": "low",
+        "requirement": "visual"
+      },
+      "sourcesAttribution": [
+        { "type": "scientific", "contributor": "North American Mycological Association", "notes": "Easy beginner mushroom." }
+      ],
+      "media": [
+        { "url": "/materials/mycology/chicken_of_the_woods.jpg", "caption": "Vibrant orange shelves on oak trunk", "angle": "side", "quality": "good", "verified": true }
+      ],
+      "references": [
+        { "title": "Field Guide to Mushrooms of North America", "url": "" }
+      ],
+      "relationships": [],
+      "traits": {
+        "hymenophore": [{ "name": "pores", "label": "Sulfur Yellow Pores" }],
+        "cap_color": [{ "name": "orange", "label": "Bright Orange & Yellow" }],
+        "stem": [{ "name": "stemless", "label": "Shelf Brackets / Stemless" }],
+        "spore_print": [{ "name": "white", "label": "White" }],
+        "flesh": [{ "name": "thick", "label": "Fleshy Chicken-like Flesh" }],
+        "habitat": [{ "name": "hardwood", "label": "Oak & Hardwood Stumps" }],
+        "season": [{ "name": "summer", "label": "Summer" }, { "name": "fall", "label": "Autumn" }],
+        "edibility": [{ "name": "choice", "label": "Choice Edible" }]
+      }
+    },
+    {
+      "id": "amanita_phalloides",
+      "type": "mycology",
+      "title": "Death Cap",
+      "scientificName": "Amanita phalloides",
+      "authority": "Secr.",
+      "taxonomy": {
+        "kingdom": "Fungi",
+        "phylum": "Basidiomycota",
+        "class": "Agaricomycetes",
+        "order": "Agaricales",
+        "family": "Amanitaceae",
+        "genus": "Amanita",
+        "species": "Amanita phalloides"
+      },
+      "content": {
+        "summary": "DEADLY POISONOUS mushroom responsible for the majority of fatal mushroom poisonings worldwide.",
+        "description": "Smooth olive-green to yellowish cap, white free gills, skirt-like ring on upper stem, and a prominent cup-like volva sac enclosing the base of the stem (often buried under soil/duff).",
+        "identificationGuide": "ALWAYS dig out the entire stem base when identifying white-gilled mushrooms to inspect for a buried cup-like volva sac and skirt ring.",
+        "habitatDesc": "Mycorrhizal under hardwood trees, especially oak, beech, and chestnut.",
+        "seasonalityDesc": "Summer through autumn.",
+        "edibility": "deadly",
+        "toxicityDesc": "DEADLY. Contains potent amatoxins that destroy liver and kidney tissue. Thermal cooking does NOT neutralize amatoxins.",
+        "medicinalDesc": "None. Extremely dangerous lethal toxin."
+      },
+      "safetyRating": {
+        "difficulty": "expert",
+        "risk": "deadly",
+        "requirement": "microscopy"
+      },
+      "sourcesAttribution": [
+        { "type": "scientific", "contributor": "CDC & Toxicological Registry", "notes": "Critical safety entry." }
+      ],
+      "media": [
+        { "url": "/materials/mycology/death_cap.jpg", "caption": "Death Cap showing volva cup at stem base", "angle": "side", "quality": "good", "verified": true }
+      ],
+      "references": [
+        { "title": "Poisonous Mushrooms of Canada", "url": "" }
+      ],
+      "relationships": [
+        { "target_id": "volvariella_volvacea", "relation_type": "lookalike", "notes": "Paddy Straw Mushroom (Volvariella volvacea) is confused by novice foragers, causing fatal intoxications." }
+      ],
+      "traits": {
+        "hymenophore": [{ "name": "gills", "label": "Free White Gills" }],
+        "cap_color": [{ "name": "green", "label": "Olive Green / Yellowish" }],
+        "stem": [{ "name": "volva", "label": "Skirt Ring & Sac Volva at Base" }],
+        "spore_print": [{ "name": "white", "label": "White" }],
+        "flesh": [{ "name": "white", "label": "White Unchanging Flesh" }],
+        "habitat": [{ "name": "hardwood", "label": "Oak & Beech Forests" }],
+        "season": [{ "name": "summer", "label": "Summer" }, { "name": "fall", "label": "Autumn" }],
+        "edibility": [{ "name": "deadly", "label": "DEADLY POISONOUS" }]
+      }
+    },
+    {
+      "id": "fomitopsis_betulina",
+      "type": "mycology",
+      "title": "Birch Polypore",
+      "scientificName": "Fomitopsis betulina",
+      "authority": "(Bull.) B.K. Cui",
+      "taxonomy": {
+        "kingdom": "Fungi",
+        "phylum": "Basidiomycota",
+        "class": "Agaricomycetes",
+        "order": "Polyporales",
+        "family": "Fomitopsidaceae",
+        "genus": "Fomitopsis",
+        "species": "Fomitopsis betulina"
+      },
+      "content": {
+        "summary": "Traditional medicinal polypore growing exclusively on birch trees, famous for historical usage.",
+        "description": "Smooth, hoof-shaped or rubbery rounded bracket fungus with greyish-brown upper surface and white pore underside. Grows exclusively on birch trunks.",
+        "identificationGuide": "Strict host association with Birch trees (Betula spp.). Smooth tan cap with white pore underside and tough corky interior.",
+        "habitatDesc": "Exclusively on dead or living Birch trees.",
+        "seasonalityDesc": "Year-round persistent polypore.",
+        "edibility": "inedible",
+        "toxicityDesc": "Non-toxic, but too tough/corky for culinary ingestion.",
+        "medicinalDesc": "Historically used as an antiparasitic, wound plaster, tinder lighter, and immune stimulant. Found in the pouch of Ötzi the Iceman (5,300 BP)."
+      },
+      "safetyRating": {
+        "difficulty": "beginner",
+        "risk": "low",
+        "requirement": "visual"
+      },
+      "sourcesAttribution": [
+        { "type": "scientific", "contributor": "Ethnobotany & Ethnomycology Archives", "notes": "Classic survival & indigenous medicine polypore." },
+        { "type": "traditional", "contributor": "Indigenous Boreal Knowledge", "notes": "Used as natural tinder, band-aid strip, and parasite cleanser." }
+      ],
+      "media": [
+        { "url": "/materials/mycology/birch_polypore.jpg", "caption": "Birch Polypore bracket on birch trunk", "angle": "top", "quality": "good", "verified": true }
+      ],
+      "references": [
+        { "title": "Ötzi the Iceman Mycological Analysis", "url": "" }
+      ],
+      "relationships": [],
+      "traits": {
+        "hymenophore": [{ "name": "pores", "label": "Tiny White Pores" }],
+        "cap_color": [{ "name": "brown", "label": "Greyish Tan to Brown" }],
+        "stem": [{ "name": "stemless", "label": "Direct Bracket Attachment" }],
+        "spore_print": [{ "name": "white", "label": "White" }],
+        "flesh": [{ "name": "corky", "label": "Tough White Corky Flesh" }],
+        "habitat": [{ "name": "birch", "label": "Birch Trees Exclusively" }],
+        "season": [{ "name": "year_round", "label": "Year-Round Persistent" }],
+        "edibility": [{ "name": "inedible", "label": "Inedible / Medicinal Use Only" }]
+      }
+    }
+  ],
+  "identificationKeys": [
+    {
+      "id": "na_basic_key_v1",
+      "module": "mycology",
+      "region": "north_america",
+      "title": "North American Field Diagnostic Key",
+      "description": "Step-by-step diagnostic decision tree for wild mushrooms.",
+      "keyTree": {
+        "root": "hymenophore_type",
+        "nodes": {
+          "hymenophore_type": {
+            "question": "What structure is located underneath the mushroom cap?",
+            "traitCategory": "hymenophore",
+            "options": [
+              { "label": "Gills (blade-like ridges)", "value": "gills", "next": "cap_color_gilled" },
+              { "label": "Pores (sponge-like tiny holes)", "value": "pores", "next": "host_tree_poroid" },
+              { "label": "Teeth / Spines (icicle-like hangings)", "value": "teeth", "targetSpecies": "hericium_erinaceus" },
+              { "label": "Blunt Folds / Wrinkles", "value": "folds", "targetSpecies": "cantharellus_cibarius" },
+              { "label": "Honeycomb Pits (cap is pitted)", "value": "pits", "targetSpecies": "morchella_angusticeps" }
+            ]
+          },
+          "cap_color_gilled": {
+            "question": "What color is the cap surface?",
+            "traitCategory": "cap_color",
+            "options": [
+              { "label": "Olive Green or Yellowish Green", "value": "green", "targetSpecies": "amanita_phalloides" }
+            ]
+          },
+          "host_tree_poroid": {
+            "question": "Where is the porous fungus growing?",
+            "traitCategory": "habitat",
+            "options": [
+              { "label": "Exclusively on Birch trees (Betula)", "value": "birch", "targetSpecies": "fomitopsis_betulina" },
+              { "label": "Oak or Hardwood stumps as bright orange shelves", "value": "hardwood", "targetSpecies": "laetiporus_sulphureus" }
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

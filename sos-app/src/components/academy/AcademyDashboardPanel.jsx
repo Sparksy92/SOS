@@ -5,11 +5,13 @@ import {
   Feather, Zap, Compass, Shield,
   Edit3, BookOpenCheck, Loader2,
   FileSpreadsheet, ClipboardList,
-  Sparkles, FileText, CheckCircle, RefreshCw
+  Sparkles, FileText, CheckCircle, RefreshCw, UserCheck, Flag
 } from 'lucide-react';
 import QuizEngine from './QuizEngine.jsx';
 import FlashcardEngine from './FlashcardEngine.jsx';
 import Scratchpad from './Scratchpad.jsx';
+import StandardsBadge from './StandardsBadge.jsx';
+import ReportCardModal from './ReportCardModal.jsx';
 import { API_BASE } from '../../config.js';
 
 const AGE_BRACKETS = [
@@ -36,9 +38,9 @@ const AcademyDashboardPanel = () => {
   const [showScratchpad, setShowScratchpad] = useState(false);
   const [currentTab, setCurrentTab] = useState('courses'); // 'courses' or 'report-card' or 'ai-generator'
   const [reportRecords, setReportRecords] = useState([]);
-  
-  // Quiz Generator States
-  const [selectedFileForQuiz, setSelectedFileForQuiz] = useState('');
+  const [showReportCardModal, setShowReportCardModal] = useState(false);
+  const [studentName, setStudentName] = useState(() => localStorage.getItem('sos_academy_student_name') || 'Homestead Learner');
+  const [selectedStandardFilter, setSelectedStandardFilter] = useState('ALL');
 
   // Fetch courses and library materials
   useEffect(() => {
@@ -410,9 +412,8 @@ const AcademyDashboardPanel = () => {
                       </p>
 
                       {course.standards && course.standards.length > 0 && (
-                        <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', borderTop: '1px dashed rgba(255,255,255,0.08)', paddingTop: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <BookOpenCheck size={12} />
-                          Standards: {course.standards.join(', ')}
+                        <div style={{ borderTop: '1px dashed rgba(255,255,255,0.08)', paddingTop: '8px' }}>
+                          <StandardsBadge standards={course.standards} />
                         </div>
                       )}
 
@@ -603,13 +604,68 @@ const AcademyDashboardPanel = () => {
   // 3. Render Main Academy Hub
   return (
     <div style={{ padding: '24px', height: '100%', overflowY: 'auto' }}>
-      <div style={{ textAlign: 'center', marginBottom: '40px', marginTop: '20px' }}>
-        <h1 style={{ fontSize: '2.5rem', margin: '0 0 16px 0', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '16px' }}>
+      {/* Top Banner with Student Profile & Accreditation Status */}
+      <div style={{
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px',
+        backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(74, 107, 75, 0.4)',
+        padding: '12px 24px', borderRadius: '12px', marginBottom: '24px'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <UserCheck size={20} color="#10B981" />
+          <span style={{ fontSize: '0.85rem', color: '#94A3B8' }}>ACTIVE STUDENT:</span>
+          <input 
+            type="text"
+            value={studentName}
+            onChange={(e) => {
+              setStudentName(e.target.value);
+              localStorage.setItem('sos_academy_student_name', e.target.value);
+            }}
+            placeholder="Enter Student Name"
+            style={{
+              background: '#0F172A', color: '#F8FAFC', border: '1px solid #334155',
+              padding: '6px 12px', borderRadius: '6px', fontSize: '0.9rem', fontWeight: 'bold'
+            }}
+          />
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ display: 'flex', gap: '6px' }}>
+            <span style={{ fontSize: '0.72rem', background: 'rgba(59, 130, 246, 0.2)', border: '1px solid #3B82F6', color: '#60A5FA', padding: '3px 8px', borderRadius: '4px', fontWeight: 600 }}>
+              🇺🇸 US Standards (NGSS / CCSS / CTE)
+            </span>
+            <span style={{ fontSize: '0.72rem', background: 'rgba(239, 68, 68, 0.2)', border: '1px solid #EF4444', color: '#F87171', padding: '3px 8px', borderRadius: '4px', fontWeight: 600 }}>
+              🇨🇦 Canadian Standards (Ontario / BC / AB)
+            </span>
+          </div>
+
+          <button
+            onClick={() => setShowReportCardModal(true)}
+            style={{
+              background: '#10B981', color: '#0F172A', border: 'none',
+              padding: '8px 16px', borderRadius: '6px', fontWeight: 'bold',
+              cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.88rem'
+            }}
+          >
+            <Award size={16} /> Official Report Card & Transcript
+          </button>
+        </div>
+      </div>
+
+      {showReportCardModal && (
+        <ReportCardModal 
+          studentName={studentName}
+          records={reportRecords}
+          onClose={() => setShowReportCardModal(false)}
+        />
+      )}
+
+      <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+        <h1 style={{ fontSize: '2.5rem', margin: '0 0 12px 0', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '16px' }}>
           <Award size={48} color="var(--brand-accent)" />
           Survival Academy
         </h1>
-        <p style={{ fontSize: '1.1rem', color: 'rgba(255,255,255,0.7)', maxWidth: '600px', margin: '0 auto', lineHeight: '1.6' }}>
-          Welcome to the interactive off-grid school. Select your age bracket to access curated math, science, literacy, and tactical training modules.
+        <p style={{ fontSize: '1.05rem', color: 'rgba(255,255,255,0.7)', maxWidth: '650px', margin: '0 auto', lineHeight: '1.6' }}>
+          Turnkey off-grid school aligned with US and Canadian standards. Select an age bracket to begin interactive STEM, foraging, medicine, and engineering tracks.
         </p>
       </div>
 

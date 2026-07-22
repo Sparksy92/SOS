@@ -195,6 +195,95 @@ function getDb() {
         );
       `);
 
+      // SOS Knowledge Engine Schema (Normalized Master Tables)
+      currentDb.exec(`
+        CREATE TABLE IF NOT EXISTS knowledge_entries (
+          id TEXT PRIMARY KEY,
+          type TEXT NOT NULL DEFAULT 'mycology',
+          title TEXT NOT NULL,
+          scientific_name TEXT,
+          authority TEXT,
+          taxonomy_json TEXT,
+          content_json TEXT,
+          safety_rating_json TEXT,
+          sources_attribution_json TEXT,
+          media_json TEXT,
+          references_json TEXT,
+          relationships_json TEXT,
+          pack_id TEXT,
+          version TEXT DEFAULT '1.0.0',
+          created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+          updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+        );
+      `);
+
+      currentDb.exec(`
+        CREATE TABLE IF NOT EXISTS traits (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          category TEXT NOT NULL,
+          name TEXT NOT NULL,
+          label TEXT NOT NULL,
+          UNIQUE(category, name)
+        );
+      `);
+
+      currentDb.exec(`
+        CREATE TABLE IF NOT EXISTS entry_traits (
+          entry_id TEXT NOT NULL,
+          trait_id INTEGER NOT NULL,
+          PRIMARY KEY (entry_id, trait_id),
+          FOREIGN KEY (entry_id) REFERENCES knowledge_entries(id) ON DELETE CASCADE,
+          FOREIGN KEY (trait_id) REFERENCES traits(id) ON DELETE CASCADE
+        );
+      `);
+
+      currentDb.exec(`
+        CREATE TABLE IF NOT EXISTS identification_keys (
+          id TEXT PRIMARY KEY,
+          module TEXT NOT NULL DEFAULT 'mycology',
+          region TEXT NOT NULL,
+          title TEXT NOT NULL,
+          description TEXT,
+          key_tree_json TEXT NOT NULL,
+          version TEXT DEFAULT '1.0.0',
+          created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        );
+      `);
+
+      currentDb.exec(`
+        CREATE TABLE IF NOT EXISTS mycology_observations (
+          id TEXT PRIMARY KEY,
+          user_id TEXT DEFAULT 'local_ranger',
+          date TEXT DEFAULT CURRENT_TIMESTAMP,
+          latitude REAL,
+          longitude REAL,
+          location_name TEXT,
+          photos_json TEXT,
+          entry_id TEXT,
+          confidence TEXT CHECK(confidence IN ('confirmed', 'probable', 'possible', 'unidentified')),
+          notes TEXT,
+          weather TEXT,
+          habitat TEXT,
+          trees_nearby TEXT,
+          is_private INTEGER DEFAULT 1,
+          created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (entry_id) REFERENCES knowledge_entries(id) ON DELETE SET NULL
+        );
+      `);
+
+      currentDb.exec(`
+        CREATE TABLE IF NOT EXISTS knowledge_packs (
+          id TEXT PRIMARY KEY,
+          module TEXT NOT NULL,
+          title TEXT NOT NULL,
+          version TEXT NOT NULL,
+          source TEXT,
+          license TEXT,
+          entry_count INTEGER DEFAULT 0,
+          installed_at TEXT DEFAULT CURRENT_TIMESTAMP
+        );
+      `);
+
       // Migration Check: If document_chunks exists but lacks is_ocr column, drop it so it gets recreated.
       let hasIsOcr = false;
       try {

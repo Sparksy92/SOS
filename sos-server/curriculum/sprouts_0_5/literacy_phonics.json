@@ -1,0 +1,52 @@
+{
+  "id": "sprouts_literacy_phonics",
+  "title": "Alphabet, Phonics & Early Reading",
+  "subject": "English Language Arts & Literacy",
+  "gradeLevel": "Pre-K to Kindergarten (Ages 0-5)",
+  "category": "Reading & Writing",
+  "standards": [
+    "US.CCSS.ELA-LITERACY.RF.K.1",
+    "US.CCSS.ELA-LITERACY.RF.K.2",
+    "CA.ON.ENG.K.LITERACY",
+    "CA.BC.ENG.K.READING"
+  ],
+  "description": "Learn letter sounds, A-Z phonics, sight words, and early reading through fun stories and rhymes.",
+  "learningObjectives": [
+    "Recognize uppercase and lowercase letters from A to Z.",
+    "Identify letter-sound associations (phonics).",
+    "Read simple 3-letter CVC words (cat, dog, sun, log)."
+  ],
+  "lessons": [
+    {
+      "id": "lesson_1",
+      "title": "Letter Sounds & Phonics",
+      "content": "Letter 'A' says /a/ as in Apple! Letter 'B' says /b/ as in Bear! Letter 'C' says /k/ as in Cat! Practice saying letter sounds aloud every day."
+    },
+    {
+      "id": "lesson_2",
+      "title": "Blending 3-Letter Words",
+      "content": "Put sounds together! /c/ + /a/ + /t/ = CAT! /d/ + /o/ + /g/ = DOG! /s/ + /u/ + /n/ = SUN! When you blend sounds together, you are reading!"
+    }
+  ],
+  "flashcards": [
+    { "term": "Phonics", "definition": "Learning the sounds that letters make." },
+    { "term": "Alphabet", "definition": "The set of 26 letters used to write words." },
+    { "term": "Blend", "definition": "Combining individual letter sounds to read a whole word." }
+  ],
+  "questions": [
+    {
+      "question": "Which letter sound does the word 'SUN' start with?",
+      "options": ["Letter S (/s/)", "Letter B (/b/)", "Letter M (/m/)", "Letter T (/t/)"],
+      "correctIndex": 0
+    },
+    {
+      "question": "If you blend the sounds /d/ + /o/ + /g/, what word do you get?",
+      "options": ["CAT", "DOG", "PIG", "LOG"],
+      "correctIndex": 1
+    }
+  ],
+  "practicalChallenge": {
+    "title": "A-Z Letter Sound Scavenger Hunt",
+    "instruction": "Find 3 objects around your home: something starting with 'A' (Apple), something starting with 'B' (Book), and something starting with 'C' (Cup)!"
+  }
+}

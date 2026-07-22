@@ -1,0 +1,53 @@
+{
+  "id": "explorers_elementary_math",
+  "title": "Mathematics: Arithmetic, Fractions & Geometry",
+  "subject": "Mathematics",
+  "gradeLevel": "Elementary / Middle (Grades 1-6 / Ages 6-12)",
+  "category": "Mathematics",
+  "standards": [
+    "US.CCSS.MATH.4.OA.A.3",
+    "US.CCSS.MATH.4.NF.A.1",
+    "US.CCSS.MATH.5.G.B.3",
+    "CA.ON.MATH.G5.NUMBERS",
+    "CA.BC.MATH.G6.GEOMETRY"
+  ],
+  "description": "Master multiplication tables, long division, fraction operations, perimeter, area, and volume calculations.",
+  "learningObjectives": [
+    "Solve multi-digit multiplication and division problems.",
+    "Add, subtract, and simplify fractions with common denominators.",
+    "Calculate Perimeter (P = 2L + 2W) and Area (A = L * W) of rectangular spaces."
+  ],
+  "lessons": [
+    {
+      "id": "lesson_1",
+      "title": "Fractions & Equivalent Quantities",
+      "content": "A fraction represents a part of a whole. The top number is the NUMERATOR (parts we have), and the bottom is the DENOMINATOR (total equal parts). 2/4 is equivalent to 1/2."
+    },
+    {
+      "id": "lesson_2",
+      "title": "Calculating Perimeter and Area",
+      "content": "Perimeter is the total distance around the outside of a shape (add all sides). Area is the total surface space inside (Length multiplied by Width). A garden 10 meters long and 5 meters wide has an area of 10 x 5 = 50 square meters."
+    }
+  ],
+  "flashcards": [
+    { "term": "Numerator", "definition": "The top number in a fraction showing how many parts are taken." },
+    { "term": "Denominator", "definition": "The bottom number in a fraction showing total equal parts in the whole." },
+    { "term": "Area", "definition": "The measurement of surface space inside a shape, measured in square units (L x W)." }
+  ],
+  "questions": [
+    {
+      "question": "What is the Area of a rectangular greenhouse that measures 8 feet wide by 12 feet long?",
+      "options": ["40 sq ft", "96 sq ft", "20 sq ft", "100 sq ft"],
+      "correctIndex": 1
+    },
+    {
+      "question": "Simplify the fraction 4/8 to its lowest terms:",
+      "options": ["1/4", "1/2", "3/4", "2/3"],
+      "correctIndex": 1
+    }
+  ],
+  "practicalChallenge": {
+    "title": "Homestead Garden Plot Geometry",
+    "instruction": "Measure the floor or table in your room (Length x Width). Calculate both the total Perimeter and total Area in feet or meters!"
+  }
+}

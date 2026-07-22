@@ -1,0 +1,52 @@
+{
+  "id": "operators_tactical_medicine",
+  "title": "Wilderness Emergency Medicine & TCCC Protocols",
+  "subject": "Trauma Medicine & Field First Aid",
+  "gradeLevel": "Adult Mastery (Ages 18+)",
+  "category": "Emergency Medicine",
+  "standards": [
+    "US.CTE.HEALTH.EMERGENCY",
+    "US.TCCC.PROTOCOLS",
+    "CA.ON.HEALTH.FIRSTAID",
+    "CA.BC.HEALTH.PARAMEDIC"
+  ],
+  "description": "Master MARCH PAWS trauma protocols, arterial tourniquet application, chest seals for tension pneumothorax, and wound packing.",
+  "learningObjectives": [
+    "Apply MARCH PAWS protocol (Massive Bleeding, Airway, Respiration, Circulation, Hypothermia).",
+    "Apply high and tight CAT tourniquet for arterial extremity hemorrhage.",
+    "Pack junctional wounds using hemostatic gauze."
+  ],
+  "lessons": [
+    {
+      "id": "lesson_1",
+      "title": "The MARCH PAWS Algorithm",
+      "content": "In severe trauma, hemorrhage is the #1 preventable cause of death. MARCH stands for: M = Massive Bleeding (Tourniquets/Hemostatic Gauze), A = Airway (Recovery position / NPA), R = Respiration (Vented chest seals), C = Circulation (Pelvic binder / IV-IO), H = Hypothermia Prevention (Warm blankets)."
+    },
+    {
+      "id": "lesson_2",
+      "title": "Tourniquet Placement & Application",
+      "content": "Place windlass tourniquets 2-3 inches above the wound (or high and tight over clothing during active danger). Tighten windlass until arterial bleeding stops completely and distal pulse is absent. Record application time on the TQ strap!"
+    }
+  ],
+  "flashcards": [
+    { "term": "MARCH Protocol", "definition": "Tactical combat casualty care assessment priority: Massive Bleeding, Airway, Respiration, Circulation, Hypothermia." },
+    { "term": "Tension Pneumothorax", "definition": "Trapped air in the pleural cavity compressing the lung and heart, treated with vented chest seals or needle decompression." },
+    { "term": "Hemostatic Gauze", "definition": "Gauze impregnated with kaolin or chitosan that rapidly accelerates blood clotting." }
+  ],
+  "questions": [
+    {
+      "question": "What is the absolute first priority in the MARCH trauma protocol?",
+      "options": ["A - Airway", "M - Massive Bleeding control", "H - Hypothermia", "R - Respiration"],
+      "correctIndex": 1
+    },
+    {
+      "question": "Where should a tourniquet be placed relative to an arterial extremity bleed?",
+      "options": ["Directly over the joint", "2-3 inches above the wound (high and tight)", "Below the wound", "On the neck"],
+      "correctIndex": 1
+    }
+  ],
+  "practicalChallenge": {
+    "title": "Self-Application Tourniquet Drill",
+    "instruction": "Practice applying a CAT or SOFTT tourniquet to your non-dominant arm using one hand. Target completion time: under 30 seconds!"
+  }
+}

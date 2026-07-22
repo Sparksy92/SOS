@@ -1,0 +1,52 @@
+{
+  "id": "explorers_history_social_studies",
+  "title": "History, Geography & World Civilizations",
+  "subject": "History & Social Studies",
+  "gradeLevel": "Elementary / Middle (Grades 1-6 / Ages 6-12)",
+  "category": "History & Social Studies",
+  "standards": [
+    "US.C3.FRAMEWORK.D2.HIS",
+    "US.C3.FRAMEWORK.D2.GEO",
+    "CA.ON.SOC.G5.HERITAGE",
+    "CA.BC.SOC.G6.GLOBAL"
+  ],
+  "description": "Explore ancient civilizations, North American settlement history, trade routes, cartography, and world geography.",
+  "learningObjectives": [
+    "Understand major milestones in North American history and Indigenous heritage.",
+    "Read world maps, cardinal directions, latitude, and longitude.",
+    "Trace how historical trade routes shaped modern society."
+  ],
+  "lessons": [
+    {
+      "id": "lesson_1",
+      "title": "Latitude, Longitude & Maps",
+      "content": "Latitude lines run horizontally parallel to the Equator (measuring North and South). Longitude lines run vertically from Pole to Pole (measuring East and West). Together, they form a coordinate grid that pinpoints any location on Earth!"
+    },
+    {
+      "id": "lesson_2",
+      "title": "Early Trade Routes & Homestead Pioneers",
+      "content": "Pioneers and early settlers relied on rivers, natural mountain passes, and trade trails to travel west. Understanding history helps us learn how earlier generations survived and built resilient communities."
+    }
+  ],
+  "flashcards": [
+    { "term": "Latitude", "definition": "Imaginary horizontal lines measuring distance North or South of the Equator." },
+    { "term": "Longitude", "definition": "Imaginary vertical lines measuring distance East or West of the Prime Meridian." },
+    { "term": "Equator", "definition": "The imaginary circle around the middle of the Earth at 0 degrees latitude." }
+  ],
+  "questions": [
+    {
+      "question": "Which imaginary line sits at 0 degrees latitude and divides the Earth into Northern and Southern Hemispheres?",
+      "options": ["Equator", "Prime Meridian", "Tropic of Capricorn", "Arctic Circle"],
+      "correctIndex": 0
+    },
+    {
+      "question": "What coordinate grid system is formed by combining lines of latitude and longitude on a globe?",
+      "options": ["Geographic Grid", "Pie Chart", "Time Zone Bar", "Compass Rose"],
+      "correctIndex": 0
+    }
+  ],
+  "practicalChallenge": {
+    "title": "Map Maker & Latitude Expedition",
+    "instruction": "Draw a map of your neighborhood or property. Include a Compass Rose (N, S, E, W) and a map key legend!"
+  }
+}

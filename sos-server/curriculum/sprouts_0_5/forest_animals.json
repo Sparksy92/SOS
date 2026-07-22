@@ -1,0 +1,52 @@
+{
+  "id": "sprouts_forest_animals",
+  "title": "Wildlife & Animal Tracks",
+  "subject": "Early Life Science & Biology",
+  "gradeLevel": "Pre-K to Kindergarten (Ages 0-5)",
+  "category": "Life Science",
+  "standards": [
+    "US.NGSS.K-LS1-1",
+    "US.NGSS.K-ESS3-1",
+    "CA.ON.SCI.K.NE",
+    "CA.BC.SCIENCE.K.LIVING"
+  ],
+  "description": "Discover woodland animals, what they eat, and how to spot their footprints in mud and snow.",
+  "learningObjectives": [
+    "Identify common wild animals (rabbits, deer, squirrels, birds).",
+    "Recognize basic animal footprints in dirt and snow.",
+    "Understand how animals find shelter in winter."
+  ],
+  "lessons": [
+    {
+      "id": "lesson_1",
+      "title": "Who Lives in the Forest?",
+      "content": "Squirrels build nests of leaves high up in oak trees. Rabbits dig burrows underground. Birds weave nests out of twigs and feathers. Every creature has a home!"
+    },
+    {
+      "id": "lesson_2",
+      "title": "Detecting Footprints",
+      "content": "When soil is wet or snow is fresh, animal feet leave impressions! Deer leave split heart-shaped hoof prints. Birds leave small three-toed fork shapes."
+    }
+  ],
+  "flashcards": [
+    { "term": "Burrow", "definition": "A hole or tunnel dug by a small animal as a home." },
+    { "term": "Tracks", "definition": "Footprints left behind in mud, sand, or snow." },
+    { "term": "Herbivore", "definition": "An animal that eats plants, leaves, and berries." }
+  ],
+  "questions": [
+    {
+      "question": "Which animal leaves a split heart-shaped hoof print in the mud?",
+      "options": ["Rabbit", "Deer", "Eagle", "Fish"],
+      "correctIndex": 1
+    },
+    {
+      "question": "Where do squirrels build their leafy nests?",
+      "options": ["Underwater", "High up in tree branches", "Inside deep caves", "Under highway pavement"],
+      "correctIndex": 1
+    }
+  ],
+  "practicalChallenge": {
+    "title": "Mud & Snow Track Hunter",
+    "instruction": "Walk near a garden or damp path. Find at least 1 footprint left by an animal or bird. Draw it on paper!"
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "id": "cadets_algebra_geometry",
+  "title": "Algebra, Geometry & Applied Trigonometry",
+  "subject": "Mathematics",
+  "gradeLevel": "High School (Grades 7-12 / Ages 13-17)",
+  "category": "Mathematics",
+  "standards": [
+    "US.CCSS.MATH.HSA.REI.B.3",
+    "US.CCSS.MATH.HSG.SRT.C.8",
+    "CA.ON.MATH.G10.ALGEBRA",
+    "CA.BC.MATH.G11.PRECALC"
+  ],
+  "description": "Solve linear equations, quadratic formulas, Pythagorean theorem, right-triangle trigonometry, and slope-intercept graphing.",
+  "learningObjectives": [
+    "Solve single-variable linear equations (ax + b = c) and systems of equations.",
+    "Apply Pythagorean Theorem (a^2 + b^2 = c^2) to find unknown distances.",
+    "Calculate trigonometric ratios (Sine, Cosine, Tangent) in practical applications."
+  ],
+  "lessons": [
+    {
+      "id": "lesson_1",
+      "title": "Pythagorean Theorem & Structural Layouts",
+      "content": "In any right-angled triangle, the square of the hypotenuse equals the sum of squares of the other two sides: a^2 + b^2 = c^2. Builders use the 3-4-5 rule to ensure corners are perfectly square (3^2 + 4^2 = 9 + 16 = 25 = 5^2)."
+    },
+    {
+      "id": "lesson_2",
+      "title": "Linear Equations & Slope-Intercept Form",
+      "content": "The slope-intercept equation is y = mx + b, where m is the slope (rise over run) and b is the y-intercept. Linear equations model constant rates of change, such as battery discharge rates over time."
+    }
+  ],
+  "flashcards": [
+    { "term": "Pythagorean Theorem", "definition": "Formula for right triangles: a^2 + b^2 = c^2." },
+    { "term": "Hypotenuse", "definition": "The longest side of a right-angled triangle, opposite the right angle." },
+    { "term": "Slope (m)", "definition": "The steepness of a line calculated as Rise divided by Run (delta y / delta x)." }
+  ],
+  "questions": [
+    {
+      "question": "If a right triangle has legs of length a = 6 meters and b = 8 meters, what is the length of the hypotenuse c?",
+      "options": ["10 meters", "14 meters", "12 meters", "16 meters"],
+      "correctIndex": 0
+    },
+    {
+      "question": "In the linear equation y = 3x + 5, what is the slope (m) of the line?",
+      "options": ["5", "3", "8", "15"],
+      "correctIndex": 1
+    }
+  ],
+  "practicalChallenge": {
+    "title": "The 3-4-5 Square Corner Builder Test",
+    "instruction": "Using a measuring tape and string, lay out a 3-foot by 4-foot right triangle on the floor. Verify that the diagonal distance equals exactly 5 feet!"
+  }
+}

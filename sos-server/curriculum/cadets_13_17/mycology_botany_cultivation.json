@@ -1,0 +1,52 @@
+{
+  "id": "cadets_mycology_botany",
+  "title": "Applied Mycology & Agricultural Botany",
+  "subject": "Bio-Sciences & Mycology",
+  "gradeLevel": "High School (Grades 7-12 / Ages 13-17)",
+  "category": "Life Science & Agriculture",
+  "standards": [
+    "US.NGSS.HS-LS2-3",
+    "US.CTE.AGRI.BOTANY",
+    "CA.ON.SCI.G11.BIOLOGY",
+    "CA.BC.SCIENCE.G11.LIFE"
+  ],
+  "description": "Study fungal life cycles, sterile liquid culture inoculation, substrate pasteurization, and greenhouse climate controls.",
+  "learningObjectives": [
+    "Trace the fungal life cycle from spore germination to hyphae, mycelium, and fruiting body.",
+    "Perform sterile grain inoculations using still air boxes (SAB) or HEPA laminar flow hoods.",
+    "Formulate woodchip and grain substrates for Lion's Mane, Shiitake, and Oyster mushrooms."
+  ],
+  "lessons": [
+    {
+      "id": "lesson_1",
+      "title": "The Fungal Kingdom & Decomposition Physics",
+      "content": "Unlike plants, fungi do not synthesize energy via photosynthesis. They are saprophytes, secreting extracellular enzymes (ligninases and cellulases) to break down complex organic polymers into bio-available carbohydrates."
+    },
+    {
+      "id": "lesson_2",
+      "title": "Greenhouse Climate Parameters",
+      "content": "Fruiting requires precise environmental triggers: Relative Humidity (85-95%), Fresh Air Exchange (CO2 < 800 ppm), and ambient temperature (18-24°C / 65-75°F)."
+    }
+  ],
+  "flashcards": [
+    { "term": "Mycelium", "definition": "The vegetative network of fungal threads (hyphae) living within substrate." },
+    { "term": "Pasteurization", "definition": "Heating substrate to 65-80°C for 1-2 hours to kill competing organisms while retaining beneficial microflora." },
+    { "term": "Saprophyte", "definition": "An organism that feeds on decaying organic matter." }
+  ],
+  "questions": [
+    {
+      "question": "What extracellular enzymes do wood-decay fungi secrete to break down dense wood logs?",
+      "options": ["Amylase & Pepsin", "Ligninase & Cellulase", "Insulin & Lactase", "Lipase & Hemoglobin"],
+      "correctIndex": 1
+    },
+    {
+      "question": "Why is Fresh Air Exchange (FAE) critical during the mushroom fruiting phase?",
+      "options": ["To raise CO2 levels to 5000 ppm", "To lower CO2 concentrations so stems do not stretch long and thin", "To freeze the caps", "To dry out the substrate completely"],
+      "correctIndex": 1
+    }
+  ],
+  "practicalChallenge": {
+    "title": "Substrate Hydration & Field Capacity Test",
+    "instruction": "Hydrate hardwood sawdust or straw. Squeeze a handful: exactly a few drops of water should squeeze through your knuckles (field capacity!)."
+  }
+}

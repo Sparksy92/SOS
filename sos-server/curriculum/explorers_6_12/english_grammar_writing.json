@@ -1,0 +1,53 @@
+{
+  "id": "explorers_english_writing",
+  "title": "English Grammar, Reading & Story Composition",
+  "subject": "English Language Arts & Reading",
+  "gradeLevel": "Elementary / Middle (Grades 1-6 / Ages 6-12)",
+  "category": "Reading & Writing",
+  "standards": [
+    "US.CCSS.ELA-LITERACY.L.4.1",
+    "US.CCSS.ELA-LITERACY.W.4.3",
+    "CA.ON.ENG.G4.WRITING",
+    "CA.BC.ENG.G5.COMPOSITION"
+  ],
+  "description": "Master parts of speech (nouns, verbs, adjectives), punctuation, paragraph structure, and creative story writing.",
+  "learningObjectives": [
+    "Identify Nouns, Verbs, Adjectives, and Adverbs in sentences.",
+    "Apply proper capitalization and punctuation (periods, commas, quotation marks).",
+    "Compose a narrative paragraph with a topic sentence, supporting details, and a conclusion."
+  ],
+  "lessons": [
+    {
+      "id": "lesson_1",
+      "title": "Parts of Speech: Nouns, Verbs & Adjectives",
+      "content": "A NOUN names a person, place, or thing (e.g., 'forest', 'ranger'). A VERB expresses action (e.g., 'runs', 'searches'). An ADJECTIVE describes a noun (e.g., 'vibrant', 'thick')."
+    },
+    {
+      "id": "lesson_2",
+      "title": "Structuring a Great Paragraph",
+      "content": "Every paragraph needs 3 key parts: 1) A Topic Sentence (introduces main idea), 2) Supporting Sentences (provides evidence and detail), and 3) A Concluding Sentence (wraps up the thought)."
+    }
+  ],
+  "flashcards": [
+    { "term": "Noun", "definition": "A word that names a person, place, thing, or idea." },
+    { "term": "Verb", "definition": "An action word that tells what a subject is doing." },
+    { "term": "Adjective", "definition": "A word that describes or modifies a noun." },
+    { "term": "Topic Sentence", "definition": "The sentence that summarizes the main point of a paragraph." }
+  ],
+  "questions": [
+    {
+      "question": "In the sentence 'The brave ranger explored the dark cave,' which word is the ADJECTIVE describing the ranger?",
+      "options": ["Brave", "Ranger", "Explored", "Cave"],
+      "correctIndex": 0
+    },
+    {
+      "question": "What is the primary role of a topic sentence in paragraph writing?",
+      "options": ["To end the story", "To state the main idea of the paragraph", "To list vocabulary words", "To ask a question"],
+      "correctIndex": 1
+    }
+  ],
+  "practicalChallenge": {
+    "title": "Field Journal Story Writer",
+    "instruction": "Write a 5-sentence paragraph describing an outdoor adventure. Underline all Nouns in blue and circle all Verbs in green!"
+  }
+}

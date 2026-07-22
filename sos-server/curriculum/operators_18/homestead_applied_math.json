@@ -1,0 +1,40 @@
+{
+  "id": "operators_applied_math",
+  "title": "Homestead Applied Mathematics & Accounting",
+  "subject": "Mathematics",
+  "gradeLevel": "Adult Mastery (Ages 18+)",
+  "category": "Mathematics",
+  "standards": [
+    "US.CTE.FINANCE.ACCOUNTING",
+    "US.CTE.CONSTRUCTION.MATH",
+    "CA.BC.TRADES.MATH"
+  ],
+  "description": "Master financial cash flow accounting, ROI calculation, concrete volume formulas, roof pitch slope, and structural load math.",
+  "learningObjectives": [
+    "Calculate Return on Investment (ROI) and payback periods for solar and water projects.",
+    "Calculate concrete pad cubic yardage formulas: (Length x Width x Thickness) / 27.",
+    "Determine roof pitch ratios and rafter lengths."
+  ],
+  "lessons": [
+    {
+      "id": "lesson_1",
+      "title": "Concrete Volume Formulas",
+      "content": "Concrete is ordered in Cubic Yards. Formula: Multiply Length (ft) x Width (ft) x Thickness (ft), then divide by 27. Example: A 12 ft x 24 ft x 0.5 ft (6-inch thick) slab requires (12 x 24 x 0.5) / 27 = 144 / 27 = 5.33 cubic yards."
+    }
+  ],
+  "flashcards": [
+    { "term": "Cubic Yard", "definition": "A unit of volume equal to 27 cubic feet (3 ft x 3 ft x 3 ft)." },
+    { "term": "Payback Period", "definition": "The length of time required for an investment to generate enough savings to recover its initial cost." }
+  ],
+  "questions": [
+    {
+      "question": "How many cubic feet are in 1 Cubic Yard of concrete?",
+      "options": ["9 cu ft", "27 cu ft", "36 cu ft", "100 cu ft"],
+      "correctIndex": 1
+    }
+  ],
+  "practicalChallenge": {
+    "title": "Slab & Material Cost Estimate",
+    "instruction": "Calculate the cubic yards of concrete needed for a 20 ft x 20 ft x 4-inch (0.33 ft) thick workshop pad!"
+  }
+}

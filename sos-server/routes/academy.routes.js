@@ -38,7 +38,7 @@ const scanCurriculumDir = () => {
           const content = fs.readFileSync(filePath, 'utf8');
           const parsed = JSON.parse(content);
 
-          if (parsed.id && parsed.title && parsed.type) {
+          if (parsed.id && parsed.title) {
             data[bracket.key].push(parsed);
           } else {
             console.warn(`[ACADEMY] Invalid schema in file: ${file}`);
@@ -90,7 +90,21 @@ router.get('/courses', (req, res) => {
   }
 });
 
-// Route: Dynamic AI Quiz Generator from Library Document
+// Route: Get Educational Standards Framework Taxonomy
+router.get('/standards', (req, res) => {
+  res.json({
+    frameworks: [
+      { id: 'US.NGSS', name: 'US Next Generation Science Standards (NGSS)', region: 'United States' },
+      { id: 'US.CCSS', name: 'US Common Core State Standards (CCSS Math & ELA)', region: 'United States' },
+      { id: 'US.CTE', name: 'US Career & Technical Education (Trades & Tech)', region: 'United States' },
+      { id: 'CA.ON', name: 'Ontario Provincial Curriculum', region: 'Canada' },
+      { id: 'CA.BC', name: 'British Columbia ADST & Science Framework', region: 'Canada' },
+      { id: 'CA.AB', name: 'Alberta Education Outcomes', region: 'Canada' }
+    ]
+  });
+});
+
+// Route: Dynamic AI Quiz / Course Generator from Library Document
 router.post('/generate-quiz', async (req, res) => {
   const { filePath } = req.body;
   if (!filePath) {
@@ -118,9 +132,9 @@ You MUST respond with a valid JSON object ONLY. Do not write markdown blocks or 
 {
   "id": "generated_${path.basename(filePath, path.extname(filePath)).replace(/[^a-zA-Z0-9]/g, '_')}",
   "title": "Quiz: ${path.basename(filePath, path.extname(filePath))}",
-  "subject": "Survival & Practical Skills",
-  "gradeLevel": "Grade 6-12",
-  "standards": ["Practical Field Competency"],
+  "subject": "Practical STEM & Field Skills",
+  "gradeLevel": "Grades 1-12",
+  "standards": ["US.NGSS.MS-ESS3-3", "CA.ON.SCI.G6"],
   "description": "Interactive homeschool evaluation generated dynamically from library document: ${path.basename(filePath)}",
   "questions": [
     {

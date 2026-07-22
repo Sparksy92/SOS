@@ -1,0 +1,40 @@
+{
+  "id": "sprouts_history_community",
+  "title": "Community, History & World Around Us",
+  "subject": "History & Social Studies",
+  "gradeLevel": "Pre-K to Kindergarten (Ages 0-5)",
+  "category": "History & Social Studies",
+  "standards": [
+    "US.C3.FRAMEWORK.K.CIVICS",
+    "CA.ON.SOC.K.COMMUNITY",
+    "CA.BC.SOC.K.IDENTITY"
+  ],
+  "description": "Learn about family, community helpers, historical traditions, and working together.",
+  "learningObjectives": [
+    "Identify community helpers (firefighters, doctors, farmers, builders).",
+    "Understand family history and traditions.",
+    "Practice sharing, cooperation, and citizenship."
+  ],
+  "lessons": [
+    {
+      "id": "lesson_1",
+      "title": "Helpers in Our Community",
+      "content": "Farmers grow our food! Doctors keep us healthy! Builders construct safe homes! Firefighters keep us safe! Everyone has an important job in a community."
+    }
+  ],
+  "flashcards": [
+    { "term": "Community", "definition": "A group of people who live and work together in the same place." },
+    { "term": "Tradition", "definition": "Special customs passed down from parents to children over time." }
+  ],
+  "questions": [
+    {
+      "question": "Which community helper grows vegetables, grains, and fruit for us to eat?",
+      "options": ["Farmer", "Mechanic", "Pilot", "Painter"],
+      "correctIndex": 0
+    }
+  ],
+  "practicalChallenge": {
+    "title": "Community Helper Thank You Card",
+    "instruction": "Draw a picture of a farmer or doctor helping people and share it with your family!"
+  }
+}

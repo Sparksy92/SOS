@@ -1,0 +1,52 @@
+{
+  "id": "explorers_water_filtration",
+  "title": "Water Filtration & Environmental Hydrology",
+  "subject": "Earth Science & Chemistry",
+  "gradeLevel": "Elementary / Middle (Grades 1-6 / Ages 6-12)",
+  "category": "Homestead Science",
+  "standards": [
+    "US.NGSS.5-ESS2-2",
+    "US.NGSS.MS-ESS3-3",
+    "CA.ON.SCI.G5.WATER",
+    "CA.BC.SCIENCE.G6.EARTH"
+  ],
+  "description": "Understand water purification, particulate filtration, pathogen elimination, and off-grid water safety.",
+  "learningObjectives": [
+    "Differentiate between turbidity filtration (gravel/sand/charcoal) and biological disinfection (boiling/UV/micro-pore).",
+    "Explain the water cycle and runoff contaminants.",
+    "Build a 3-stage bio-sand emergency filter."
+  ],
+  "lessons": [
+    {
+      "id": "lesson_1",
+      "title": "Turbidity vs. Microorganisms",
+      "content": "Clear water is not always safe water! Sand and gravel remove large suspended dirt particles (turbidity). Activated charcoal absorbs chemical odors and heavy metals. However, microscopic bacteria and protozoa (Giardia) require boiling (100°C / 212°F) or sub-micron filtration (0.1 micron) to render safe."
+    },
+    {
+      "id": "lesson_2",
+      "title": "Building a Multi-Tier Filter",
+      "content": "A emergency gravity filter uses coarse gravel at the top to catch debris, fine sand in the middle to trap sediment, and crushed charcoal at the bottom to absorb dissolved compounds."
+    }
+  ],
+  "flashcards": [
+    { "term": "Turbidity", "definition": "The cloudiness or haziness of water caused by individual suspended particles." },
+    { "term": "Activated Charcoal", "definition": "Highly porous carbon that binds chemical impurities through adsorption." },
+    { "term": "Giardia", "definition": "A microscopic parasite that causes severe intestinal illness when ingested from untreated water." }
+  ],
+  "questions": [
+    {
+      "question": "What is the primary function of activated charcoal in a water filter?",
+      "options": ["Filter out pinecones", "Adsorb dissolved chemicals and odors", "Kill viruses with heat", "Change water color to green"],
+      "correctIndex": 1
+    },
+    {
+      "question": "What temperature must water reach to guarantee destruction of biological pathogens?",
+      "options": ["50°C (122°F)", "100°C (212°F / Boiling)", "0°C (32°F / Freezing)", "75°C (167°F)"],
+      "correctIndex": 1
+    }
+  ],
+  "practicalChallenge": {
+    "title": "DIY 3-Layer Bio-Sand Filter",
+    "instruction": "Using a cut plastic bottle, layer cotton, activated charcoal, fine sand, and gravel. Pour muddy water through and record the clarity before and after!"
+  }
+}

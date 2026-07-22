@@ -1,0 +1,53 @@
+{
+  "id": "cadets_english_literature",
+  "title": "English Literature, Essay Composition & Analysis",
+  "subject": "English Language Arts & Literature",
+  "gradeLevel": "High School (Grades 7-12 / Ages 13-17)",
+  "category": "Reading & Writing",
+  "standards": [
+    "US.CCSS.ELA-LITERACY.RL.9-10.1",
+    "US.CCSS.ELA-LITERACY.W.9-10.1",
+    "CA.ON.ENG.G10.LITERATURE",
+    "CA.BC.ENG.G11.COMPOSITION"
+  ],
+  "description": "Master persuasive essay writing, literary thesis development, rhetorical analysis, and technical document drafting.",
+  "learningObjectives": [
+    "Formulate a clear, arguable thesis statement supported by textual evidence.",
+    "Apply rhetorical strategies (Ethos, Pathos, Logos) in persuasive writing.",
+    "Cite sources accurately using standard academic citation styles."
+  ],
+  "lessons": [
+    {
+      "id": "lesson_1",
+      "title": "Formulating a Strong Thesis Statement",
+      "content": "A thesis statement is the central claim of your essay. It must be specific, arguable, and supported by logical evidence throughout your body paragraphs."
+    },
+    {
+      "id": "lesson_2",
+      "title": "Rhetorical Appeals: Ethos, Pathos & Logos",
+      "content": "ETHOS appeals to credibility and character. LOGOS appeals to logic, data, and reason. PATHOS appeals to emotion and human experience. Effective persuasive writing balances all three."
+    }
+  ],
+  "flashcards": [
+    { "term": "Thesis Statement", "definition": "A single sentence that summarizes the main claim or argument of an essay." },
+    { "term": "Ethos", "definition": "An appeal to credibility, ethics, or moral authority." },
+    { "term": "Logos", "definition": "An appeal to logic, evidence, statistics, and rational argument." },
+    { "term": "Pathos", "definition": "An appeal to emotion and empathy." }
+  ],
+  "questions": [
+    {
+      "question": "Which rhetorical appeal relies on logical data, statistics, and verifiable evidence?",
+      "options": ["Pathos", "Logos", "Ethos", "Mythos"],
+      "correctIndex": 1
+    },
+    {
+      "question": "Where is the thesis statement typically placed in a standard 5-paragraph academic essay?",
+      "options": ["At the very end of the introduction paragraph", "In the second page appendix", "Inside the title header", "Randomly in body paragraph 2"],
+      "correctIndex": 0
+    }
+  ],
+  "practicalChallenge": {
+    "title": "Persuasive Essay Outline",
+    "instruction": "Draft a 1-page persuasive essay on an important homestead or community topic. Include a clear Thesis Statement and 3 supporting arguments!"
+  }
+}

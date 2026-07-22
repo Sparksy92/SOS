@@ -1,0 +1,52 @@
+{
+  "id": "cadets_history_civics",
+  "title": "World History, Constitutional Civics & Economics",
+  "subject": "History & Social Studies",
+  "gradeLevel": "High School (Grades 7-12 / Ages 13-17)",
+  "category": "History & Social Studies",
+  "standards": [
+    "US.C3.FRAMEWORK.D2.CIV",
+    "US.C3.FRAMEWORK.D2.ECO",
+    "CA.ON.SOC.G10.CIVICS",
+    "CA.BC.SOC.G12.GOVN"
+  ],
+  "description": "Examine world historical revolutions, constitutional governance, civil rights, economic trade systems, and community resilience.",
+  "learningObjectives": [
+    "Analyze key principles of constitutional governance, separation of powers, and individual rights.",
+    "Understand supply and demand, inflation, and trade economics.",
+    "Trace major turning points in modern world history."
+  ],
+  "lessons": [
+    {
+      "id": "lesson_1",
+      "title": "Constitutional Governance & Separation of Powers",
+      "content": "Constitutional governance limits state power through rule of law, protecting fundamental individual liberties. Separation of powers distributes authority across Legislative, Executive, and Judicial branches to prevent tyranny."
+    },
+    {
+      "id": "lesson_2",
+      "title": "Economic Principles: Scarcity & Supply/Demand",
+      "content": "Economics is the study of resource allocation under conditions of scarcity. Supply represents how much of a good is available; Demand represents consumer desire to purchase it. Price equilibrium occurs where supply equals demand."
+    }
+  ],
+  "flashcards": [
+    { "term": "Separation of Powers", "definition": "Division of government authority among distinct branches to prevent concentration of power." },
+    { "term": "Scarcity", "definition": "The fundamental economic problem of having unlimited wants in a world of limited resources." },
+    { "term": "Rule of Law", "definition": "The principle that all people and institutions are subject to and accountable to law that is fairly enforced." }
+  ],
+  "questions": [
+    {
+      "question": "Which principle prevents any single branch of government from acquiring absolute control?",
+      "options": ["Separation of Powers & Checks and Balances", "Absolute Monarchy", "Central Planning", "Feudalism"],
+      "correctIndex": 0
+    },
+    {
+      "question": "What happens to the price of a scarce resource when demand increases while supply remains constant?",
+      "options": ["Price tends to rise", "Price drops to zero", "Supply immediately doubles", "No change"],
+      "correctIndex": 0
+    }
+  ],
+  "practicalChallenge": {
+    "title": "Constitutional Analysis & Bill of Rights Review",
+    "instruction": "Read the Bill of Rights or Canadian Charter of Rights and Freedoms. Choose 2 key rights and write a 1-page summary explaining why they are critical for a free society!"
+  }
+}

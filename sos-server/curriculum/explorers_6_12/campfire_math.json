@@ -1,26 +1,57 @@
 {
-  "id": "campfire_math",
-  "title": "Campfire Math",
-  "type": "quiz",
-  "subject": "Mathematics",
-  "gradeLevel": "Grade 3",
-  "standards": ["CCSS.MATH.CONTENT.3.OA.A.1", "CCSS.MATH.CONTENT.3.NBT.A.2"],
-  "description": "Learn multiplication, subtraction, and word problems using real survival logic.",
-  "questions": [
+  "id": "explorers_campfire_math",
+  "title": "Campfire Math & Practical Measurements",
+  "subject": "Applied Mathematics & Physics",
+  "gradeLevel": "Elementary / Middle (Grades 1-6 / Ages 6-12)",
+  "category": "Practical STEM",
+  "standards": [
+    "US.CCSS.MATH.3.MD.A.2",
+    "US.CCSS.MATH.4.MD.A.1",
+    "CA.ON.MATH.G4.MEASURE",
+    "CA.BC.MATH.G5.UNITS"
+  ],
+  "description": "Learn volumetric measurements, weight, fuel ratio calculations, and geometry through campfires and homestead woodpiles.",
+  "learningObjectives": [
+    "Calculate firewood volume in cords and cubic feet.",
+    "Understand surface-area-to-volume ratio in tinder vs fuel logs.",
+    "Perform liquid volume conversions for water storage (Liters to Gallons)."
+  ],
+  "lessons": [
     {
-      "question": "Each camper needs 3 liters of water per day. If there are 4 campers, how many liters of water do they need in total for one day?",
-      "options": ["7 Liters", "10 Liters", "12 Liters", "15 Liters"],
-      "correctIndex": 2
+      "id": "lesson_1",
+      "title": "The Geometry of Tinder, Kindling, and Fuel",
+      "content": "Thin twigs have high surface area relative to volume, making them ignite rapidly. Thick logs have low surface area, burning slowly for long-term heat. To build a fire: start with 80% high-surface-area tinder, transition to medium kindling, then add heavy fuel logs."
     },
     {
-      "question": "A box of matches contains 50 matches. If we use 3 matches to light a fire every day, how many matches do we use in one week (7 days)?",
-      "options": ["14 matches", "21 matches", "28 matches", "35 matches"],
+      "id": "lesson_2",
+      "title": "Measuring Firewood: Cords & Volume",
+      "content": "A full cord of wood measures 4 feet high by 4 feet deep by 8 feet long (4' x 4' x 8' = 128 cubic feet). A face cord is 4 feet high by 8 feet long by 16 inches deep (4' x 8' x 1.33' = 42.6 cubic feet)."
+    }
+  ],
+  "flashcards": [
+    { "term": "Cord", "definition": "A unit of volume for stacked firewood equal to 128 cubic feet (4 x 4 x 8 ft)." },
+    { "term": "Surface Area", "definition": "The total outer area of an object exposed to air and heat." },
+    { "term": "Kindling", "definition": "Small dry sticks used to raise temperature to ignite larger fuel logs." }
+  ],
+  "questions": [
+    {
+      "question": "How many cubic feet are in a standard full cord of stacked firewood measuring 4 ft x 4 ft x 8 ft?",
+      "options": ["64 cu ft", "128 cu ft", "256 cu ft", "100 cu ft"],
       "correctIndex": 1
     },
     {
-      "question": "Our solar battery starts at 100% capacity. During the night, the lights consume 35% and the radio consumes 15%. What percentage is left in the morning?",
-      "options": ["50%", "65%", "45%", "80%"],
-      "correctIndex": 0
+      "question": "Why does fine birch bark tinder catch fire faster than a thick oak log?",
+      "options": ["It is heavier", "It has a higher surface-area-to-volume ratio", "It contains water", "It is cooler"],
+      "correctIndex": 1
+    },
+    {
+      "question": "If 1 US gallon equals approximately 3.78 Liters, how many Liters are in a 5-gallon water jug?",
+      "options": ["10 Liters", "15.5 Liters", "18.9 Liters", "25 Liters"],
+      "correctIndex": 2
     }
-  ]
+  ],
+  "practicalChallenge": {
+    "title": "Firewood Stack & Volume Audit",
+    "instruction": "Measure a stack of wood using a tape measure (Length x Width x Height in inches). Divide by 1,728 to find total cubic feet!"
+  }
 }

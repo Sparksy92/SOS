@@ -1,27 +1,51 @@
 {
-  "id": "safe_foraging",
-  "title": "Safe Foraging Basics",
-  "type": "flashcard",
-  "subject": "Life Science",
-  "gradeLevel": "Grade 4",
-  "standards": ["CCSS.ELA-LITERACY.RI.4.7", "NextGen Science: 4-LS1-1"],
-  "description": "Learn to identify edible and poisonous plants that you might encounter in the wild.",
-  "cards": [
+  "id": "explorers_safe_foraging",
+  "title": "Safe Wild Foraging & Botany Basics",
+  "subject": "Life Science & Botany",
+  "gradeLevel": "Elementary / Middle (Grades 1-6 / Ages 6-12)",
+  "category": "Life Science",
+  "standards": [
+    "US.NGSS.4-LS1-1",
+    "CA.ON.SCI.G4.PLANTS",
+    "CA.BC.SCIENCE.G4.BOTANY"
+  ],
+  "description": "Learn to identify wild edible plants, avoid toxic lookalikes, and apply Universal Edibility Principles safely.",
+  "learningObjectives": [
+    "Identify common safe wild plants (Dandelions, Wild Pine Needle Tea).",
+    "Recognize toxic indicators ('Leaves of three', milky sap, umbrella white berries).",
+    "Understand plant anatomy (leaves, stem, roots, flower)."
+  ],
+  "lessons": [
     {
-      "front": "Dandelion (Taraxacum)",
-      "back": "EDIBLE! The entire plant is safe. Leaves can be eaten raw or boiled, flowers are sweet, and roots can be roasted as a coffee substitute."
+      "id": "lesson_1",
+      "title": "Safe vs Toxic Plant Characteristics",
+      "content": "Rule #1 of wild foraging: Never ingest any plant or mushroom unless you have 100% positive identification! Dandelions are 100% edible (leaves, flowers, and roots). Poison Ivy contains urushiol oil causing severe allergic rashes — remember: 'Leaves of three, let it be!'"
     },
     {
-      "front": "Leaves of Three (Poison Ivy / Oak)",
-      "back": "TOXIC! Do not touch or burn. Causes severe skin rashes due to urushiol oil. Remember: 'Leaves of three, let it be!'"
-    },
-    {
-      "front": "Pine Needles (White Pine)",
-      "back": "EDIBLE! Steep in hot (but not boiling) water to make a pine needle tea which is extremely high in Vitamin C."
-    },
-    {
-      "front": "Wild Berries - White or Yellow",
-      "back": "DANGEROUS! A good rule of thumb: 10% of white/yellow wild berries are edible (90% toxic). Avoid them completely."
+      "id": "lesson_2",
+      "title": "Pine Needle Tea & Vitamin C",
+      "content": "Eastern White Pine needles contain high concentrations of Vitamin C (up to 4-5 times higher than lemons!). Steep green needles in hot water for 10 minutes to make a survival tonic."
     }
-  ]
+  ],
+  "flashcards": [
+    { "term": "Urushiol Oil", "definition": "The toxic skin irritant chemical found in Poison Ivy, Oak, and Sumac." },
+    { "term": "Dandelion", "definition": "A 100% edible wild plant with yellow flowers, serrated leaves, and high nutritional value." },
+    { "term": "Positive Identification", "definition": "Matching 100% of physical features against an official field guide before harvesting." }
+  ],
+  "questions": [
+    {
+      "question": "What is the common rhyme used to remember and avoid Poison Ivy?",
+      "options": ["'Leaves of three, let it be!'", "'Yellow leaves are sweet'", "'Big green stems grow high'", "'Red berries mean go'"],
+      "correctIndex": 0
+    },
+    {
+      "question": "Which wild plant has 100% edible leaves, flowers, and roots?",
+      "options": ["Poison Hemlock", "Dandelion", "Deadly Nightshade", "Oleander"],
+      "correctIndex": 1
+    }
+  ],
+  "practicalChallenge": {
+    "title": "Wild Leaf Identification Challenge",
+    "instruction": "Find 3 different plant leaves outdoors. Examine the leaf margins (smooth vs serrated) and sketch them in your field journal!"
+  }
 }

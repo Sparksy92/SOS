@@ -1,26 +1,57 @@
 {
-  "id": "counting_nature",
-  "title": "Counting in Nature",
-  "type": "quiz",
-  "subject": "Mathematics",
-  "gradeLevel": "Pre-K",
-  "standards": ["CCSS.MATH.CONTENT.K.CC.B.4"],
-  "description": "Learn to count items found around the campsite.",
+  "id": "sprouts_counting_nature",
+  "title": "Nature Counting & Early Math",
+  "subject": "Early Mathematics & Botany",
+  "gradeLevel": "Pre-K to Kindergarten (Ages 0-5)",
+  "category": "Early STEM",
+  "standards": [
+    "US.CCSS.MATH.K.CC.A.1",
+    "US.CCSS.MATH.K.CC.B.4",
+    "CA.ON.MATH.K.N1",
+    "CA.BC.MATH.K.NUMBER"
+  ],
+  "description": "Learn numbers 1 to 10 by counting pinecones, leaves, rocks, and wild berries in nature.",
+  "learningObjectives": [
+    "Count objects from 1 to 10 using natural outdoor items.",
+    "Recognize basic geometric shapes in leaves and tree trunks.",
+    "Categorize items by color, size, and texture."
+  ],
+  "lessons": [
+    {
+      "id": "lesson_1",
+      "title": "Counting Outdoor Treasures",
+      "content": "Look around the homestead or forest floor. Can you find 3 pinecones? Count them one by one: 1, 2, 3! Touch each pinecone as you count it to practice 1-to-1 correspondence."
+    },
+    {
+      "id": "lesson_2",
+      "title": "Nature's Shapes",
+      "content": "Tree trunks are circles! Pine needles look like straight lines! Rocks can be oval or round. Walk around outdoors and spot 3 round objects and 3 long straight sticks."
+    }
+  ],
+  "flashcards": [
+    { "term": "Pinecone", "definition": "The woody seed container of a pine tree." },
+    { "term": "Circle", "definition": "A round shape with no sharp corners, like a cut log." },
+    { "term": "Count", "definition": "To name numbers in order to find how many items there are." }
+  ],
   "questions": [
     {
-      "question": "How many acorns do you see if there is 1 on the rock and 1 in your hand?",
-      "options": ["1", "2", "3", "4"],
+      "question": "If you find 2 red autumn leaves and pick up 1 green leaf, how many leaves do you have in total?",
+      "options": ["2 leaves", "3 leaves", "5 leaves", "1 leaf"],
       "correctIndex": 1
     },
     {
-      "question": "If we see 3 birds in the tree and 2 fly away, how many birds are left in the tree?",
-      "options": ["1", "2", "3", "0"],
+      "question": "What shape is the cross-section of a round tree trunk?",
+      "options": ["Square", "Triangle", "Circle", "Star"],
+      "correctIndex": 2
+    },
+    {
+      "question": "Which of these natural items is best for practice counting 1 to 5?",
+      "options": ["Pinecones on the ground", "Clouds in the sky", "Water drop in a lake", "Smoke from a chimney"],
       "correctIndex": 0
-    },
-    {
-      "question": "Count the tents: 🏕️ 🏕️ 🏕️. How many tents are there?",
-      "options": ["2", "3", "4", "5"],
-      "correctIndex": 1
     }
-  ]
+  ],
+  "practicalChallenge": {
+    "title": "Homestead Nature Scavenger Count",
+    "instruction": "Go outside with a basket. Collect 5 small stones, 4 dry leaves, and 3 twigs. Lay them out in lines and count them aloud to a parent or instructor!"
+  }
 }

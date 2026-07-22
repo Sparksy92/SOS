@@ -1,0 +1,40 @@
+{
+  "id": "operators_english_communication",
+  "title": "Technical Writing, SOP Documentation & Communication",
+  "subject": "English Language Arts & Technical Writing",
+  "gradeLevel": "Adult Mastery (Ages 18+)",
+  "category": "Reading & Writing",
+  "standards": [
+    "US.CTE.COMMUNICATION",
+    "US.OSHA.SOP.STANDARDS",
+    "CA.BC.TRADES.COMMUNICATION"
+  ],
+  "description": "Draft clear Standard Operating Procedures (SOPs), technical manuals, emergency incident logs, and clear instruction guides.",
+  "learningObjectives": [
+    "Write concise Standard Operating Procedures (SOPs) for homestead equipment.",
+    "Formulate unambiguous emergency action protocols and radio logs.",
+    "Edit technical prose for clarity, brevity, and zero ambiguity."
+  ],
+  "lessons": [
+    {
+      "id": "lesson_1",
+      "title": "Structure of a Standard Operating Procedure (SOP)",
+      "content": "An effective SOP contains 5 key sections: 1) Purpose & Scope, 2) Required PPE & Safety Hazards, 3) Sequential Step-by-Step Instructions, 4) Troubleshooting Matrix, and 5) Maintenance Checklist."
+    }
+  ],
+  "flashcards": [
+    { "term": "SOP", "definition": "Standard Operating Procedure: Step-by-step instructions compiled to help workers carry out complex routine operations safely." },
+    { "term": "PPE", "definition": "Personal Protective Equipment: Gear worn to minimize exposure to hazards." }
+  ],
+  "questions": [
+    {
+      "question": "What is the primary goal of writing a Standard Operating Procedure (SOP)?",
+      "options": ["To ensure tasks are performed consistently, safely, and correctly by anyone", "To fill up paper space", "To entertain the reader", "To obscure instructions"],
+      "correctIndex": 0
+    }
+  ],
+  "practicalChallenge": {
+    "title": "Draft a Homestead Equipment SOP",
+    "instruction": "Draft a 1-page SOP for a piece of equipment (generator, chainsaw, or water pump). Include safety hazards, step-by-step start procedure, and shutdown steps!"
+  }
+}
